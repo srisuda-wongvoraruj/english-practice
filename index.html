@@ -2057,7 +2057,8 @@ function answerListen(sel) {
 }
 
 // ── Speech Recognition shared helper ─────────
-// Delays start by 150ms to avoid race conditions when previous instance hasn't fully stopped
+// Must call start() synchronously inside user gesture (iOS requirement)
+// gotResult flag prevents onend from resetting UI when speech was captured
 function startSR(opts) {
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
   if (!SR) return null;
@@ -2066,13 +2067,15 @@ function startSR(opts) {
   r.continuous      = opts.continuous      || false;
   r.interimResults  = opts.interimResults  || false;
   r.maxAlternatives = opts.maxAlternatives || 1;
-  if (opts.onResult) r.onresult = opts.onResult;
-  if (opts.onError)  r.onerror  = opts.onError;
-  if (opts.onEnd)    r.onend    = opts.onEnd;
-  setTimeout(()=>{
-    try { r.start(); }
-    catch(e) { if(opts.onError) opts.onError({error:'start-failed'}); }
-  }, 150);
+  let gotResult = false;
+  r.onresult = e => { gotResult = true; if(opts.onResult) opts.onResult(e); };
+  r.onerror  = e => { if(e.error !== 'no-speech' && opts.onError) opts.onError(e); };
+  r.onend    = () => {
+    if (!gotResult && opts.onNoResult) opts.onNoResult();
+    else if (opts.onEnd) opts.onEnd();
+  };
+  try { r.start(); }
+  catch(e) { if(opts.onError) opts.onError({error:'start-failed'}); }
   return r;
 }
 
@@ -2116,7 +2119,7 @@ function toggleRec(){
   const lbl=document.getElementById('rec-lbl');
   if(_isRec){
     _isRec=false;
-    if(_recog){try{_recog.stop()}catch(e){}}
+    if(_recog){try{_recog.abort()}catch(e){} _recog=null;}
     if(btn){btn.classList.remove('rec');btn.innerHTML='🎤';}
     if(lbl){lbl.classList.remove('active');lbl.textContent='กดเพื่อพูด';}
     return;
@@ -2125,6 +2128,7 @@ function toggleRec(){
     if(lbl)lbl.textContent='❌ ไม่รองรับ ลองใช้ Chrome';return;
   }
   stopSpeech();
+  if(_recog){try{_recog.abort()}catch(e){} _recog=null;}
   _isRec=true;
   if(btn){btn.classList.add('rec');btn.innerHTML='⏹';}
   if(lbl){lbl.textContent='🎙 กำลังฟัง...';lbl.classList.add('active');}
@@ -2136,6 +2140,11 @@ function toggleRec(){
       if(btn){btn.classList.remove('rec');btn.innerHTML='🎤';}
       if(lbl){lbl.classList.remove('active');lbl.textContent='เสร็จแล้ว!';}
       showCompare(t,window._spk.en);
+    },
+    onNoResult:()=>{
+      _isRec=false;
+      if(btn){btn.classList.remove('rec');btn.innerHTML='🎤';}
+      if(lbl){lbl.classList.remove('active');lbl.textContent='ไม่ได้ยิน — กดอีกครั้งนะ 🎤';}
     },
     onError:e=>{
       _isRec=false;
@@ -2288,8 +2297,8 @@ function translateRecord() {
         if(btn){btn.textContent='🎤 พูดดูเลย';btn.style.background='linear-gradient(180deg,#FF6B9D,#e0175c)'}
       }
     };
-    _trRecog.onend=()=>{ if(_trRec) setTimeout(startListening,150); };
-    setTimeout(()=>{ try{_trRecog.start();}catch(e){if(_trRec)setTimeout(startListening,200);} },150);
+    _trRecog.onend=()=>{ if(_trRec) setTimeout(startListening,300); };
+    try{_trRecog.start();}catch(e){if(_trRec)setTimeout(startListening,300);}
   }
   startListening();
 }
@@ -2553,7 +2562,7 @@ function chatToggleRec() {
   const lbl=document.getElementById('chat-rec-lbl');
   if(chat.isRec){
     chat.isRec=false;
-    if(chat.recog){try{chat.recog.stop()}catch(e){}}
+    if(chat.recog){try{chat.recog.abort()}catch(e){} chat.recog=null;}
     if(btn){btn.classList.remove('rec');btn.innerHTML='🎤';}
     if(lbl){lbl.classList.remove('active');lbl.textContent='กดเพื่อพูด';}
     return;
@@ -2562,6 +2571,7 @@ function chatToggleRec() {
     if(lbl)lbl.textContent='❌ ลองใช้ Chrome';return;
   }
   stopSpeech();
+  if(chat.recog){try{chat.recog.abort()}catch(e){} chat.recog=null;}
   chat.isRec=true;
   if(btn){btn.classList.add('rec');btn.innerHTML='⏹';}
   if(lbl){lbl.textContent='🔴 กำลังฟัง...';lbl.classList.add('active');}
@@ -2572,6 +2582,11 @@ function chatToggleRec() {
       if(btn){btn.classList.remove('rec');btn.innerHTML='🎤';}
       if(lbl) lbl.classList.remove('active');
       userResponded(said);
+    },
+    onNoResult:()=>{
+      chat.isRec=false;
+      if(btn){btn.classList.remove('rec');btn.innerHTML='🎤';}
+      if(lbl){lbl.classList.remove('active');lbl.textContent='ไม่ได้ยิน — กดอีกครั้งนะ 🎤';}
     },
     onError:()=>{
       chat.isRec=false;
