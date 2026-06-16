@@ -1,0 +1,2502 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WorkSpeak ✨</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{font-size:16px}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+  background:#F7F3FF;
+  color:#3D2C6B;
+  min-height:100vh;
+  max-width:480px;
+  margin:0 auto;
+}
+
+/* ── PASTEL TOKENS ── */
+:root{
+  --purple:#9B7FE8;--purple-dk:#7B5FD0;--purple-lt:#F0EBFF;
+  --pink:#F4A7C0;--pink-dk:#E0789F;--pink-lt:#FFF0F6;
+  --green:#6DC78A;--green-br:#5BB87B;--green-lt:#E6F9ED;
+  --yellow:#F5D06A;--yellow-dk:#D9A800;--yellow-lt:#FFFBE6;
+  --red:#F08080;--red-lt:#FFF0F0;
+  --blue:#89B4F7;--blue-lt:#EBF2FF;
+  --orange:#FFB67A;
+  --surface:#FFFFFF;
+  --text:#3D2C6B;--text2:#7B6AA0;--muted:#B0A0CF;
+  --border:#EAE0FF;
+  --bg:#F7F3FF;
+  --shadow-sm:0 2px 8px rgba(155,127,232,.12);
+  --shadow-md:0 4px 16px rgba(155,127,232,.18);
+}
+
+/* ── SCREENS ── */
+.screen{display:none;min-height:100vh;padding-bottom:40px}
+.screen.active{display:block}
+
+/* ── HEADER ── */
+.hero{
+  background:linear-gradient(160deg,#C4A4F0 0%,#F4A7C0 100%);
+  padding:20px 18px 28px;
+  color:#fff;
+  position:relative;
+  overflow:hidden;
+}
+.hero::before{
+  content:'✨ ⭐ 💫 ✨ ⭐';
+  position:absolute;top:8px;right:12px;
+  font-size:14px;letter-spacing:6px;opacity:.35;
+  animation:float 4s ease-in-out infinite;
+}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+
+.hero-row{display:flex;align-items:center;justify-content:space-between}
+.owl-wrap{display:flex;align-items:center;gap:10px}
+.owl{font-size:36px;animation:float 3s ease-in-out infinite}
+.app-title{font-size:22px;font-weight:900;letter-spacing:-.5px}
+.app-sub{font-size:12px;opacity:.8;margin-top:1px}
+.xp-pill{
+  background:rgba(255,255,255,.22);
+  border:2px solid rgba(255,255,255,.4);
+  border-radius:100px;padding:5px 12px;
+  font-size:12px;font-weight:800;
+  display:flex;align-items:center;gap:4px;
+}
+
+/* Daily bar */
+.daily-section{margin-top:16px}
+.daily-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:7px}
+.daily-row span{font-size:12px;opacity:.85;font-weight:600}
+.hero-bar{background:rgba(255,255,255,.25);border-radius:100px;height:10px;overflow:hidden}
+.hero-bar-fill{background:#FFD93D;height:100%;border-radius:100px;transition:width .6s cubic-bezier(.34,1.56,.64,1);position:relative}
+.hero-bar-fill::after{content:'';position:absolute;top:2px;left:6px;right:6px;height:3px;background:rgba(255,255,255,.4);border-radius:3px}
+
+/* ── STATS ── */
+.stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;padding:14px 16px}
+.stat-card{
+  background:var(--surface);
+  border-radius:18px;
+  padding:14px 8px;
+  text-align:center;
+  box-shadow:0 2px 12px rgba(124,92,252,.1);
+  border:2px solid var(--border);
+}
+.stat-emoji{font-size:22px;margin-bottom:4px}
+.stat-val{font-size:20px;font-weight:900;color:var(--purple)}
+.stat-lbl{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-top:1px}
+
+/* ── SECTION TITLE ── */
+.sec-title{
+  font-size:13px;font-weight:800;
+  color:var(--muted);text-transform:uppercase;letter-spacing:.8px;
+  padding:4px 16px 8px;
+}
+
+/* ── CATEGORY CARDS ── */
+.cat-grid{display:flex;flex-direction:column;gap:12px;padding:0 16px}
+.cat-card{
+  border-radius:22px;
+  padding:18px;
+  display:flex;align-items:center;gap:15px;
+  cursor:pointer;
+  transition:transform .18s cubic-bezier(.34,1.56,.64,1), box-shadow .18s;
+  position:relative;overflow:hidden;
+  border:none;
+}
+.cat-card:active{transform:scale(.96)}
+.cat-card:hover{transform:translateY(-3px)}
+
+.cat-card.meetings   {background:linear-gradient(135deg,#B8A4E8,#9B7FE8);box-shadow:0 6px 18px rgba(155,127,232,.32)}
+.cat-card.presentations{background:linear-gradient(135deg,#F4A7C0,#F08080);box-shadow:0 6px 18px rgba(244,167,192,.35)}
+.cat-card.communication{background:linear-gradient(135deg,#89C4F4,#89B4F7);box-shadow:0 6px 18px rgba(137,196,244,.38)}
+.cat-card.networking {background:linear-gradient(135deg,#82D9A0,#6DC78A);box-shadow:0 6px 18px rgba(109,199,138,.35)}
+
+.cat-card::before{
+  content:'';position:absolute;top:-20px;right:-20px;
+  width:80px;height:80px;border-radius:50%;
+  background:rgba(255,255,255,.12);
+}
+.cat-card::after{
+  content:'';position:absolute;top:10px;right:30px;
+  width:40px;height:40px;border-radius:50%;
+  background:rgba(255,255,255,.1);
+}
+
+.cat-icon-wrap{
+  width:56px;height:56px;border-radius:16px;
+  background:rgba(255,255,255,.25);
+  display:flex;align-items:center;justify-content:center;
+  font-size:28px;flex-shrink:0;
+  backdrop-filter:blur(4px);
+}
+.cat-info{flex:1;color:#fff}
+.cat-name{font-size:15px;font-weight:800;text-shadow:0 1px 3px rgba(0,0,0,.15)}
+.cat-desc{font-size:11px;opacity:.85;margin-top:2px;font-weight:500}
+.cat-bar-wrap{margin-top:10px}
+.cat-bar{background:rgba(255,255,255,.3);border-radius:100px;height:5px;overflow:hidden}
+.cat-bar-fill{background:rgba(255,255,255,.9);height:100%;border-radius:100px;transition:width .5s ease}
+.cat-pct{font-size:10px;opacity:.9;font-weight:700;text-align:right;margin-top:3px}
+.cat-arrow{font-size:20px;opacity:.7;color:#fff;flex-shrink:0;position:relative;z-index:1}
+
+/* ── BACK BUTTON ── */
+.back-btn{
+  background:rgba(255,255,255,.22);border:2px solid rgba(255,255,255,.35);
+  color:#fff;border-radius:100px;padding:6px 14px;
+  cursor:pointer;font-size:13px;font-weight:700;
+  display:inline-flex;align-items:center;gap:5px;
+  transition:all .15s;
+}
+.back-btn:hover{background:rgba(255,255,255,.3)}
+
+/* ── CATEGORY SCREEN HEADER ── */
+.cat-hero{padding:20px 18px 28px;color:#fff;position:relative;overflow:hidden}
+.cat-hero.meetings   {background:linear-gradient(135deg,#B8A4E8,#9B7FE8)}
+.cat-hero.presentations{background:linear-gradient(135deg,#F4A7C0,#F08080)}
+.cat-hero.communication{background:linear-gradient(135deg,#89C4F4,#89B4F7)}
+.cat-hero.networking {background:linear-gradient(135deg,#82D9A0,#6DC78A)}
+.cat-hero-icon{font-size:44px;margin:14px 0 4px;animation:float 3s ease-in-out infinite}
+.cat-hero-name{font-size:20px;font-weight:900;text-shadow:0 2px 6px rgba(0,0,0,.15)}
+.cat-hero-desc{font-size:13px;opacity:.85;margin-top:3px}
+
+/* ── MODE CARDS ── */
+.mode-list{display:flex;flex-direction:column;gap:12px;padding:0 16px}
+.mode-card{
+  background:var(--surface);
+  border-radius:20px;
+  padding:18px;
+  display:flex;align-items:center;gap:16px;
+  cursor:pointer;
+  border:2.5px solid var(--border);
+  transition:all .18s cubic-bezier(.34,1.56,.64,1);
+  box-shadow:0 2px 10px rgba(124,92,252,.07);
+}
+.mode-card:hover{border-color:var(--purple);transform:translateY(-2px);box-shadow:0 6px 18px rgba(124,92,252,.15)}
+.mode-card:active{transform:scale(.97)}
+.mode-ico-wrap{
+  width:54px;height:54px;border-radius:16px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:28px;flex-shrink:0;
+}
+.mode-ico-listen{background:#EEF5FF}
+.mode-ico-speak{background:#FFF0F6}
+.mode-ico-shadow{background:#F0EBFF}
+.mode-ico-translate{background:#FFF3E0}
+
+/* ── TRANSLATE EXERCISE ── */
+.th-prompt-card{
+  background:linear-gradient(135deg,#FF9500,#FF6B9D);
+  border-radius:24px;padding:28px 20px;
+  color:#fff;text-align:center;margin-bottom:16px;
+  box-shadow:0 8px 24px rgba(255,149,0,.38);
+  position:relative;overflow:hidden;
+}
+.th-prompt-card::before{content:'🇹🇭';position:absolute;top:12px;left:14px;font-size:22px;opacity:.5}
+.th-prompt-card::after{content:'🇬🇧';position:absolute;bottom:12px;right:14px;font-size:22px;opacity:.5}
+.th-context-tag{
+  font-size:11px;font-weight:800;opacity:.85;
+  background:rgba(0,0,0,.18);border-radius:100px;
+  padding:4px 13px;display:inline-block;margin-bottom:12px;letter-spacing:.4px;
+}
+.th-prompt{font-size:21px;font-weight:900;line-height:1.5;text-shadow:0 2px 6px rgba(0,0,0,.2)}
+
+.think-zone{
+  background:var(--yellow-lt);border:2.5px dashed #e6a800;
+  border-radius:18px;padding:20px 16px;text-align:center;margin-bottom:14px;
+}
+.think-emoji{font-size:30px;display:block;margin-bottom:6px;animation:float 2s ease-in-out infinite}
+.think-text{font-size:14px;font-weight:700;color:#7a5200}
+.think-sub{font-size:12px;color:#a87a00;margin-top:3px}
+
+.answer-box{
+  background:var(--surface);border-radius:20px;
+  border:2.5px solid var(--green-br);padding:18px;
+  margin-bottom:14px;display:none;
+  animation:fadeSlide .3s ease;
+}
+.answer-box.show{display:block}
+.answer-lbl{font-size:11px;font-weight:800;color:var(--green);text-transform:uppercase;letter-spacing:.6px;margin-bottom:8px}
+.answer-en{font-size:19px;font-weight:800;color:var(--text);line-height:1.5}
+
+.translate-btns{display:flex;gap:10px;margin-bottom:14px}
+.self-rate-row{display:flex;gap:8px;margin-top:14px}
+.rate-btn{
+  flex:1;padding:12px 8px;border-radius:14px;border:2.5px solid var(--border);
+  background:var(--surface);cursor:pointer;text-align:center;
+  font-size:13px;font-weight:700;transition:all .15s;
+}
+.rate-btn:hover{transform:translateY(-2px)}
+.rate-btn.rate-yes{border-color:var(--green-br);background:var(--green-lt);color:#2d6a00}
+.rate-btn.rate-no{border-color:var(--red);background:var(--red-lt);color:#8b0000}
+.rate-btn.rate-almost{border-color:var(--yellow-dk);background:var(--yellow-lt);color:#7a5200}
+.mode-info{flex:1}
+.mode-name{font-size:15px;font-weight:800;color:var(--text)}
+.mode-desc{font-size:12px;color:var(--text2);margin-top:2px;line-height:1.4}
+.mode-badge{
+  font-size:11px;font-weight:800;
+  background:var(--purple-lt);color:var(--purple);
+  border-radius:100px;padding:4px 10px;white-space:nowrap;
+}
+.mode-right{text-align:right;display:flex;flex-direction:column;align-items:flex-end;gap:5px}
+
+/* ── EXERCISE HEADER ── */
+.ex-hero{
+  background:linear-gradient(135deg,#C4A4F0,#F4A7C0);
+  padding:14px 16px 20px;color:#fff;
+}
+.ex-hero-row{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.ex-mode-tag{
+  background:rgba(255,255,255,.22);border-radius:100px;
+  padding:4px 12px;font-size:12px;font-weight:700;
+}
+.ex-prog-row{display:flex;align-items:center;gap:10px}
+.ex-prog-track{
+  flex:1;background:rgba(255,255,255,.3);
+  border-radius:100px;height:10px;overflow:hidden;
+}
+.ex-prog-fill{
+  background:#FFD93D;height:100%;border-radius:100px;
+  transition:width .5s cubic-bezier(.34,1.56,.64,1);
+}
+.ex-count{font-size:12px;font-weight:800;opacity:.85;white-space:nowrap}
+.ex-title{font-size:15px;font-weight:800;margin-top:8px;opacity:.95}
+
+/* ── BUTTONS ── */
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;
+  gap:7px;border:none;border-radius:100px;
+  font-size:15px;font-weight:800;cursor:pointer;
+  padding:14px 22px;letter-spacing:.1px;
+  transition:transform .1s,box-shadow .1s;
+  position:relative;top:0;
+}
+.btn:active{transform:translateY(4px) !important}
+
+.btn-primary{background:linear-gradient(180deg,#B8A4E8,#9B7FE8);color:#fff;box-shadow:0 5px 0 #7B5FD0}
+.btn-primary:active{box-shadow:0 1px 0 #7B5FD0}
+.btn-green{background:linear-gradient(180deg,#82D9A0,#6DC78A);color:#fff;box-shadow:0 5px 0 #4CA86A}
+.btn-green:active{box-shadow:0 1px 0 #4CA86A}
+.btn-yellow{background:linear-gradient(180deg,#F5D06A,#E8BC40);color:#5a3c00;box-shadow:0 5px 0 #C99A00}
+.btn-yellow:active{box-shadow:0 1px 0 #C99A00}
+.btn-ghost{background:var(--surface);color:var(--purple);border:2.5px solid var(--border);box-shadow:0 4px 0 var(--border)}
+.btn-ghost:active{box-shadow:0 0 0 var(--border)}
+.btn-outline{background:var(--purple-lt);color:var(--purple);box-shadow:0 4px 0 #D4C6FF}
+.btn-outline:active{box-shadow:0 0 0 #D4C6FF}
+.btn-sm{font-size:13px;padding:9px 16px}
+.btn-full{width:100%}
+.btn-lg{font-size:17px;padding:16px 24px}
+
+/* ── CARD ── */
+.card{background:var(--surface);border-radius:20px;padding:18px;border:2px solid var(--border);box-shadow:0 2px 10px rgba(124,92,252,.07)}
+
+/* ── AUDIO PLAYER ── */
+.audio-card{
+  background:linear-gradient(135deg,#F0EBFF,#FFF0F6);
+  border-radius:22px;padding:24px 18px;
+  text-align:center;margin-bottom:16px;
+  border:2px solid var(--border);
+}
+.audio-hint{font-size:12px;color:var(--text2);font-weight:700;margin-bottom:14px}
+.play-ring{
+  width:76px;height:76px;border-radius:50%;
+  background:linear-gradient(135deg,#C4A4F0,#F4A7C0);
+  display:flex;align-items:center;justify-content:center;
+  margin:0 auto 14px;cursor:pointer;
+  box-shadow:0 6px 20px rgba(196,164,240,.45);
+  transition:all .2s cubic-bezier(.34,1.56,.64,1);
+  font-size:28px;border:none;color:#fff;
+}
+.play-ring:hover{transform:scale(1.08)}
+.play-ring:active{transform:scale(.93)}
+.play-ring.playing{animation:pulse-ring 1.5s ease-in-out infinite}
+@keyframes pulse-ring{
+  0%,100%{box-shadow:0 6px 20px rgba(124,92,252,.45)}
+  50%{box-shadow:0 6px 30px rgba(124,92,252,.7),0 0 0 8px rgba(124,92,252,.15)}
+}
+.play-btns-row{display:flex;gap:8px;justify-content:center;margin-top:2px}
+.transcript-wrap{
+  background:#fff;border-radius:14px;padding:14px;
+  margin-top:14px;text-align:left;
+  border:1.5px solid var(--border);
+  display:none;
+}
+.transcript-wrap.show{display:block;animation:fadeSlide .25s ease}
+@keyframes fadeSlide{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.transcript-en{font-size:14px;line-height:1.65;color:var(--text)}
+.transcript-th{font-size:12px;color:var(--text2);margin-top:8px;padding-top:8px;border-top:1.5px dashed var(--border);line-height:1.6}
+
+/* ── MCQ ── */
+.question-text{font-size:16px;font-weight:800;color:var(--text);margin-bottom:14px;line-height:1.4}
+.opts{display:flex;flex-direction:column;gap:10px}
+.opt{
+  background:var(--surface);border:2.5px solid var(--border);
+  border-radius:16px;padding:14px 16px;
+  cursor:pointer;font-size:14px;font-weight:600;color:var(--text);
+  transition:all .18s;display:flex;align-items:center;gap:13px;
+}
+.opt:hover{border-color:var(--purple);background:var(--purple-lt);transform:translateX(3px)}
+.opt.correct{border-color:var(--green-br)!important;background:var(--green-lt)!important;cursor:default}
+.opt.wrong{border-color:var(--red)!important;background:var(--red-lt)!important;cursor:default;animation:shake .35s ease}
+.opt.disabled{cursor:default}
+@keyframes shake{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-6px)}40%,80%{transform:translateX(6px)}}
+@keyframes bounceIn{0%{transform:scale(.8);opacity:0}60%{transform:scale(1.08)}100%{transform:scale(1);opacity:1}}
+.opt.correct{animation:bounceIn .3s ease}
+.opt-num{
+  width:32px;height:32px;border-radius:50%;
+  background:var(--border);
+  display:flex;align-items:center;justify-content:center;
+  font-weight:900;font-size:13px;flex-shrink:0;
+  transition:all .18s;color:var(--text2);
+}
+.opt.correct .opt-num{background:var(--green-br);color:#fff}
+.opt.wrong .opt-num{background:var(--red);color:#fff}
+.opt:hover .opt-num{background:var(--purple);color:#fff}
+
+/* ── TIP ── */
+.tip-card{
+  background:var(--yellow-lt);
+  border-left:4px solid var(--yellow-dk);
+  border-radius:0 14px 14px 0;
+  padding:12px 14px;font-size:13px;
+  margin-top:14px;line-height:1.6;
+  color:#5a4000;font-weight:500;
+  animation:fadeSlide .25s ease;
+}
+.tip-card::before{content:'💡 ';font-size:15px}
+
+/* ── PHRASE CARD ── */
+.phrase-card{
+  background:linear-gradient(135deg,#C4A4F0,#F4A7C0);
+  border-radius:24px;padding:28px 20px;
+  color:#fff;text-align:center;margin-bottom:16px;
+  box-shadow:0 8px 24px rgba(196,164,240,.38);
+  position:relative;overflow:hidden;
+}
+.phrase-card::before{content:'✨';position:absolute;top:12px;left:14px;font-size:20px;opacity:.4}
+.phrase-card::after{content:'✨';position:absolute;bottom:12px;right:14px;font-size:16px;opacity:.4}
+.phrase-en{font-size:20px;font-weight:900;line-height:1.4;text-shadow:0 2px 6px rgba(0,0,0,.2)}
+.phrase-th{font-size:13px;opacity:.85;margin-top:10px;background:rgba(0,0,0,.15);border-radius:100px;padding:6px 16px;display:inline-block}
+
+/* ── MODEL ROW ── */
+.model-row{display:flex;gap:10px;margin-bottom:16px}
+
+/* ── RECORD BUTTON ── */
+.record-section{text-align:center;padding:20px 0 8px}
+.rec-btn{
+  width:86px;height:86px;border-radius:50%;border:none;
+  background:linear-gradient(180deg,#F4A7C0,#E0789F);
+  color:#fff;font-size:38px;cursor:pointer;
+  box-shadow:0 6px 0 #C05080;
+  transition:transform .1s,box-shadow .1s;
+  display:flex;align-items:center;justify-content:center;
+  margin:0 auto 12px;
+}
+.rec-btn:active{transform:translateY(5px);box-shadow:0 1px 0 #9A0035}
+.rec-btn.rec{
+  background:linear-gradient(180deg,#FF4B4B,#CC0000);
+  box-shadow:0 6px 0 #8B0000;
+  animation:recPulse 1.2s ease-in-out infinite;
+}
+@keyframes recPulse{
+  0%,100%{box-shadow:0 6px 0 #8B0000}
+  50%{box-shadow:0 6px 0 #8B0000,0 0 0 12px rgba(255,75,75,.2)}
+}
+.rec-label{font-size:13px;font-weight:700;color:var(--text2)}
+.rec-label.active{color:var(--red)}
+
+/* ── WORD COMPARISON ── */
+.cmp-card{
+  background:var(--surface);border-radius:20px;
+  border:2.5px solid var(--border);padding:16px;
+  margin-top:14px;animation:fadeSlide .3s ease;
+}
+.cmp-score-row{text-align:center;margin-bottom:14px}
+.score-bubble{
+  width:80px;height:80px;border-radius:50%;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  margin:0 auto 8px;font-weight:900;
+}
+.sc-hi{background:var(--green-lt);color:var(--green)}
+.sc-md{background:var(--yellow-lt);color:#8a6200}
+.sc-lo{background:var(--red-lt);color:var(--red)}
+.sc-big{font-size:22px}
+.sc-msg{font-size:13px;font-weight:700;color:var(--text2);margin-top:4px}
+.cmp-lbl{font-size:10px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin:10px 0 6px}
+.word-row{display:flex;flex-wrap:wrap;gap:5px}
+.chip{padding:5px 10px;border-radius:100px;font-size:12px;font-weight:700}
+.chip-ok{background:var(--green-lt);color:#2d6a00}
+.chip-miss{background:var(--red-lt);color:#8b0000}
+.chip-extra{background:var(--yellow-lt);color:#7a5200}
+.chip-legend{font-size:11px;color:var(--muted);margin-top:10px;text-align:center}
+
+/* ── SHADOW ── */
+.shadow-guide{
+  background:linear-gradient(135deg,#F0EBFF,#FFF0F6);
+  border-radius:18px;padding:14px 16px;margin-bottom:14px;
+  border:2px solid var(--border);
+}
+.guide-title{font-size:13px;font-weight:800;color:var(--purple);margin-bottom:6px}
+.guide-steps{font-size:12px;color:var(--text2);line-height:1.9}
+
+.shadow-seg{
+  background:var(--surface);border-radius:18px;
+  padding:16px;margin-bottom:10px;
+  border:2.5px solid var(--border);
+  transition:all .2s;
+}
+.shadow-seg.seg-active{
+  border-color:var(--purple);
+  box-shadow:0 0 0 4px rgba(124,92,252,.1);
+}
+.shadow-seg.seg-done{
+  border-color:var(--green-br);
+  background:var(--green-lt);
+}
+.seg-header{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.seg-dot{
+  width:26px;height:26px;border-radius:50%;
+  background:var(--purple);color:#fff;
+  display:flex;align-items:center;justify-content:center;
+  font-size:11px;font-weight:900;flex-shrink:0;
+}
+.seg-done .seg-dot{background:var(--green-br)}
+.seg-tag{font-size:11px;font-weight:700;color:var(--muted)}
+.seg-en{font-size:16px;font-weight:700;line-height:1.5;margin-bottom:5px;transition:filter .3s}
+.seg-th{font-size:13px;color:var(--text2);margin-bottom:12px}
+.seg-btns{display:flex;gap:8px}
+
+/* ── NEXT AREA ── */
+.next-area{margin-top:18px}
+
+/* ── RESULTS ── */
+.result-hero{
+  padding:36px 20px 28px;
+  text-align:center;color:#fff;
+  position:relative;overflow:hidden;
+}
+.result-hero.rh-great{background:linear-gradient(135deg,#43e97b,#38f9d7)}
+.result-hero.rh-ok{background:linear-gradient(135deg,#f6d365,#fda085)}
+.result-hero.rh-low{background:linear-gradient(135deg,#7C5CFC,#FF6B9D)}
+.result-hero::before{content:'🎊 🎉 🌟 🎊 🎉';position:absolute;top:10px;left:0;right:0;font-size:16px;text-align:center;opacity:.35;letter-spacing:10px}
+.res-emoji{font-size:56px;margin-bottom:10px;display:block;animation:float 2.5s ease-in-out infinite}
+.res-score{font-size:66px;font-weight:900;letter-spacing:-2px;text-shadow:0 4px 12px rgba(0,0,0,.2)}
+.res-msg{font-size:18px;font-weight:800;opacity:.9;margin-top:4px}
+
+.stars-row{display:flex;justify-content:center;gap:6px;margin:6px 0 0}
+.star{font-size:30px;opacity:.25;transition:all .4s}
+.star.lit{opacity:1;animation:starPop .4s cubic-bezier(.34,1.56,.64,1) both}
+@keyframes starPop{from{transform:scale(0) rotate(-30deg)}to{transform:scale(1) rotate(0deg)}}
+
+.res-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;padding:14px 16px 0}
+.res-stat{
+  background:var(--surface);border-radius:18px;
+  padding:14px 8px;text-align:center;
+  border:2px solid var(--border);
+  box-shadow:0 2px 10px rgba(124,92,252,.08);
+}
+.res-ico{font-size:20px;margin-bottom:4px}
+.res-val{font-size:20px;font-weight:900;color:var(--purple)}
+.res-lbl{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin-top:2px}
+
+.review-section{padding:0 16px;margin-top:14px}
+.review-title{font-size:13px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px}
+.review-item{
+  background:var(--surface);border-radius:16px;
+  padding:14px;border:2px solid var(--border);
+  margin-bottom:8px;font-size:13px;
+}
+.review-item-q{font-weight:700;color:var(--text);margin-bottom:4px}
+.review-item-tip{color:var(--text2);line-height:1.5}
+
+.divider{height:1.5px;background:var(--border);margin:14px 16px}
+
+/* ── CONFETTI CANVAS ── */
+#confetti-canvas{
+  position:fixed;top:0;left:0;right:0;bottom:0;
+  pointer-events:none;z-index:9999;
+  max-width:480px;margin:0 auto;
+}
+
+/* ── MASCOT BUBBLE ── */
+.mascot-bubble{
+  background:rgba(255,255,255,.22);
+  border:1.5px solid rgba(255,255,255,.35);
+  border-radius:14px;padding:7px 13px;
+  font-size:12px;font-weight:600;
+  margin-top:10px;display:inline-block;
+  position:relative;
+}
+.mascot-bubble::before{
+  content:'';position:absolute;top:-7px;left:18px;
+  border:6px solid transparent;
+  border-bottom-color:rgba(255,255,255,.35);
+}
+
+/* ── ANIMATIONS ── */
+@keyframes slideUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+.slide-up{animation:slideUp .3s ease}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.fade-in{animation:fadeIn .3s ease}
+
+/* info box */
+.info-box{
+  background:#F8F6FF;border-radius:14px;
+  padding:13px 15px;font-size:13px;
+  color:var(--text2);line-height:1.6;
+  border:1.5px solid var(--border);
+}
+
+/* PAD */
+.pad{padding:0 16px}
+
+/* ── BUDDY TEASER (home) ── */
+.buddy-teaser{
+  background:linear-gradient(135deg,#2D1B69,#7C5CFC);
+  border-radius:20px;padding:16px 18px;
+  display:flex;align-items:center;gap:14px;
+  cursor:pointer;color:#fff;
+  margin:0 16px;
+  box-shadow:0 6px 20px rgba(45,27,105,.35);
+  transition:transform .18s cubic-bezier(.34,1.56,.64,1);
+}
+.buddy-teaser:hover,.buddy-teaser:active{transform:scale(.97)}
+.buddy-avatar-wrap{
+  width:54px;height:54px;border-radius:16px;
+  background:rgba(255,255,255,.2);
+  display:flex;align-items:center;justify-content:center;
+  font-size:28px;flex-shrink:0;position:relative;
+}
+.buddy-online{
+  width:12px;height:12px;border-radius:50%;
+  background:#58CC02;border:2px solid #2D1B69;
+  position:absolute;bottom:2px;right:2px;
+}
+.buddy-teaser-info{flex:1}
+.buddy-teaser-name{font-size:15px;font-weight:800}
+.buddy-teaser-sub{font-size:12px;opacity:.8;margin-top:2px}
+
+/* ── SCENARIO CARDS ── */
+.scenario-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:0 16px}
+.scenario-card{
+  border-radius:20px;padding:16px 14px;
+  cursor:pointer;color:#fff;
+  transition:transform .18s cubic-bezier(.34,1.56,.64,1),box-shadow .18s;
+  position:relative;overflow:hidden;
+  border:none;
+}
+.scenario-card:hover{transform:translateY(-3px)}
+.scenario-card:active{transform:scale(.95)}
+.scenario-ico{font-size:32px;display:block;margin-bottom:8px}
+.scenario-name{font-size:13px;font-weight:800;line-height:1.3}
+.scenario-desc{font-size:11px;opacity:.8;margin-top:3px;line-height:1.4}
+
+/* ── CHAT SCREEN ── */
+.chat-hdr{
+  background:linear-gradient(135deg,#2D1B69,#7C5CFC);
+  padding:14px 16px 18px;color:#fff;
+}
+.chat-hdr-row{display:flex;align-items:center;gap:12px}
+.buddy-ava{
+  width:44px;height:44px;border-radius:14px;
+  background:rgba(255,255,255,.2);
+  display:flex;align-items:center;justify-content:center;
+  font-size:24px;flex-shrink:0;position:relative;
+}
+.buddy-ava .online-dot{
+  width:10px;height:10px;border-radius:50%;
+  background:#58CC02;border:2px solid #2D1B69;
+  position:absolute;bottom:1px;right:1px;
+}
+.buddy-hdr-info{flex:1}
+.buddy-hdr-name{font-size:16px;font-weight:800}
+.buddy-hdr-status{font-size:11px;opacity:.75;margin-top:1px}
+.turn-badge{
+  background:rgba(255,255,255,.2);border-radius:100px;
+  padding:5px 12px;font-size:12px;font-weight:800;
+}
+.scenario-tag{
+  background:rgba(255,255,255,.15);border-radius:100px;
+  padding:5px 14px;font-size:12px;font-weight:700;
+  margin-top:10px;display:inline-block;
+}
+
+/* Chat bubbles */
+.chat-body{padding:16px;display:flex;flex-direction:column;gap:10px;min-height:200px}
+.bubble{max-width:82%;animation:slideUp .3s ease}
+.bubble-buddy{align-self:flex-start}
+.bubble-user{align-self:flex-end}
+.bubble-inner{
+  border-radius:18px;padding:12px 16px;
+  font-size:14px;line-height:1.55;font-weight:500;
+}
+.bubble-buddy .bubble-inner{
+  background:var(--surface);color:var(--text);
+  border:2px solid var(--border);
+  border-bottom-left-radius:5px;
+}
+.bubble-user .bubble-inner{
+  background:linear-gradient(135deg,#7C5CFC,#FF6B9D);
+  color:#fff;border-bottom-right-radius:5px;
+}
+.bubble-name{font-size:11px;font-weight:800;color:var(--muted);margin-bottom:4px;padding-left:4px}
+.bubble-hint{
+  font-size:12px;color:var(--text2);
+  background:var(--yellow-lt);border-radius:10px;
+  padding:7px 12px;margin-top:6px;line-height:1.5;
+}
+
+/* User turn area */
+.user-turn-zone{
+  background:linear-gradient(135deg,#F0EBFF,#FFF0F6);
+  border-radius:22px;padding:18px;
+  text-align:center;margin:0 16px 12px;
+  border:2.5px solid var(--border);
+}
+.turn-prompt{font-size:13px;font-weight:700;color:var(--text2);margin-bottom:14px}
+.chat-rec-btn{
+  width:72px;height:72px;border-radius:50%;border:none;
+  background:linear-gradient(180deg,#7C5CFC,#5E3FD6);
+  color:#fff;font-size:32px;cursor:pointer;
+  box-shadow:0 5px 0 #3d2499;
+  transition:transform .1s,box-shadow .1s;
+  display:flex;align-items:center;justify-content:center;
+  margin:0 auto 10px;
+}
+.chat-rec-btn:active{transform:translateY(4px);box-shadow:0 1px 0 #3d2499}
+.chat-rec-btn.rec{
+  background:linear-gradient(180deg,#FF4B4B,#cc0000);
+  box-shadow:0 5px 0 #8B0000;
+  animation:recPulse 1.2s ease-in-out infinite;
+}
+.chat-rec-lbl{font-size:12px;font-weight:700;color:var(--text2)}
+.chat-rec-lbl.active{color:var(--red)}
+.skip-btn{
+  background:transparent;border:none;color:var(--muted);
+  font-size:12px;font-weight:700;cursor:pointer;
+  margin-top:8px;text-decoration:underline;
+}
+
+/* Conversation end */
+.convo-done{padding:16px;text-align:center}
+.convo-done-emoji{font-size:52px;display:block;margin-bottom:8px;animation:float 2.5s ease-in-out infinite}
+.convo-phrases{text-align:left;margin:14px 0}
+.phrase-item{
+  background:var(--surface);border-radius:14px;padding:12px 14px;
+  margin-bottom:8px;border:2px solid var(--border);
+  font-size:13px;
+}
+.phrase-item-en{font-weight:700;color:var(--text);margin-bottom:3px}
+.phrase-item-tip{color:var(--text2);font-size:12px}
+</style>
+</head>
+<body>
+<canvas id="confetti-canvas"></canvas>
+
+<!-- ══════════════ NOTES ══════════════ -->
+<div id="screen-notes" class="screen">
+  <div class="hero">
+    <div class="hero-row">
+      <button class="back-btn" onclick="showScreen('home')">← Back</button>
+    </div>
+    <div style="margin-top:12px">
+      <div style="font-size:36px">📓</div>
+      <div class="app-title" style="margin-top:6px">Short Notes</div>
+      <div class="app-sub">ประโยคที่พูดพลาด — ทบทวนให้ขึ้นใจ</div>
+    </div>
+  </div>
+  <div class="pad" style="padding-top:14px">
+    <div id="notes-list"></div>
+    <button class="btn btn-ghost btn-full" id="clear-notes-btn" style="margin-top:10px;display:none" onclick="clearNotes()">🗑 ล้างโน้ตทั้งหมด</button>
+    <div style="height:20px"></div>
+  </div>
+</div>
+
+<!-- ══════════════ SCENARIOS ══════════════ -->
+<div id="screen-scenarios" class="screen">
+  <div class="hero">
+    <div class="hero-row">
+      <button class="back-btn" onclick="showScreen('home')">← Back</button>
+    </div>
+    <div style="margin-top:12px">
+      <div style="font-size:36px">💬</div>
+      <div class="app-title" style="margin-top:6px">Chat with Buddy</div>
+      <div class="app-sub">เลือกสถานการณ์ แล้วพูดคุยกับเพื่อนชาวต่างชาติ</div>
+    </div>
+  </div>
+  <div style="padding:14px 16px 4px">
+    <div class="sec-title" style="padding:0 0 10px">เลือกสถานการณ์ที่อยากฝึก</div>
+    <div class="scenario-grid" id="scenario-grid"></div>
+  </div>
+</div>
+
+<!-- ══════════════ CHAT ══════════════ -->
+<div id="screen-chat" class="screen">
+  <div class="chat-hdr">
+    <div class="chat-hdr-row">
+      <button class="back-btn" id="chat-back">← Back</button>
+      <div class="buddy-ava"><span id="chat-buddy-emoji"></span><div class="online-dot"></div></div>
+      <div class="buddy-hdr-info">
+        <div class="buddy-hdr-name" id="chat-buddy-name"></div>
+        <div class="buddy-hdr-status">🟢 Online — พร้อมคุย!</div>
+      </div>
+      <div class="turn-badge" id="chat-turn-badge">1 / 3</div>
+    </div>
+    <div class="scenario-tag" id="chat-scenario-tag"></div>
+  </div>
+  <div class="chat-body" id="chat-body"></div>
+  <div id="chat-turn-zone"></div>
+</div>
+
+<!-- ══════════════ HOME ══════════════ -->
+<div id="screen-home" class="screen active">
+  <div class="hero">
+    <div class="hero-row">
+      <div class="owl-wrap">
+        <span class="owl">🦉</span>
+        <div>
+          <div class="app-title">WorkSpeak</div>
+          <div class="app-sub">ฝึกอังกฤษสไตล์มืออาชีพ</div>
+        </div>
+      </div>
+      <div class="xp-pill">⭐ <span id="xp-num">0</span> XP</div>
+    </div>
+    <div id="mascot-msg" class="mascot-bubble">สวัสดี! พร้อมฝึกวันนี้กันไหม? 🎯</div>
+    <div class="daily-section">
+      <div class="daily-row">
+        <span>🔥 Daily Goal</span>
+        <span id="daily-lbl">0 / 5</span>
+      </div>
+      <div class="hero-bar">
+        <div class="hero-bar-fill" id="daily-fill" style="width:0%"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="stats-row">
+    <div class="stat-card">
+      <div class="stat-emoji">✅</div>
+      <div class="stat-val" id="h-done">0</div>
+      <div class="stat-lbl">Done</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-emoji">🏆</div>
+      <div class="stat-val" id="h-best">-</div>
+      <div class="stat-lbl">Best</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-emoji">🔥</div>
+      <div class="stat-val" id="h-streak">0</div>
+      <div class="stat-lbl">Streak</div>
+    </div>
+  </div>
+
+  <div class="sec-title">เลือกหัวข้อที่อยากฝึก</div>
+  <div class="cat-grid" id="cat-grid"></div>
+  <div style="height:4px"></div>
+  <div class="sec-title">📓 Short Notes</div>
+  <div class="pad">
+    <div id="notes-preview" onclick="showScreen('notes')" style="cursor:pointer"></div>
+  </div>
+  <div style="height:4px"></div>
+  <div class="sec-title">💬 พูดคุยกับ Buddy</div>
+  <div class="buddy-teaser" onclick="showScreen('scenarios')">
+    <div class="buddy-avatar-wrap">🧑‍💼<div class="buddy-online"></div></div>
+    <div class="buddy-teaser-info">
+      <div class="buddy-teaser-name">Chat with a Foreign Friend</div>
+      <div class="buddy-teaser-sub">ฝึกสนทนาจริงๆ เลือกสถานการณ์ได้เลย →</div>
+    </div>
+    <span style="font-size:22px;opacity:.8">›</span>
+  </div>
+  <div style="height:12px"></div>
+</div>
+
+<!-- ══════════════ CATEGORY ══════════════ -->
+<div id="screen-category" class="screen">
+  <div class="cat-hero" id="cat-hero">
+    <button class="back-btn" onclick="showScreen('home')">← Back</button>
+    <div class="cat-hero-icon" id="cat-hero-icon"></div>
+    <div class="cat-hero-name" id="cat-hero-name"></div>
+    <div class="cat-hero-desc" id="cat-hero-desc"></div>
+  </div>
+  <div style="padding:14px 16px 4px">
+    <div class="sec-title" style="padding:0 0 8px">เลือกโหมดฝึก</div>
+    <div class="mode-list" id="mode-list"></div>
+  </div>
+</div>
+
+<!-- ══════════════ EXERCISE ══════════════ -->
+<div id="screen-exercise" class="screen">
+  <div class="ex-hero">
+    <div class="ex-hero-row">
+      <button class="back-btn" id="ex-back">← Back</button>
+      <span class="ex-mode-tag" id="ex-mode-tag"></span>
+    </div>
+    <div class="ex-prog-row">
+      <div class="ex-prog-track">
+        <div class="ex-prog-fill" id="ex-prog" style="width:0%"></div>
+      </div>
+      <span class="ex-count" id="ex-count">1/5</span>
+    </div>
+    <div class="ex-title" id="ex-title"></div>
+  </div>
+  <div class="pad" style="padding-top:16px" id="ex-body"></div>
+</div>
+
+<!-- ══════════════ RESULTS ══════════════ -->
+<div id="screen-results" class="screen">
+  <div class="result-hero" id="res-hero">
+    <span class="res-emoji" id="res-emoji"></span>
+    <div class="res-score" id="res-score"></div>
+    <div class="res-msg" id="res-msg"></div>
+    <div class="stars-row" id="stars-row">
+      <span class="star" id="star1">⭐</span>
+      <span class="star" id="star2">⭐</span>
+      <span class="star" id="star3">⭐</span>
+      <span class="star" id="star4">⭐</span>
+      <span class="star" id="star5">⭐</span>
+    </div>
+  </div>
+  <div class="res-grid">
+    <div class="res-stat"><div class="res-ico">✅</div><div class="res-val" id="res-correct">-</div><div class="res-lbl">Correct</div></div>
+    <div class="res-stat"><div class="res-ico">📝</div><div class="res-val" id="res-total">-</div><div class="res-lbl">Total</div></div>
+    <div class="res-stat"><div class="res-ico">🔥</div><div class="res-val" id="res-streak">-</div><div class="res-lbl">Streak</div></div>
+  </div>
+  <div class="divider"></div>
+  <div id="res-review"></div>
+  <div class="pad" style="display:flex;flex-direction:column;gap:10px;margin-top:6px">
+    <button class="btn btn-green btn-full btn-lg" id="res-again">🔄 Practice Again</button>
+    <button class="btn btn-ghost btn-full" onclick="showScreen('home')">🏠 Back to Home</button>
+  </div>
+  <div style="height:16px"></div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════
+// CONTENT
+// ═══════════════════════════════════════════════
+const CATS = [
+  {
+    id:'meetings', name:'Meetings & Discussions', cls:'meetings',
+    icon:'📊', desc:'เปิด-ปิดประชุม เสนอแนวคิด และสรุปงาน',
+    listen:[
+      {
+        audio:"Hey everyone, thanks for jumping on. Let's go ahead and get started. So today we've got three things to cover: first up is the Q3 sales results, then we'll look at the product launch timeline, and lastly we need to sort out the budget for next quarter.",
+        question:"What is the FIRST agenda item?",
+        opts:["Budget planning","Product launch timeline","Q3 sales results","Team introductions"],
+        correct:2,
+        thai:"สวัสดีทุกคน เริ่มประชุมเลย วันนี้มี 3 เรื่อง: ผล Q3, กำหนดเปิดตัวสินค้า, และงบประมาณไตรมาสหน้า",
+        tip:"'Go over' = ทบทวน | 'Agenda' = วาระประชุม | 'Budget planning' = วางแผนงบประมาณ"
+      },
+      {
+        audio:"Hey, can I suggest we push this one to the next meeting? The data's not quite there yet and I think we really need to dig into it a bit more before we make any calls. Could we maybe set up a follow-up for Thursday?",
+        question:"Why does the speaker want to postpone?",
+        opts:["They are too busy","The data isn't ready","It's not important","No meeting room"],
+        correct:1,
+        thai:"อยากเสนอให้เลื่อนเรื่องนี้ไปก่อน ข้อมูลยังไม่พร้อม ต้องวิเคราะห์ให้ละเอียดกว่านี้ก่อน",
+        tip:"'Thorough analysis' = การวิเคราะห์อย่างละเอียด | 'Follow-up' = การติดตาม"
+      },
+      {
+        audio:"Alright, before we wrap up, let's just make sure we're all on the same page on next steps. Sarah, you've got the market research report — can you have that done by next Friday? Tom, can you loop in the engineering team? And I'll take care of the budget sign-off. Sound good to everyone?",
+        question:"What is Tom responsible for?",
+        opts:["Budget approval","Market research","Coordinate with engineering","Write minutes"],
+        correct:2,
+        thai:"ก่อนจบ: Sarah ทำรายงานวิจัยตลาด, Tom ประสานงาน engineering, ผมดูแลอนุมัติงบ",
+        tip:"'Wrap up' = สรุปจบ | 'Action items' = งานที่ต้องทำต่อ | 'Coordinate' = ประสานงาน"
+      }
+    ],
+    speak:[
+      {en:"Could you please elaborate on that point?", th:"ช่วยอธิบายเพิ่มเติมในจุดนั้นได้ไหมครับ?"},
+      {en:"I'd like to build on what you just said.", th:"ผมอยากต่อยอดจากสิ่งที่คุณพูดไป"},
+      {en:"Let's table that discussion for now and move on.", th:"เก็บเรื่องนั้นไว้ก่อนแล้วไปต่อกัน"},
+      {en:"Does everyone agree with this approach?", th:"ทุกคนเห็นด้วยกับแนวทางนี้ไหมครับ?"},
+      {en:"I'd like to propose a different solution.", th:"ผมอยากเสนอวิธีแก้ปัญหาอีกแบบหนึ่ง"},
+      {en:"Can we revisit this in the next meeting?", th:"เราจะกลับมาดูเรื่องนี้ในประชุมครั้งหน้าได้ไหม?"}
+    ],
+    shadow:{
+      title:"Opening a Meeting",
+      segs:[
+        {en:"Good morning, everyone. Thank you for joining.", th:"อรุณสวัสดิ์ครับ ขอบคุณที่มาร่วมประชุม"},
+        {en:"Let's get started with today's agenda.", th:"มาเริ่มกับวาระประชุมวันนี้กัน"},
+        {en:"First, I'd like to hear an update from each team.", th:"ขอ update จากแต่ละทีมก่อนนะครับ"},
+        {en:"Please keep your updates brief and to the point.", th:"กรุณาพูดให้กระชับและตรงประเด็น"},
+        {en:"After that, we'll discuss the key issues together.", th:"หลังจากนั้นเราจะมาพูดคุยเรื่องสำคัญร่วมกัน"}
+      ]
+    },
+    translate:[
+      {th:"ขอโทษที่มาสายนะครับ ติดประชุมก่อนหน้าอยู่", context:"เข้าประชุมสาย",
+       en:"Sorry I'm late. I got held up in a previous meeting.",
+       tip:"'Got held up' = ติดอยู่ | ฟังดูเป็นธรรมชาติกว่า 'I was stuck'"},
+      {th:"ผมไม่แน่ใจว่าเข้าใจถูกต้องไหมครับ ช่วยพูดซ้ำได้ไหม?", context:"ฟังไม่เข้าใจ",
+       en:"I'm not sure I caught that. Could you say it again?",
+       tip:"'I didn't catch that' = ฟังไม่ทัน | สุภาพและเป็นธรรมชาติมาก"},
+      {th:"ขอเสนอไอเดียอีกแบบหนึ่งได้ไหมครับ?", context:"อยากเสนอแนวคิด",
+       en:"Can I throw out another idea?",
+       tip:"'Throw out an idea' = โยนไอเดีย | เป็น idiom ที่ใช้ในออฟฟิสบ่อยมาก"},
+      {th:"สรุปแล้วเราตัดสินใจอะไรบ้างในวันนี้ครับ?", context:"ปิดประชุม",
+       en:"So what did we decide on today?",
+       tip:"'Decide on' = ตัดสินใจเรื่อง | สั้น ตรง และเป็นธรรมชาติ"},
+      {th:"ผมขอรับผิดชอบงานส่วนนี้เองเลยได้ไหมครับ?", context:"รับงาน",
+       en:"Can I take this one on myself?",
+       tip:"'Take this on' = รับงานนี้ไว้ | informal และฟังดูกระตือรือร้น"},
+    ]
+  },
+  {
+    id:'presentations', name:'Presentations & Pitches', cls:'presentations',
+    icon:'🎤', desc:'พรีเซ้นต์งาน พิชท์โปรเจกต์ ให้โดนใจ',
+    listen:[
+      {
+        audio:"So today I want to walk you through our proposal for expanding into Southeast Asia. We've done a lot of research and there's a really strong opportunity here, especially in Thailand, Vietnam, and Indonesia. We're looking at a total market of around 2.3 billion dollars, and we think we can realistically grab about 5% of that within three years.",
+        question:"What is the total addressable market?",
+        opts:["23 billion dollars","2.3 billion dollars","230 million dollars","5 billion dollars"],
+        correct:1,
+        thai:"นำเสนอข้อเสนอขยาย SE Asia ตลาดรวม 2.3 พันล้าน USD คาดว่าได้ 5% ใน 3 ปี",
+        tip:"'Total addressable market' = ขนาดตลาดรวม | 'Market share' = ส่วนแบ่งตลาด"
+      },
+      {
+        audio:"So if you look at this slide here, our cost to acquire a customer actually dropped by 35% over the past year. And at the same time, the lifetime value went up by 20%. Which is great, right? It basically means the more we grow, the more efficient we get.",
+        question:"How much did acquisition cost decrease?",
+        opts:["20%","35%","15%","55%"],
+        correct:1,
+        thai:"จากสไลด์: ต้นทุนหาลูกค้าลด 35% ขณะที่ lifetime value เพิ่ม 20%",
+        tip:"'Customer acquisition cost' = ต้นทุนการหาลูกค้า | 'Lifetime value' = มูลค่าตลอดอายุลูกค้า"
+      },
+      {
+        audio:"In conclusion, this investment represents a compelling opportunity. The risk is manageable, the market timing is right, and our team has the expertise to execute effectively. I'd like to open the floor for questions now. Who would like to start?",
+        question:"What does the speaker do at the very end?",
+        opts:["Ask for money","Close the meeting","Open for questions","Show more slides"],
+        correct:2,
+        thai:"โดยสรุป การลงทุนน่าสนใจมาก ทีมงานพร้อม ขอเปิดรับคำถามได้เลย",
+        tip:"'Open the floor' = เปิดให้ผู้ฟังถาม | 'Compelling' = น่าสนใจมาก"
+      }
+    ],
+    speak:[
+      {en:"Today I'd like to present our quarterly results.", th:"วันนี้จะนำเสนอผลประกอบการรายไตรมาสครับ"},
+      {en:"As you can see from this chart, sales have grown significantly.", th:"จากกราฟนี้จะเห็นว่ายอดขายเติบโตอย่างมีนัยสำคัญ"},
+      {en:"I'd like to draw your attention to this key finding.", th:"อยากให้ทุกท่านสังเกตผลการวิจัยสำคัญชิ้นนี้"},
+      {en:"In conclusion, the data strongly supports our recommendation.", th:"โดยสรุป ข้อมูลสนับสนุนข้อเสนอแนะของเราอย่างมาก"},
+      {en:"Are there any questions or concerns I can address?", th:"มีคำถามหรือข้อกังวลอะไรที่ผมจะช่วยตอบได้ไหมครับ?"}
+    ],
+    shadow:{
+      title:"Structuring a Presentation",
+      segs:[
+        {en:"Thank you for the opportunity to present today.", th:"ขอบคุณที่ให้โอกาสนำเสนอในวันนี้"},
+        {en:"My presentation covers three main areas.", th:"การนำเสนอของผมครอบคลุม 3 ส่วนหลัก"},
+        {en:"First, the current situation and key challenges.", th:"แรก คือสถานการณ์ปัจจุบันและความท้าทาย"},
+        {en:"Second, our proposed solution and implementation plan.", th:"ที่สอง คือวิธีแก้ปัญหาและแผนดำเนินงาน"},
+        {en:"Finally, the expected outcomes and recommended next steps.", th:"สุดท้าย คือผลลัพธ์ที่คาดหวังและขั้นตอนต่อไป"}
+      ]
+    },
+    translate:[
+      {th:"ขอข้ามไปสไลด์ถัดไปเลยนะครับ", context:"ระหว่างนำเสนอ",
+       en:"Let me jump to the next slide.",
+       tip:"'Jump to' = ข้ามไป | 'move on to' ก็ใช้ได้ แต่ 'jump to' ฟังดูสบายกว่า"},
+      {th:"ตัวเลขอาจดูน่ากังวล แต่มีเหตุผลที่ดีนะครับ", context:"อธิบายข้อมูล",
+       en:"I know the numbers look a bit scary, but there's a good reason.",
+       tip:"'Look a bit scary' = ฟังดูเป็นธรรมชาติ ไม่ formal เกิน ผู้ฟังจะผ่อนคลายขึ้น"},
+      {th:"มีคำถามก่อนที่จะไปต่อไหมครับ?", context:"ถามผู้ฟัง",
+       en:"Any questions before we move on?",
+       tip:"'Before we move on' = ก่อนไปต่อ | 'we' ทำให้รู้สึกเป็นทีมกัน"},
+      {th:"นี่คือสิ่งที่ผมอยากให้ทุกคนจำไปจากการนำเสนอนี้", context:"เน้นจุดสำคัญ",
+       en:"This is the one thing I want you to take away from this.",
+       tip:"'Take away' = สิ่งที่จำกลับไป | 'takeaway' เป็น buzzword ใน corporate"},
+      {th:"ขอบคุณที่รับฟังนะครับ มีคำถามอะไรไหมครับ?", context:"จบการนำเสนอ",
+       en:"Thanks for listening! Any questions?",
+       tip:"'Thanks for listening' สั้นและ friendly กว่า 'Thank you for your attention'"},
+    ]
+  },
+  {
+    id:'communication', name:'Emails & Phone Calls', cls:'communication',
+    icon:'📧', desc:'เขียนอีเมล คุยโทรศัพท์ อย่างมืออาชีพ',
+    listen:[
+      {
+        audio:"Hey, this is James calling from TechCorp. Hope I'm not catching you at a bad time! I'm just following up on the proposal we sent over last week. I was wondering if you'd had a chance to look at it yet, and if there's anything you'd like to go over together.",
+        question:"Why is James calling?",
+        opts:["To send a new proposal","To follow up on a sent proposal","To schedule a meeting","To confirm a payment"],
+        correct:1,
+        thai:"James โทรมาติดตามข้อเสนอที่ส่งสัปดาห์ที่แล้ว อยากรู้ว่าได้ดูแล้วหรือยัง",
+        tip:"'Check in' = ติดตาม/สอบถาม | 'Regarding' = เกี่ยวกับ"
+      },
+      {
+        audio:"Thank you for your email. I've reviewed the contract and have some concerns about the payment terms and the intellectual property clause. Could we schedule a call this week to discuss these points? I'm available Tuesday or Thursday afternoon.",
+        question:"What does the person want to discuss?",
+        opts:["Delivery schedule","Payment terms and IP clause","Pricing only","Office location"],
+        correct:1,
+        thai:"ตรวจสอบสัญญาแล้ว มีข้อกังวลเรื่องเงื่อนไขชำระเงินและ IP ขอนัดคุยได้ไหม",
+        tip:"'Intellectual property (IP)' = ทรัพย์สินทางปัญญา | 'Payment terms' = เงื่อนไขการชำระเงิน"
+      },
+      {
+        audio:"I'm writing to follow up on my application for the Senior Marketing Manager position. I submitted my application two weeks ago and wanted to confirm you received all the necessary documents. I remain very interested and am available for an interview at your earliest convenience.",
+        question:"What position did the person apply for?",
+        opts:["Junior Marketing Analyst","Marketing Director","Senior Marketing Manager","Sales Manager"],
+        correct:2,
+        thai:"ติดตามใบสมัคร Senior Marketing Manager ส่งไป 2 สัปดาห์แล้ว อยากยืนยันว่าได้รับเอกสารครบ",
+        tip:"'Follow up on' = ติดตามเรื่อง | 'Earliest convenience' = เมื่อสะดวกที่สุด"
+      }
+    ],
+    speak:[
+      {en:"I'm calling to follow up on our previous conversation.", th:"โทรมาเพื่อติดตามการสนทนาครั้งก่อนของเราครับ"},
+      {en:"Please find the attached documents for your review.", th:"โปรดดูเอกสารแนบสำหรับการตรวจสอบของคุณ"},
+      {en:"I look forward to hearing from you at your earliest convenience.", th:"หวังจะได้รับการติดต่อกลับเมื่อคุณสะดวก"},
+      {en:"Could we reschedule our meeting to next Wednesday?", th:"เราสามารถเลื่อนประชุมไปพุธหน้าได้ไหมครับ?"},
+      {en:"I'd like to confirm the details of our agreement.", th:"ผมอยากยืนยันรายละเอียดของข้อตกลงของเรา"}
+    ],
+    shadow:{
+      title:"Professional Phone Call",
+      segs:[
+        {en:"Good afternoon. This is David from ABC Company.", th:"สวัสดีตอนบ่าย นี่คือ David จาก ABC Company"},
+        {en:"I'm calling regarding your recent inquiry.", th:"โทรมาเรื่องการสอบถามที่คุณส่งมาเร็วๆ นี้"},
+        {en:"I'd like to provide you with some more information.", th:"ผมอยากให้ข้อมูลเพิ่มเติมแก่คุณ"},
+        {en:"Is now a good time to talk for a few minutes?", th:"ตอนนี้สะดวกคุยสักครู่ไหมครับ?"}
+      ]
+    },
+    translate:[
+      {th:"ขอโทษที่ตอบช้านะครับ อยู่ในประชุมมาตลอดเลย", context:"ตอบอีเมลช้า",
+       en:"Sorry for the slow reply — I've been in back-to-back meetings.",
+       tip:"'Back-to-back meetings' = ประชุมติดกันไม่มีหยุด | เป็น expression ที่คนออฟฟิสใช้บ่อยมาก"},
+      {th:"ผมจะติดต่อกลับหาคุณภายในพรุ่งนี้นะครับ", context:"สัญญาจะตามไป",
+       en:"I'll get back to you by tomorrow.",
+       tip:"'Get back to you' = ติดต่อกลับ | ใช้ได้ทั้งอีเมล โทร และ chat"},
+      {th:"ขอโทษที่รบกวนนะครับ แต่อยากยืนยันนัดพรุ่งนี้", context:"โทรยืนยันนัด",
+       en:"Sorry to bother you, but I just wanted to confirm tomorrow's meeting.",
+       tip:"'Sorry to bother you' = ขอโทษที่รบกวน | ใช้ตอนโทรหาคนที่อาจยุ่งอยู่"},
+      {th:"ช่วยส่ง feedback มาให้ผมก่อนวันศุกร์ได้ไหมครับ?", context:"ขอ feedback",
+       en:"Could you send over your feedback before Friday?",
+       tip:"'Send over' = ส่งมาให้ | 'send over' ฟังดู casual กว่า 'please send'"},
+      {th:"ขอแนบไฟล์ที่คุณขอมาด้วยนะครับ", context:"ส่งไฟล์ทางอีเมล",
+       en:"I've attached the file you asked for.",
+       tip:"สั้น ตรง และเป็นธรรมชาติ | ดีกว่า 'Please find attached herewith' ที่ formal เกิน"},
+    ]
+  },
+  {
+    id:'networking', name:'Networking & Small Talk', cls:'networking',
+    icon:'🤝', desc:'ทำความรู้จัก สร้างความสัมพันธ์ มั่นใจ',
+    listen:[
+      {
+        audio:"Hey! I don't think we've met. I'm Michelle. I work on the product side over at Innovate Labs — we mostly do B2B software stuff. What about you? What brought you out to this conference?",
+        question:"What does Michelle want to know at the end?",
+        opts:["Where you work","Why you're at the conference","Your job title","Your company revenue"],
+        correct:1,
+        thai:"สวัสดี ชื่อ Michelle ทำทีม product ที่ Innovate Labs เน้น B2B software แล้วคุณล่ะ มางานนี้เพราะอะไร?",
+        tip:"'What brings you here?' = อะไรทำให้คุณมาที่นี่? | เปิดบทสนทนาด้วยคำถามปลายเปิด"
+      },
+      {
+        audio:"It was really great meeting you today. I really enjoyed our conversation about digital transformation. Here's my card. I'd love to stay in touch. Would it be okay if I connected with you on LinkedIn? I think there might be opportunities for collaboration down the road.",
+        question:"What does the speaker suggest at the end?",
+        opts:["Having lunch","Connecting on LinkedIn","Scheduling a meeting","Sending an email"],
+        correct:1,
+        thai:"ยินดีมากที่ได้พบ ชอบบทสนทนาเรื่อง digital transformation นี่นามบัตร ขอ connect LinkedIn ได้ไหม",
+        tip:"'Stay in touch' = ติดต่อกันต่อไป | 'Down the road' = ในอนาคต"
+      },
+      {
+        audio:"So what's your take on the shift to remote work? A lot of companies are going remote-first now. It's really changing how teams collaborate and communicate. Have you noticed similar trends in your industry?",
+        question:"What topic are they discussing?",
+        opts:["AI and automation","Remote work trends","Company mergers","New regulations"],
+        correct:1,
+        thai:"คุณคิดยังไงกับ remote work หลายบริษัทหัน remote-first ส่งผลต่อการทำงานร่วมกันมาก",
+        tip:"'What's your take on?' = คุณคิดยังไงกับ? | 'Remote-first' = เน้นทำงานจากที่บ้าน"
+      }
+    ],
+    speak:[
+      {en:"It's great to meet you. What do you do?", th:"ยินดีที่ได้รู้จัก คุณทำงานอะไรครับ?"},
+      {en:"I work in the marketing department at a tech company.", th:"ผมทำงานในฝ่ายการตลาดที่บริษัทเทคโนโลยี"},
+      {en:"What brings you to this event today?", th:"อะไรทำให้คุณมางานนี้วันนี้ครับ?"},
+      {en:"I'd love to stay in touch. Can I have your business card?", th:"อยากติดต่อต่อนะครับ ขอนามบัตรได้ไหมครับ?"},
+      {en:"It was a real pleasure meeting you today.", th:"ยินดีมากที่ได้พบคุณวันนี้ครับ"}
+    ],
+    shadow:{
+      title:"Introducing Yourself",
+      segs:[
+        {en:"Hi, I'm Alex. It's great to be here.", th:"สวัสดี ผมชื่อ Alex ดีใจที่ได้มาที่นี่"},
+        {en:"I work as a product manager at a startup in Bangkok.", th:"ทำงานเป็น product manager ที่ startup ในกรุงเทพ"},
+        {en:"We focus on AI solutions for small and medium businesses.", th:"เราเน้น AI solutions สำหรับ SME"},
+        {en:"I'm here to network and learn about the latest trends.", th:"มาที่นี่เพื่อ network และเรียนรู้เทรนด์ล่าสุด"}
+      ]
+    },
+    translate:[
+      {th:"คุณทำงานด้านไหนอยู่ตอนนี้ครับ?", context:"ทำความรู้จักกัน",
+       en:"What do you do these days?",
+       tip:"'What do you do these days?' = เป็นธรรมชาติมาก ดีกว่า 'What is your occupation?'"},
+      {th:"เราน่าจะแลกอีเมลหรือ LinkedIn กันนะครับ", context:"ก่อนแยกทาง",
+       en:"We should swap emails or connect on LinkedIn.",
+       tip:"'Swap' = แลก | ฟังดู casual และเป็นมิตร ไม่ formal เกิน"},
+      {th:"คุยกับคุณสนุกมากเลยครับ", context:"ก่อนแยกทาง",
+       en:"It's been really great chatting with you.",
+       tip:"'Chatting' ฟังดูเป็นธรรมชาติกว่า 'talking' หรือ 'conversing' มาก"},
+      {th:"เคยได้ยินชื่อบริษัทคุณมาบ้าง ทำเรื่องอะไรบ้างครับ?", context:"แสดงความสนใจ",
+       en:"I've heard of your company! What exactly do you guys do?",
+       tip:"'You guys' = พูดถึงบริษัท แบบ friendly | 'exactly' ทำให้ฟังดูสนใจจริงๆ"},
+      {th:"ถ้ามีโอกาสอยากทำงานร่วมกันนะครับ", context:"สร้างความสัมพันธ์",
+       en:"I'd love to find a way to work together sometime.",
+       tip:"'Find a way to' = หาทาง | ฟังดูกระตือรือร้นแต่ไม่กดดัน"},
+    ]
+  }
+];
+
+// ═══════════════════════════════════════════════
+// SCENARIOS (Chat with Buddy)
+// ═══════════════════════════════════════════════
+// ── Scoring helpers ──────────────────────────
+function calcNaturalness(spoken) {
+  let score = 42;
+  const s = spoken.toLowerCase();
+  const contractions = ["i'm","you're","it's","we're","they're","that's","can't","won't","don't","i'll","i've","isn't","aren't","i'd","it'll","there's","here's","let's","she's","he's"];
+  contractions.forEach(c=>{ if(s.includes(c)) score += 7; });
+  const casual = ["actually","honestly","totally","yeah","right","sure","definitely","absolutely","exactly","of course","for sure","pretty","really","kind of","sort of","i think","you know","i mean","no worries","sounds good","that makes sense","fair enough","same here","same","me too","ha","hmm"];
+  casual.forEach(c=>{ if(s.includes(c)) score += 5; });
+  const formal = ["i would like to","pursuant to","therefore","furthermore","with regards to","i wish to","kindly note","please be informed","as per"];
+  formal.forEach(f=>{ if(s.includes(f)) score -= 18; });
+  return Math.min(100, Math.max(0, score));
+}
+
+function calcGrammar(spoken) {
+  const s = spoken.toLowerCase().trim();
+  const words = s.split(/\s+/).filter(Boolean);
+  if(words.length < 2) return 20;
+  let score = 45;
+  // Subject starter
+  const subjectStarters = ['i','you','we','they','he','she','it','this','that','there','the','my','our','your','let','can','could','would','may','do','did','have','has','is','are','was','were'];
+  if(subjectStarters.some(w => s.startsWith(w+' ') || s===w)) score += 15;
+  // Verb presence
+  const verbs = ['is','are','was','were','have','has','had','do','does','did','will','would','can','could','should','may','might','let','get','got','go','went','need','want','think','know','see','make','take','give','put','come','look','use','find','feel','try','keep','help','got','been','being'];
+  if(verbs.some(v => words.includes(v))) score += 18;
+  // Good grammar markers
+  const goodMarkers = ["i'll","i've","i'd","i'm","we'll","it's","that's","would like","could you","can you","let me","could i","may i","i think","don't","can't","won't"];
+  goodMarkers.forEach(m => { if(s.includes(m)) score += 8; });
+  // Common Thai-English grammar mistakes
+  const mistakes = ['i am go','i am want','i am like','i am need','i no have','i not go','very much like','i can to','want to go to shop'];
+  mistakes.forEach(m => { if(s.includes(m)) score -= 25; });
+  // Length bonus
+  if(words.length >= 5) score += 8;
+  if(words.length >= 8) score += 7;
+  return Math.min(100, Math.max(0, score));
+}
+
+function calcSituationFit(spoken, context) {
+  const s = spoken.toLowerCase();
+  const ctx = (context||'').toLowerCase();
+  let score = 45;
+  const ctxMap = {
+    'ประชุม':   ['meeting','team','discuss','update','agenda','point','let me','everyone'],
+    'สาย':      ['late','sorry','held up','stuck','delayed','apology','just'],
+    'ฟังไม่':   ['again','repeat','catch','understand','pardon','sorry','come again'],
+    'ไอเดีย':   ['idea','suggest','what if','option','proposal','think','could we'],
+    'ปิด':      ['decide','wrap','conclude','action','next steps','recap','so we'],
+    'นำเสนอ':   ['slide','present','show','data','look','here','chart','walk'],
+    'อธิบาย':   ['explain','reason','because','actually','what happened','let me'],
+    'ถาม':      ['question','any','before','clarify','wonder','what about'],
+    'email':    ['write','send','attach','regarding','follow up','touch base'],
+    'โทร':      ['call','phone','reach','available','connect','ring'],
+    'เดินทาง':  ['travel','trip','flight','hotel','visit','destination','book'],
+    'อาหาร':    ['food','eat','try','taste','recommend','dish','restaurant'],
+    'finance':  ['revenue','profit','growth','target','performance','quarter','numbers','results'],
+    'feedback': ['feedback','improve','work','appreciate','help','better','thank'],
+    'congrats': ['congrats','great','amazing','happy','excited','proud','well done'],
+    'remote':   ['video','call','home','wifi','camera','mute','online','connect'],
+  };
+  let matched = 0;
+  Object.entries(ctxMap).forEach(([key, kwords]) => {
+    if(ctx.includes(key)) kwords.forEach(kw => { if(s.includes(kw)) matched++; });
+  });
+  score += matched * 9;
+  if(s.split(/\s+/).length >= 4) score += 8;
+  if(s.split(/\s+/).length >= 8) score += 7;
+  return Math.min(100, Math.max(0, score));
+}
+
+function showTranslateScore(spoken, ex) {
+  const nat = calcNaturalness(spoken);
+  const grm = calcGrammar(spoken);
+  const sit = calcSituationFit(spoken, ex.context||'');
+  const overall = Math.round(nat*0.3 + grm*0.4 + sit*0.3);
+  S.scores.push(overall);
+  if(overall >= 80) fireConfetti();
+  const bar = (v,color,label) => `
+    <div style="margin-bottom:10px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+        <span style="font-size:12px;font-weight:700;color:var(--text2)">${label}</span>
+        <span style="font-size:12px;font-weight:800;color:var(--text)">${v}%</span>
+      </div>
+      <div style="background:#eee;border-radius:100px;height:8px;overflow:hidden">
+        <div style="width:${v}%;height:100%;background:${color};border-radius:100px;transition:width 0.6s ease"></div>
+      </div>
+    </div>`;
+  const em  = overall>=85?'🌟':overall>=70?'😊':overall>=50?'🙂':'💪';
+  const msg = overall>=85?'Excellent! เป็นธรรมชาติมากเลย':overall>=70?'Good job! ฟังดูดีมาก':overall>=50?'ดีนะ ฝึกต่อไปเรื่อยๆ':'ลองอีกครั้งนะ คุณทำได้!';
+  if(overall < 60) saveNote({phrase:ex.en, context:ex.context||'Translate', tip:ex.tip||'ฝึกพูดประโยคนี้ให้คล่อง'});
+  const correctionHtml = overall < 60 ? `
+    <div style="background:var(--yellow-lt);border:1.5px solid #D9A800;border-radius:12px;padding:10px 14px;margin-top:12px">
+      <div style="font-size:11px;font-weight:800;color:#7a5200;margin-bottom:5px">📓 บันทึกแล้ว — ประโยคตัวอย่าง</div>
+      <div style="font-size:14px;font-weight:700;color:var(--text);line-height:1.5">"${ex.en}"</div>
+      <button onclick="speak('${ex.en.replace(/['"]/g,' ')}')" style="margin-top:8px;background:transparent;border:1.5px solid #D9A800;border-radius:100px;padding:4px 12px;font-size:12px;font-weight:700;color:#7a5200;cursor:pointer">🔊 ฟังอีกครั้ง</button>
+    </div>` : '';
+  document.getElementById('cmp-area').innerHTML = `
+    <div class="cmp-card fade-in">
+      <div style="text-align:center;margin-bottom:16px">
+        <div style="font-size:32px">${em}</div>
+        <div style="font-size:30px;font-weight:900;color:var(--purple);margin-top:2px">${overall}%</div>
+        <div style="font-size:13px;color:var(--text2);margin-top:4px">${msg}</div>
+      </div>
+      ${bar(nat,'#6DC78A','🎯 ความเป็นธรรมชาติ')}
+      ${bar(grm,'#9B7FE8','📝 Grammar')}
+      ${bar(sit,'#F4A7C0','📍 เหมาะกับสถานการณ์')}
+      <div style="margin-top:12px;padding:10px 14px;background:var(--purple-lt);border-radius:10px;font-size:13px;color:var(--text2)">
+        <span style="font-weight:700">คุณพูดว่า:</span> "${spoken}"
+      </div>
+      ${correctionHtml}
+    </div>`;
+  showNextBtn();
+}
+
+function renderScoreCard(accuracy, pronunciation, naturalness, target, spoken) {
+  const overall = Math.round(accuracy*0.4 + pronunciation*0.35 + naturalness*0.25);
+  const bar = (v,color) => `<div style="flex:1;background:#eee;border-radius:100px;height:7px;overflow:hidden"><div style="width:${v}%;height:100%;background:${color};border-radius:100px"></div></div>`;
+  const em = overall>=85?'🌟':overall>=70?'😊':overall>=50?'🙂':'💪';
+  const msg = overall>=85?'Excellent! เป็นธรรมชาติมากเลย':overall>=70?'Good job! ฟังดูดีมาก':overall>=50?'ดีนะ ฝึกต่อไปเรื่อยๆ':'ลองอีกครั้งนะ คุณทำได้!';
+  return `<div class="cmp-card fade-in">
+    <div style="text-align:center;margin-bottom:14px">
+      <div style="font-size:44px;margin-bottom:4px">${em}</div>
+      <div style="font-size:34px;font-weight:900;color:var(--purple)">${overall}%</div>
+      <div style="font-size:13px;font-weight:700;color:var(--text2);margin-top:3px">${msg}</div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:9px;margin-bottom:14px">
+      <div style="display:flex;align-items:center;gap:8px">
+        <span style="font-size:12px;font-weight:700;color:var(--muted);width:90px;flex-shrink:0">🎯 Accuracy</span>
+        ${bar(accuracy,'#9B7FE8')}
+        <span style="font-size:12px;font-weight:800;color:var(--purple);width:36px;text-align:right">${accuracy}%</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <span style="font-size:12px;font-weight:700;color:var(--muted);width:90px;flex-shrink:0">🗣️ Pronunc.</span>
+        ${bar(pronunciation,'#F4A7C0')}
+        <span style="font-size:12px;font-weight:800;color:var(--pink-dk);width:36px;text-align:right">${pronunciation}%</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <span style="font-size:12px;font-weight:700;color:var(--muted);width:90px;flex-shrink:0">✨ Natural</span>
+        ${bar(naturalness,'#6DC78A')}
+        <span style="font-size:12px;font-weight:800;color:var(--green);width:36px;text-align:right">${naturalness}%</span>
+      </div>
+    </div>
+    ${accuracy<60||overall<60?`<div style="background:var(--yellow-lt);border:1.5px solid #D9A800;border-radius:12px;padding:10px 14px;margin-bottom:10px">
+      <div style="font-size:11px;font-weight:800;color:#7a5200;margin-bottom:5px">📓 บันทึกแล้ว — ลองพูดแบบนี้</div>
+      <div style="font-size:14px;font-weight:700;color:var(--text);line-height:1.5">"${target}"</div>
+      <div style="display:flex;gap:8px;margin-top:8px">
+        <button onclick="speak(window._repeatTarget||'${target.replace(/['"\\]/g,' ')}')" style="background:transparent;border:1.5px solid #D9A800;border-radius:100px;padding:5px 12px;font-size:12px;font-weight:700;color:#7a5200;cursor:pointer;flex:1">🔊 ฟังอีกครั้ง</button>
+        <button onclick="startRepeatMode()" style="background:#F5D06A;border:none;border-radius:100px;padding:5px 12px;font-size:12px;font-weight:700;color:#5a3c00;cursor:pointer;flex:1">🎤 พูดตามเลย</button>
+      </div>
+    </div>`:''}
+    <div class="cmp-lbl">เป้าหมาย</div>
+    <div class="word-row" id="word-target-row"></div>
+    <div class="cmp-lbl" style="margin-top:8px">คุณพูดว่า</div>
+    <div class="word-row" id="word-spoken-row"></div>
+    <div class="chip-legend">🟢 ถูก &nbsp; 🔴 พลาด &nbsp; 🟡 เกิน</div>
+  </div>`;
+}
+
+window._repeatTarget = '';
+function startRepeatMode() {
+  const target = window._repeatTarget;
+  if(!target) return;
+  stopSpeech();
+  const container = document.getElementById('cmp-area') || document.getElementById('next-area')?.parentElement;
+  // Show "listen first, then speak" UI
+  const zone = document.createElement('div');
+  zone.id='repeat-mode-zone';
+  zone.style.cssText='background:var(--purple-lt);border-radius:18px;padding:16px;margin-top:10px;text-align:center';
+  zone.innerHTML=`
+    <div style="font-size:13px;font-weight:700;color:var(--purple);margin-bottom:10px">🔄 โหมดพูดตาม — ฟังก่อน แล้วพูดตาม</div>
+    <div style="font-size:15px;font-weight:700;color:var(--text);margin-bottom:14px;line-height:1.5">"${target}"</div>
+    <div style="display:flex;gap:8px;justify-content:center;margin-bottom:10px">
+      <button class="btn btn-outline btn-sm" onclick="speak('${target.replace(/['"\\]/g,' ')}')">🔊 ฟัง</button>
+      <button class="btn btn-sm" style="background:linear-gradient(180deg,#F4A7C0,#E0789F);color:#fff;box-shadow:0 4px 0 #C05080" id="repeat-rec-btn" onclick="recordRepeat()">🎤 พูดตาม</button>
+    </div>
+    <div id="repeat-score-area"></div>`;
+  const old = document.getElementById('repeat-mode-zone');
+  if(old) old.remove();
+  (document.getElementById('cmp-area')||document.querySelector('.next-area')).before(zone);
+  zone.scrollIntoView({behavior:'smooth',block:'nearest'});
+  setTimeout(()=>speak(target, 0.9), 300);
+}
+
+let _repeatRecog=null, _repeatIsRec=false;
+function recordRepeat() {
+  const target = window._repeatTarget;
+  if(!target) return;
+  if(_repeatIsRec){if(_repeatRecog)try{_repeatRecog.stop()}catch(e){};return}
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  const btn=document.getElementById('repeat-rec-btn');
+  if(!SR){if(btn)btn.textContent='❌ ต้องใช้ Chrome';return}
+  stopSpeech();
+  _repeatRecog=new SR();_repeatRecog.lang='en-US';_repeatRecog.interimResults=false;
+  _repeatIsRec=true;
+  if(btn){btn.textContent='⏹ หยุด';}
+  _repeatRecog.onresult=e=>{
+    const said=e.results[0][0].transcript;
+    const conf=Math.round((e.results[0][0].confidence||0.75)*100);
+    _repeatIsRec=false;if(btn)btn.textContent='🎤 พูดตาม';
+    const tw=target.toLowerCase().replace(/[^a-z\s]/g,'').split(/\s+/).filter(Boolean);
+    const sw=said.toLowerCase().replace(/[^a-z\s]/g,'').split(/\s+/).filter(Boolean);
+    const used=[...sw];let ok=0;const matched=new Set();
+    tw.forEach((w,i)=>{const j=used.indexOf(w);if(j!==-1){ok++;matched.add(i);used.splice(j,1)}});
+    const acc=Math.round(ok/tw.length*100);
+    const score=Math.round(acc*0.5+conf*0.5);
+    const scoreEl=document.getElementById('repeat-score-area');
+    if(scoreEl) scoreEl.innerHTML=`
+      <div style="background:${score>=80?'var(--green-lt)':score>=60?'var(--yellow-lt)':'var(--red-lt)'};border-radius:12px;padding:10px;text-align:center">
+        <div style="font-size:24px;font-weight:900;color:${score>=80?'var(--green)':score>=60?'#7a5200':'var(--red)'}">${score}%</div>
+        <div style="font-size:12px;font-weight:700;color:var(--text2);margin-top:2px">${score>=80?'สำเนียงดีมาก! 🌟':score>=60?'ดีนะ ลองอีกครั้ง 😊':'ฝึกต่อไปนะ 💪'}</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:4px">Pronunciation ${conf}% · Accuracy ${acc}%</div>
+      </div>
+      <button class="btn btn-sm btn-outline" style="margin-top:8px;width:100%" onclick="recordRepeat()">🔄 ลองอีกครั้ง</button>`;
+  };
+  _repeatRecog.onerror=()=>{_repeatIsRec=false;if(btn)btn.textContent='🎤 พูดตาม';};
+  _repeatRecog.onend=()=>{_repeatIsRec=false;if(btn)btn.textContent='🎤 พูดตาม';};
+  _repeatRecog.start();
+}
+
+const SCENARIOS = [
+  {
+    id:'coffee', name:'Coffee Break', icon:'☕', buddy:'Sam', buddyEmoji:'👩‍💼',
+    desc:'คุยกับเพื่อนร่วมงานตอนพักกาแฟ',
+    bg:'linear-gradient(135deg,#C4A4F0,#F4A7C0)', shadow:'rgba(196,164,240,.4)',
+    turns:[
+      {buddy:"Hey! You heading to grab a coffee? Mind if I tag along?", hint:"บอกว่าโอเค ชวนไปด้วยกัน", sample:"Of course! Let's go.", tip:"'Mind if I...?' = ไม่ว่าอะไรนะถ้า... | 'Of course!' ฟังดูเป็นมิตรมาก"},
+      {buddy:"So how's your week going? It's only Wednesday and I'm already exhausted.", hint:"บอกว่าสัปดาห์นี้เป็นยังไง", sample:"Same! I've had back-to-back meetings since Monday. I really need this coffee.", tip:"'Back-to-back' = ต่อเนื่องไม่มีหยุด | 'I really need this' = ฉันต้องการสิ่งนี้จริงๆ"},
+      {buddy:"Ha! What kind of meetings?", hint:"บอกว่าประชุมเรื่องอะไร", sample:"Mostly project reviews. We're pushing for a big release next week.", tip:"'Pushing for' = เร่งให้ได้ | 'Big release' = การ launch สำคัญ"},
+      {buddy:"Oh wow, that sounds intense! What are you working on?", hint:"อธิบายโปรเจกต์ที่ทำอยู่", sample:"A new feature for our mobile app. It's a bit hectic but honestly I love it.", tip:"'Hectic' = วุ่นวาย | 'Honestly I love it' = ฟังดูจริงใจและกระตือรือร้น"},
+      {buddy:"That's awesome. How long have you been on this team?", hint:"บอกว่าอยู่มากี่เดือน/ปี", sample:"About six months now. Time flies, right?", tip:"'Time flies' = เวลาผ่านไปเร็ว | ประโยคสั้น กระชับ เป็นธรรมชาติ"},
+      {buddy:"Are you settling in okay? I remember my first year here was a bit overwhelming.", hint:"บอกว่าปรับตัวได้ดีแค่ไหน", sample:"Yeah, it was at first. But everyone's been really helpful so I'm good now.", tip:"'It was at first' = ตอนแรกก็เป็นแบบนั้น | 'I'm good now' = ตอนนี้โอเคแล้ว"},
+      {buddy:"Good! This place has a great culture, I think.", hint:"เห็นด้วยและพูดถึงวัฒนธรรมองค์กร", sample:"Definitely. I feel really lucky to be here, honestly.", tip:"'I feel really lucky' = ฉันรู้สึกโชคดีมาก | 'Honestly' ทำให้ฟังดูจริงใจ"},
+      {buddy:"How do you take your coffee?", hint:"บอกว่าดื่มกาแฟแบบไหน", sample:"Oat milk latte if they have it. I've been trying to cut back on dairy.", tip:"'Cut back on' = ลดการบริโภค | เป็นประโยคที่ใช้บ่อยในชีวิตจริง"},
+      {buddy:"Oh same! I switched a few months ago and honestly I can't go back.", hint:"เห็นด้วยและพูดเรื่อง oat milk", sample:"Right? Once you try it there's no going back.", tip:"'There's no going back' = ไม่มีทางกลับไปแล้ว | idiom ที่ใช้บ่อยมาก"},
+      {buddy:"So do you live close to the office?", hint:"บอกว่าอยู่ที่ไหน เดินทางนานแค่ไหน", sample:"About thirty minutes by BTS. Not too bad honestly.", tip:"'Not too bad' = ไม่แย่เลย | เป็น casual response ที่ใช้บ่อยมาก"},
+      {buddy:"Oh nice! I'm about forty-five minutes. The commute is tough sometimes.", hint:"แสดงความเข้าใจและพูดถึงการเดินทาง", sample:"Yeah especially in rush hour. I've been trying to leave a bit earlier to avoid it.", tip:"'Rush hour' = ชั่วโมงเร่งด่วน | 'Avoid it' = หลีกเลี่ยง"},
+      {buddy:"Smart. Do you listen to anything on the commute?", hint:"บอกว่าฟังอะไรระหว่างเดินทาง", sample:"Yeah, mostly podcasts. I've been really into business ones lately.", tip:"'I've been really into' = ฉันหลงใหลใน... | แสดงความสนใจแบบ casual"},
+      {buddy:"Oh nice! Any recommendations?", hint:"แนะนำ podcast ที่ชอบ", sample:"There's one called How I Built This that's really good if you're into business stories.", tip:"'There's one called...' = มีอยู่อันนึงชื่อ... | วิธีแนะนำที่เป็นธรรมชาติ"},
+      {buddy:"Oh I love that one! Gary Vaynerchuk is another good one.", hint:"เห็นด้วยและพูดถึง podcast อื่น", sample:"Oh yeah totally! His energy is kind of intense but I like it.", tip:"'Kind of intense' = ค่อนข้างเข้มข้น/จริงจัง | 'But I like it' แสดงว่าเปิดรับ"},
+      {buddy:"Ha exactly! Hey, do you have any plans this weekend?", hint:"บอกแผนวันหยุดสุดสัปดาห์", sample:"Nothing major. I'm thinking about checking out that weekend market near Chatuchak.", tip:"'Nothing major' = ไม่มีอะไรใหญ่โต | 'Checking out' = ไปดู/ลองไป"},
+      {buddy:"Oh nice! I love that market. I went last month.", hint:"บอกว่าเคยไปแล้วและชอบมาก", sample:"Really? Any tips? I haven't been in ages.", tip:"'Any tips?' = มีคำแนะนำไหม | 'I haven't been in ages' = ไม่ได้ไปนานมากแล้ว"},
+      {buddy:"Go early! By noon it's packed and super hot.", hint:"ขอบคุณสำหรับ tip และบอกว่าจะทำ", sample:"Good call. I'll aim to get there by nine or ten then.", tip:"'Good call' = ไอเดียดีนะ | 'Aim to' = ตั้งเป้าจะ"},
+      {buddy:"Perfect. We should go together sometime!", hint:"ตอบรับและแสดงความกระตือรือร้น", sample:"Yeah for sure! That'd be really fun. Let's plan it.", tip:"'For sure!' = แน่นอน | 'Let's plan it' = ให้วางแผนกัน | กระชับและกระตือรือร้น"},
+      {buddy:"Definitely. Oh hey, are you going to the team dinner on Friday?", hint:"บอกว่าจะไปและแสดงความตื่นเต้น", sample:"I'm planning to! I heard it's at that new rooftop place. Should be great.", tip:"'I'm planning to' = ตั้งใจจะ | 'Should be great' = น่าจะดีมาก"},
+      {buddy:"Yes! I've been wanting to go there for ages. Alright, coffee's ready — shall we head back?", hint:"บอกว่าพร้อมกลับและขอบคุณ", sample:"Yeah let's go. Thanks for the chat — this was exactly what I needed.", tip:"'Thanks for the chat' = ขอบคุณสำหรับการคุย | 'Exactly what I needed' = สิ่งที่ฉันต้องการพอดี"},
+    ]
+  },
+  {
+    id:'newjob', name:'First Day!', icon:'👋', buddy:'Mike', buddyEmoji:'🧑‍💻',
+    desc:'วันแรกทำงาน แนะนำตัวกับเพื่อนร่วมทีม',
+    bg:'linear-gradient(135deg,#89C4F4,#B8A4E8)', shadow:'rgba(137,196,244,.4)',
+    turns:[
+      {buddy:"Hey, you must be the new person! Welcome. I'm Mike.", hint:"แนะนำตัว บอกชื่อและตำแหน่ง", sample:"Hi Mike! I'm Jay. Really happy to be here — I just joined marketing today.", tip:"'Really happy to be here' = ดีใจมากที่ได้มา | ฟังดูจริงใจและกระตือรือร้น"},
+      {buddy:"Oh nice! Marketing is a great team. Where were you before this?", hint:"บอกที่ทำงานเดิม", sample:"I was at a startup for about two years. E-commerce mostly.", tip:"'I was at...' = ทำงานอยู่ที่ | สั้น กระชับ และมีข้อมูลครบ"},
+      {buddy:"Cool! Was it a big startup?", hint:"บอกขนาดของ startup", sample:"Medium-sized, about eighty people when I left.", tip:"'When I left' = ตอนที่ฉันออก | บอก context ได้ดี"},
+      {buddy:"Nice. And what made you want to move here?", hint:"อธิบายเหตุผลที่ย้ายมา", sample:"Honestly, the company culture and the chance to work at a bigger scale.", tip:"'Honestly' = เปิดต้นด้วยนี้ทำให้ฟังดูจริงใจ | 'Bigger scale' = สเกลที่ใหญ่กว่า"},
+      {buddy:"That makes sense. The culture here is really good. Did you go through many interview rounds?", hint:"บอกว่าสัมภาษณ์กี่รอบ", sample:"Four rounds! But they were actually really good conversations, not just standard questions.", tip:"'Not just standard questions' = ไม่ใช่แค่คำถามทั่วไป | แสดงว่าบริษัทมีคุณภาพ"},
+      {buddy:"Ha yeah, they're thorough. But it means you get great teammates.", hint:"เห็นด้วยและพูดถึงทีม", sample:"I can already tell. Everyone I've met today has been super welcoming.", tip:"'I can already tell' = ฉันสังเกตได้แล้ว | 'Super welcoming' = ต้อนรับมาก"},
+      {buddy:"Have you met your manager yet?", hint:"บอกว่าเจอและประทับใจ", sample:"Yes! We had a quick call this morning. She seems really great.", tip:"'She seems really great' = เธอดูดีมาก | 'Quick call' = โทรคุยสั้นๆ"},
+      {buddy:"Oh you've got Sarah! She's amazing. You'll be in good hands.", hint:"แสดงความดีใจที่ได้ manager ดี", sample:"Yeah, I got that vibe straight away. I'm excited to learn from her.", tip:"'I got that vibe' = ฉันรู้สึกได้ | 'Straight away' = ทันที"},
+      {buddy:"Where are you sitting?", hint:"บอกที่นั่งและบอกว่าชอบ", sample:"Fourth floor, near the windows. The view is honestly incredible.", tip:"'The view is honestly incredible' = วิวสวยจริงๆ | 'Honestly' เพิ่มความจริงใจ"},
+      {buddy:"Oh lucky! The view up there is amazing. Do you live far?", hint:"บอกว่าอยู่ที่ไหน", sample:"About thirty minutes by BTS. It's pretty manageable.", tip:"'Pretty manageable' = จัดการได้ค่อนข้างดี | บอก commute แบบ positive"},
+      {buddy:"Nice! The commute here is actually not bad. Hey, we grab lunch together on Fridays — you should join.", hint:"ตอบรับคำเชิญไปทานข้าว", sample:"Oh I'd love that! It's always nice to get to know the team outside of work stuff.", tip:"'Outside of work stuff' = นอกจากเรื่องงาน | แสดงว่าอยากสร้างความสัมพันธ์"},
+      {buddy:"Exactly. We usually go to the food court or the Thai place across the street.", hint:"บอกว่าชอบทั้งคู่", sample:"Either works for me. I'm pretty easy when it comes to food.", tip:"'I'm pretty easy' = ฉันไม่ค่อยเลือก | 'When it comes to food' = เมื่อพูดถึงเรื่องอาหาร"},
+      {buddy:"Perfect. Hey, do you have any questions about how things work around here?", hint:"ถามเรื่อง IT access", sample:"Actually yes — what's the quickest way to get IT access sorted? I still can't log into a few systems.", tip:"'Get sorted' = จัดการให้เรียบร้อย | 'A few systems' = ระบบบางอย่าง"},
+      {buddy:"Oh just Slack the IT team directly. They're usually really fast.", hint:"ขอบคุณสำหรับ tip", sample:"Oh good to know! I'll message them right now. Thanks for the tip.", tip:"'Good to know' = ดีที่รู้ | 'I'll do it right now' = จะทำทันที — แสดงว่าเราลงมือทำ"},
+      {buddy:"Also, if you ever need to book a meeting room, do it the day before — they go fast.", hint:"ขอบคุณอีก tip นึง", sample:"Noted! Good to know before I get caught out.", tip:"'Noted!' = จดไว้แล้ว | 'Get caught out' = โดนจับได้ว่าไม่รู้"},
+      {buddy:"Ha yes, learned that the hard way. Is there anything else you need help with today?", hint:"ถามเรื่อง canteen หรือสิ่งอำนวยความสะดวก", sample:"Actually, where's the best spot to eat in the building? Canteen or somewhere else?", tip:"'Best spot to eat' = ที่กินข้าวที่ดีที่สุด | คำถามที่ practical และเป็นธรรมชาติ"},
+      {buddy:"The canteen on level two is actually really good. And there's a good noodle shop five minutes away.", hint:"ขอบคุณและบอกว่าจะลอง", sample:"Oh perfect. I'll check out the canteen today and save the noodles for another time.", tip:"'Save it for another time' = เก็บไว้คราวหน้า | แสดงว่าวางแผนจะกลับมา"},
+      {buddy:"Good plan! Alright, I should get back to it — but my desk is right by the coffee machine if you need anything.", hint:"ขอบคุณและบอกว่าจะติดต่อ", sample:"Ha, best desk in the office! Thanks so much Mike, I'll definitely come find you.", tip:"'Best desk in the office' = ล้อเล่นและเป็นมิตร | ทำให้บทสนทนาจบแบบ warm"},
+      {buddy:"Ha! Exactly. It has its perks. Good luck on your first day!", hint:"ขอบคุณสำหรับความอบอุ่น", sample:"Thanks so much. It really means a lot to have someone show me the ropes on day one.", tip:"'Show me the ropes' = สอนวิธีการทำสิ่งต่างๆ | idiom ที่ใช้บ่อยสำหรับ newbie"},
+      {buddy:"Any time! That's what we're here for. See you at lunch Friday?", hint:"ยืนยันไปทานข้าวและบอกลา", sample:"For sure! I'll be there. See you then — and thanks again for everything.", tip:"'For sure' = แน่นอน | 'Thanks again for everything' = ขอบคุณอีกครั้งสำหรับทุกอย่าง"},
+    ]
+  },
+  {
+    id:'deadline', name:'Deadline Help', icon:'📅', buddy:'Lisa', buddyEmoji:'👩‍🏫',
+    desc:'ขอต่อ deadline จากหัวหน้าหรือเพื่อนร่วมงาน',
+    bg:'linear-gradient(135deg,#B8A4E8,#9B7FE8)', shadow:'rgba(184,164,232,.4)',
+    turns:[
+      {buddy:"Hey, got a sec?", hint:"บอกว่าว่างและพร้อมฟัง", sample:"Sure, what's up?", tip:"'Sure, what's up?' = โอเค มีอะไรเหรอ | สั้น เป็นธรรมชาติ และพร้อมฟัง"},
+      {buddy:"Just checking in on the report. Is it on track for tomorrow?", hint:"บอกตามตรงว่าอาจส่งไม่ทัน", sample:"Honestly, I'm running a bit behind. I wanted to talk to you about that.", tip:"'Running a bit behind' = ช้ากว่าแผนนิดหน่อย | 'I wanted to talk to you' = เปิดบทสนทนาได้ดี"},
+      {buddy:"Oh? What's going on?", hint:"อธิบายเหตุผล", sample:"I got pulled into two unexpected client calls this afternoon. It ate up most of my time.", tip:"'Got pulled into' = ถูกดึงไปทำ | 'Ate up my time' = กินเวลาไป — เป็น idiom ที่ดี"},
+      {buddy:"Ah I see. How much more time do you need?", hint:"ขอเลื่อนและบอกเวลาที่ต้องการ", sample:"If I could have until Thursday end of day, I'd be able to do it properly.", tip:"'Do it properly' = ทำให้ถูกต้อง | 'End of day' = ก่อนเลิกงาน — ใช้บ่อยมากในออฟฟิส"},
+      {buddy:"Thursday should work. The client doesn't need it until Friday morning anyway.", hint:"ขอบคุณและแสดงความโล่งใจ", sample:"That's such a relief. I really appreciate your flexibility.", tip:"'Such a relief' = โล่งมากเลย | 'I appreciate your flexibility' = ขอบคุณที่ยืดหยุ่น"},
+      {buddy:"Of course. Quality matters more than rushing it. What section are you stuck on?", hint:"บอกว่าติดตรงไหน", sample:"Mainly the financial projections. I want to double-check the numbers before sending.", tip:"'Double-check' = ตรวจสอบซ้ำ | 'Before sending' = ก่อนส่ง — แสดงว่าเราใส่ใจ"},
+      {buddy:"Smart move. Better to take time and get it right.", hint:"เห็นด้วยและบอกว่าไม่อยากส่งอะไรผิด", sample:"Exactly. I don't want to send something that might raise red flags with the client.", tip:"'Raise red flags' = ทำให้เกิดข้อกังวล | เป็น business expression ที่ดีมาก"},
+      {buddy:"Good thinking. Have you finished the analysis section at least?", hint:"บอกว่าทำเสร็จไปแล้วบางส่วน", sample:"Yes, that part's done and I'm pretty happy with it actually.", tip:"'Pretty happy with it' = ค่อนข้างพอใจกับมัน | แสดงความมั่นใจแบบ humble"},
+      {buddy:"Great. Would it help to get a second pair of eyes on the numbers?", hint:"ขอให้ Tom ช่วยตรวจสอบ", sample:"That would be great. Do you think Tom would have time to do a quick sanity check?", tip:"'Sanity check' = ตรวจสอบเบื้องต้น | 'Would he have time?' = สุภาพและไม่กดดัน"},
+      {buddy:"I'll message him now. I'm sure he can spare fifteen minutes.", hint:"ขอบคุณที่จัดการให้", sample:"Amazing. Thank you so much for setting that up. I owe you one.", tip:"'I owe you one' = ฉันติดหนี้บุญคุณคุณอยู่ | เป็น expression ที่ friendly มาก"},
+      {buddy:"Don't worry about it. How are you feeling about the report overall?", hint:"บอกว่ามั่นใจในเนื้อหา", sample:"Pretty confident actually. I think the insights are strong. It's just the numbers that need love.", tip:"'Need love' = ต้องการความใส่ใจ | เป็น metaphor ที่ cute และ informal"},
+      {buddy:"Good. The client asked for more data visualization this time, by the way.", hint:"บอกว่าจะเพิ่ม visualizations", sample:"Oh good to know! I can definitely add more charts. That's easy enough to do.", tip:"'Easy enough to do' = ง่ายพอที่จะทำ | แสดงว่ารับเรื่องได้โดยไม่บ่น"},
+      {buddy:"Great. And please make the executive summary really punchy — that's what they read first.", hint:"บอกว่าจะทำให้กระชับและโดน", sample:"Noted. I'll make sure it hits hard right from the first line.", tip:"'Hits hard' = โดนใจมาก | 'Right from the first line' = ตั้งแต่บรรทัดแรก"},
+      {buddy:"Perfect. Is there anything else blocking you right now?", hint:"บอกว่าโอเค แค่ต้องการเวลา", sample:"No I think I'm good. I just needed that extra day and now I feel much better about it.", tip:"'I feel much better about it' = ฉันรู้สึกดีขึ้นกับเรื่องนี้ | แสดงว่าจะส่งได้ดีกว่าเดิม"},
+      {buddy:"Good. These things happen. That's why we build in buffer time.", hint:"เห็นด้วยและบอกว่าจะวางแผนดีกว่านี้", sample:"Totally. I'll try to flag things earlier next time instead of leaving it last minute.", tip:"'Flag things earlier' = บอกล่วงหน้า | 'Last minute' = นาทีสุดท้าย"},
+      {buddy:"That would be great. Just a quick heads-up goes a long way.", hint:"เห็นด้วย", sample:"Absolutely. Communication is key, right? I'll keep that in mind.", tip:"'Heads-up' = การแจ้งล่วงหน้า | 'Communication is key' = การสื่อสารสำคัญมาก"},
+      {buddy:"Exactly. Alright, you've got this. Just stay focused.", hint:"ขอบคุณและบอกว่าจะตั้งใจทำ", sample:"Thanks. I'm going to put my head down and get it done. I won't let you down.", tip:"'Put my head down' = ตั้งหน้าตั้งตาทำงาน | 'I won't let you down' = ฉันจะไม่ทำให้ผิดหวัง"},
+      {buddy:"I know you won't. Oh, and send me a draft by Thursday noon if you can.", hint:"บอกว่าจะส่ง draft ก่อนเวลา", sample:"Even better — I'll send it by noon so you have time to give me feedback.", tip:"'Even better' = ยิ่งดีกว่านั้น | แสดงว่าเราทำเกินที่คาด"},
+      {buddy:"Perfect. That gives me buffer before it goes to the client.", hint:"บอกว่าเข้าใจ และพร้อมรับ feedback", sample:"Exactly. And if you have any changes, I can turn them around quickly.", tip:"'Turn them around quickly' = แก้ไขได้เร็ว | แสดงว่าเรา responsive และเป็นมืออาชีพ"},
+      {buddy:"Great. Good luck — let me know if you need anything at all.", hint:"ขอบคุณและบอกลา", sample:"Will do. Thanks again for being so understanding. See you tomorrow.", tip:"'Thanks for being so understanding' = ขอบคุณที่เข้าใจ | จบบทสนทนาแบบ gracious"},
+    ]
+  },
+  {
+    id:'lunch', name:'Lunch Invite', icon:'🍜', buddy:'Chris', buddyEmoji:'🧑‍🍳',
+    desc:'ชวนเพื่อนร่วมงานออกไปทานข้าวกลางวัน',
+    bg:'linear-gradient(135deg,#82D9A0,#6DC78A)', shadow:'rgba(130,217,160,.4)',
+    turns:[
+      {buddy:"Hey, are you doing anything for lunch today?", hint:"บอกว่าว่างและถามกลับ", sample:"Nothing planned yet! You got something in mind?", tip:"'Got something in mind?' = มีอะไรในใจแล้วหรือ | สั้น casual และเป็นธรรมชาติ"},
+      {buddy:"There's a new Thai place that just opened around the corner. Want to check it out?", hint:"ตอบรับและแสดงความสนใจ", sample:"Ooh yes! I've been meaning to try it actually.", tip:"'I've been meaning to' = ฉันตั้งใจจะมาตลอด | แสดงว่าสนใจมาก"},
+      {buddy:"Cool! Any dietary restrictions I should know about?", hint:"บอกว่าไม่มีและบอกว่าชอบอาหารไทย", sample:"Nope, I eat pretty much everything. Thai food is actually my favorite.", tip:"'Pretty much everything' = เกือบทุกอย่าง | 'Actually my favorite' = จริงๆ แล้วเป็นอาหารที่ชอบที่สุด"},
+      {buddy:"Same! I heard they do an amazing pad see ew here.", hint:"บอกว่านั่นคือ favorite เหมือนกัน", sample:"Oh that's my go-to order! I'm definitely sold.", tip:"'Go-to order' = สิ่งที่สั่งเสมอ | 'I'm sold' = ฉันตกลงแล้ว"},
+      {buddy:"Ha! Should we invite anyone else from the team?", hint:"เห็นด้วยกับการชวนคนอื่น", sample:"Sure, why not? The more the merrier.", tip:"'The more the merrier' = ยิ่งมากยิ่งสนุก | เป็น classic expression ที่ใช้บ่อย"},
+      {buddy:"I'll message the group. What time works for you?", hint:"บอกเวลาที่ว่าง", sample:"Twelve thirty should work. I have a call until twelve.", tip:"'Should work' = น่าจะได้ | 'Until twelve' = จนถึงเที่ยง"},
+      {buddy:"Perfect, same for me. Okay, sent the message.", hint:"พูดถึงเช้านี้ว่าทำอะไรบ้าง", sample:"Great. By the way, how's your morning been?", tip:"'By the way' = แล้วก็นะ | ใช้เปลี่ยนหัวข้อบทสนทนาแบบ natural"},
+      {buddy:"Pretty good actually! I finally finished that proposal I've been stressing about.", hint:"แสดงความยินดีและถามเรื่องนั้น", sample:"Oh nice! That must feel so good. What was it for?", tip:"'That must feel so good' = นั่นต้องรู้สึกดีมากเลย | แสดง empathy ได้ดี"},
+      {buddy:"A new partnership with a regional distributor. Big deal if it comes through.", hint:"พูดถึงว่าหวังว่าจะได้ผล", sample:"Fingers crossed! You deserve a win after all that work.", tip:"'Fingers crossed' = ขอให้โชคดี | 'You deserve a win' = คุณสมควรได้รับความสำเร็จ"},
+      {buddy:"Ha! Exactly. Okay, Tom and Amy are in too.", hint:"แสดงความดีใจที่มีคนมาเยอะ", sample:"Perfect! Little team lunch — I love it.", tip:"'I love it' = ฉันชอบมาก | สั้น ตรง และแสดงความกระตือรือร้น"},
+      {buddy:"Should we walk? It's literally around the corner.", hint:"เห็นด้วยกับการเดินไป", sample:"Yeah let's walk. I could use some fresh air after sitting all morning.", tip:"'I could use some...' = ฉันต้องการ... | 'After sitting all morning' = หลังจากนั่งมาทั้งเช้า"},
+      {buddy:"Same. My back is not happy with me today.", hint:"เห็นด้วยและพูดถึงการนั่งนานเกินไป", sample:"Ha! Same. I need to get one of those standing desks.", tip:"'Standing desks' = โต๊ะแบบยืน | เป็นหัวข้อที่คนทำงาน relate ได้ง่าย"},
+      {buddy:"Those things are actually great. Tom has one.", hint:"ถาม Tom เรื่อง standing desk", sample:"Oh really? I'll have to ask him how he likes it.", tip:"'I'll have to ask him' = ฉันต้องถามเขา | แสดงว่าจะติดตามเรื่องนี้จริงๆ"},
+      {buddy:"(arriving at restaurant) Oh this place is really cute!", hint:"เห็นด้วยและพูดถึงบรรยากาศ", sample:"Right? I love the vibe. Very cozy. Good pick!", tip:"'I love the vibe' = ฉันชอบบรรยากาศ | 'Good pick' = เลือกได้ดีมาก"},
+      {buddy:"Thanks! Okay I'm torn between the pad see ew and the basil chicken.", hint:"เสนอให้แชร์กัน", sample:"You should get the basil chicken and I'll get the pad see ew and we can share!", tip:"'I'll get X and we can share' = ฉันจะสั่ง X แล้วเราแชร์กัน | วิธีแก้ปัญหาที่เป็นมิตร"},
+      {buddy:"Oh that's genius. Deal!", hint:"เห็นด้วยและบอกว่าเป็นไอเดียที่ดี", sample:"Ha! That's the only way to do lunch properly.", tip:"'That's the only way to do it properly' = นั่นคือวิธีที่ถูกต้อง | ฟังดูมั่นใจและ fun"},
+      {buddy:"So true. Hey, are you going to the town hall next week?", hint:"ถามว่าจะไปหรือเปล่าและแสดงความคิดเห็น", sample:"Yeah I'll be there. Should be interesting — apparently they're announcing the new structure.", tip:"'Should be interesting' = น่าจะน่าสนใจ | 'Apparently' = ดูเหมือนว่า"},
+      {buddy:"Oh I heard that too. Big changes apparently.", hint:"บอกว่าได้ยินมาบ้าง แต่ไม่แน่ใจ", sample:"Yeah I don't know the details but I'm curious. Change can be good, right?", tip:"'I'm curious' = ฉันอยากรู้ | 'Change can be good' = การเปลี่ยนแปลงอาจดีก็ได้"},
+      {buddy:"Ha! Spoken like a true optimist. Okay food's here — this looks amazing.", hint:"แสดงความตื่นเต้นกับอาหาร", sample:"Oh wow, okay this smells incredible. We are definitely coming back here.", tip:"'We are definitely coming back' = เราต้องกลับมาแน่ๆ | แสดง enthusiasm ได้ดี"},
+      {buddy:"Agreed. This needs to be a regular thing.", hint:"เห็นด้วยอย่างแน่วแน่", sample:"A hundred percent. Same time next week? Let's make it a standing lunch date.", tip:"'Standing lunch date' = นัดทานข้าวประจำ | 'Standing' ในที่นี้หมายถึง recurring ไม่ใช่ยืน"},
+    ]
+  },
+  {
+    id:'help', name:'Asking for Help', icon:'💡', buddy:'Tom', buddyEmoji:'🧑‍🔬',
+    desc:'ขอความช่วยเหลือเรื่องงานจากเพื่อนร่วมงาน',
+    bg:'linear-gradient(135deg,#F4A7C0,#F08080)', shadow:'rgba(244,167,192,.4)',
+    turns:[
+      {buddy:"Hey, do you have a minute?", hint:"บอกว่าว่างและถามว่ามีอะไร", sample:"Of course! What's up?", tip:"'Of course!' = แน่นอน | 'What's up?' = มีอะไรเหรอ — สั้น เป็นมิตร เป็นธรรมชาติ"},
+      {buddy:"I'm kind of stuck on something and I think you might be able to help.", hint:"บอกว่ายินดีช่วย ถามว่าติดเรื่องอะไร", sample:"Happy to try! What's going on?", tip:"'Happy to try' = ยินดีลอง | 'What's going on?' = เกิดอะไรขึ้น"},
+      {buddy:"It's this data analysis. The numbers just don't add up and I can't figure out why.", hint:"ถามว่าใช้เครื่องมืออะไร", sample:"Oh that's always frustrating. What are you working in? Excel or Sheets?", tip:"'That's always frustrating' = แสดง empathy ก่อนช่วย | 'Working in' = ใช้โปรแกรมอะไร"},
+      {buddy:"Excel. I've been at it for an hour and I keep going in circles.", hint:"เสนอจะดูไฟล์ให้", sample:"Send it over. I'll take a look — two pairs of eyes are better than one.", tip:"'Two pairs of eyes' = สองคู่ตา = ดีกว่า — เป็น expression ที่ natural มาก"},
+      {buddy:"Really? Thank you so much. Sending now.", hint:"รอดูและพบปัญหา", sample:"Got it. Give me a second... Ah, I think I see it.", tip:"'Give me a second' = รอแป๊บนึง | 'I think I see it' = ฉันคิดว่าเห็นแล้ว"},
+      {buddy:"Oh really? What is it?", hint:"อธิบายปัญหาที่เจอ", sample:"Your formula in column D is referencing the wrong range. It should be E2 to E30, not D2.", tip:"อธิบายให้ชัดเจนและตรงประเด็น | การบอกว่า 'It should be X not Y' เป็น pattern ที่ดีมาก"},
+      {buddy:"Oh no way! I've been staring at that for an hour!", hint:"แสดงความโล่งใจและขอบคุณ", sample:"Ha! It happens to everyone. These tiny errors are the hardest to spot.", tip:"'It happens to everyone' = แสดง empathy | 'Hardest to spot' = ยากที่สุดที่จะเห็น"},
+      {buddy:"You're a complete lifesaver. I would have been at this all afternoon.", hint:"ยกเลิกความถ่อมตนและถามว่าเขาทำ data มาก", sample:"Don't worry about it! Honestly I find this kind of thing kind of fun.", tip:"'Don't worry about it' = ไม่ต้องเป็นห่วง | 'Kind of fun' = ค่อนข้างสนุก — แสดงความ genuine"},
+      {buddy:"Ha! You must be really good at Excel then.", hint:"บอกว่าเรียนรู้มาเอง", sample:"I had to pick it up pretty quickly in my last role. YouTube tutorials saved my life.", tip:"'Pick it up' = เรียนรู้มา | 'Saved my life' = ช่วยชีวิตฉัน — เป็น hyperbole ที่ใช้บ่อย"},
+      {buddy:"Oh interesting! Any channels you'd recommend?", hint:"แนะนำ channel ที่ดี", sample:"There's one called ExcelJet that I still use all the time. Super clear explanations.", tip:"'I still use all the time' = แสดงว่ายังมีประโยชน์อยู่ | 'Super clear' = ชัดเจนมาก"},
+      {buddy:"I'll check it out. Thanks! Do you use Google Sheets much too?", hint:"บอกว่าใช้ทั้งสองและบอกว่าอันไหนดีในสถานการณ์ไหน", sample:"Yeah mostly Sheets for team stuff and Excel for heavy analysis. Both have their place.", tip:"'Have their place' = มีบทบาทของตัวเอง | แสดงว่าเข้าใจความแตกต่างของเครื่องมือ"},
+      {buddy:"That makes sense. Okay let me check — is the formula working now?", hint:"ยืนยันว่าเวิร์คและแสดงความดีใจ", sample:"Let me check... yes! Oh my gosh the totals are right. You fixed it!", tip:"'Oh my gosh' = โอ้โห | การแสดงความดีใจแบบ genuine ฟังดูดีกว่า 'That is correct'"},
+      {buddy:"Ha! There you go. Easy fix once you know where to look.", hint:"เห็นด้วยและบอกว่าจะเอาไปจำ", sample:"Totally. I'll remember to check the ranges first next time. Lesson learned!", tip:"'Lesson learned' = เรียนรู้แล้ว | แสดงว่าเราเรียนรู้จากประสบการณ์"},
+      {buddy:"Good call. Is there anything else in the file that looks off?", hint:"บอกว่าโอเค แต่ขอถามเรื่องหนึ่ง", sample:"I think it's okay but can I ask you one more thing while I have you?", tip:"'While I have you' = ในขณะที่ยังมีโอกาสคุยกันอยู่ | เป็น expression ที่สุภาพมาก"},
+      {buddy:"Sure, go for it.", hint:"ถามเรื่อง formula อื่นที่อยากรู้", sample:"Is there a quick way to highlight duplicates automatically? I always do it manually.", tip:"'Is there a quick way to...?' = มีวิธีรวดเร็วไหมในการ... | เป็นวิธีถามที่ดี"},
+      {buddy:"Oh yes! Conditional formatting. I'll show you — it takes about thirty seconds.", hint:"ขอบคุณที่จะสอน", sample:"Oh amazing. I never knew that existed. That's going to save me so much time.", tip:"'I never knew that existed' = ฉันไม่รู้ว่ามีสิ่งนี้อยู่ | 'Going to save me time' = จะประหยัดเวลามาก"},
+      {buddy:"(after showing) There you go! Just click Format, then Conditional Formatting.", hint:"ขอบคุณและบอกว่าจะจำ", sample:"Got it. That is so simple. I can't believe I've been doing it manually all this time.", tip:"'I can't believe' = ฉันไม่อยากจะเชื่อ | แสดงความประหลาดใจแบบ genuine"},
+      {buddy:"Ha! We've all been there. Okay I should get back to my work.", hint:"ขอบคุณอีกครั้งและบอกว่าจะตอบแทน", sample:"Of course! Thank you so much. I seriously owe you one.", tip:"'I seriously owe you one' = ฉันติดหนี้บุญคุณคุณจริงๆ | 'Seriously' เพิ่มความ genuine"},
+      {buddy:"Don't even worry about it. That's what we're here for.", hint:"เห็นด้วยและบอกว่าจะช่วยกลับในอนาคต", sample:"Still! If you ever get stuck on anything, I'll return the favor.", tip:"'Still!' = แม้กระนั้น! | 'Return the favor' = ตอบแทนน้ำใจ"},
+      {buddy:"Deal! Alright, good luck with the rest of the analysis.", hint:"ขอบคุณและบอกว่าจะทำให้เสร็จได้แล้ว", sample:"Thanks! I think I've got it from here. You seriously saved my afternoon.", tip:"'I've got it from here' = ฉันทำต่อเองได้แล้ว | 'Saved my afternoon' = ช่วยบ่ายนี้ไว้"},
+    ]
+  },
+  {
+    id:'congrats', name:'Good News!', icon:'🎉', buddy:'Amy', buddyEmoji:'👩‍🎨',
+    desc:'แสดงความยินดีกับเพื่อนร่วมงาน',
+    bg:'linear-gradient(135deg,#F5D06A,#FFB67A)', shadow:'rgba(245,208,106,.4)',
+    turns:[
+      {buddy:"Oh my gosh, guess what?!", hint:"แสดงความตื่นเต้นและถามว่าเกิดอะไรขึ้น", sample:"What?! Tell me!", tip:"'What?! Tell me!' = อะไรนะ บอกมาเลย | สั้น energetic และ natural มากสำหรับบทสนทนาที่ตื่นเต้น"},
+      {buddy:"I just got promoted to Senior Manager!", hint:"แสดงความยินดีอย่างจริงใจ", sample:"No way! That is amazing — congratulations! You totally deserved it.", tip:"'No way!' = จริงเหรอ! | 'Totally deserved it' = สมควรได้รับอย่างยิ่ง"},
+      {buddy:"I honestly can't believe it. I got the call from HR twenty minutes ago.", hint:"พูดให้กำลังใจ", sample:"Why are you surprised?! I've been saying you'd get it for months.", tip:"'I've been saying' = ฉันพูดมาตลอด | แสดงว่าเราเชื่อในตัวเขามาตลอด"},
+      {buddy:"Ha! Really? That means a lot to hear.", hint:"ยืนยันว่าคิดแบบนี้จริงๆ", sample:"One hundred percent. You've been crushing it on literally every project this year.", tip:"'Crushing it' = ทำได้ดีมาก | 'Literally every project' = ทุกโปรเจกต์จริงๆ"},
+      {buddy:"Aw thank you. I was so nervous waiting to hear.", hint:"เล่าว่ารู้สึกยังไงตอนรอ", sample:"I can imagine! How long were you waiting?", tip:"'I can imagine' = ฉันนึกภาพออก | แสดง empathy และ genuine curiosity"},
+      {buddy:"About two weeks. It felt like forever.", hint:"เห็นด้วยและบอกว่าการรอ stressful มาก", sample:"Oh that is the worst. The waiting is always the hardest part.", tip:"'The worst' = แย่ที่สุด | 'The hardest part' = ส่วนที่ยากที่สุด — universal truth ที่ everyone relates"},
+      {buddy:"Totally. So what does this mean for you? Any more responsibility?", hint:"ถามกลับว่ารายละเอียดการเลื่อนขั้นเป็นยังไง", sample:"Wait, I'm asking about your promotion! Tell me everything.", tip:"'Tell me everything' = บอกมาทั้งหมดเลย | แสดงว่าสนใจจริงๆ"},
+      {buddy:"Ha! Okay. So I'll be managing two new direct reports starting next month.", hint:"แสดงความตื่นเต้นแทน", sample:"Oh that's so exciting! Do you know who they are yet?", tip:"'Do you know yet?' = รู้แล้วหรือยัง | แสดงความสนใจในรายละเอียด"},
+      {buddy:"Not yet. HR said they'll discuss it next week.", hint:"บอกว่าจะเป็น manager ที่ดี", sample:"I'm sure you'll be an amazing manager. You're so good with people.", tip:"'You're so good with people' = คุณเก่งเรื่องคน | เป็น compliment ที่ specific และ meaningful"},
+      {buddy:"That's actually the part I'm most excited about — leading a team.", hint:"พูดถึงว่าการ lead team สำคัญและน่าตื่นเต้น", sample:"It's so rewarding when you get it right. You'll love it.", tip:"'When you get it right' = เมื่อทำได้ดี | 'You'll love it' = คุณจะชอบมัน"},
+      {buddy:"I want to be the kind of manager I always wished I had.", hint:"บอกว่านั่นคือ mindset ที่ถูก", sample:"That is exactly the right mindset. The best managers always say that.", tip:"'That is exactly the right mindset' = นั่นคือความคิดที่ถูกต้องแน่นอน | ให้กำลังใจแบบ genuine"},
+      {buddy:"Ha! I hope so. I might need some advice from you along the way.", hint:"บอกว่ายินดีช่วยเสมอ", sample:"Any time! I've been managing people for four years. Happy to share what I've learned.", tip:"'Happy to share what I've learned' = ยินดีแบ่งปันสิ่งที่เรียนรู้มา | open และ generous"},
+      {buddy:"Really? I would love that. Let's get coffee and chat properly.", hint:"เห็นด้วยและนัดคุย", sample:"Yes let's! Actually let's celebrate first and then do the advice session after.", tip:"'Celebrate first' = เฉลิมฉลองก่อน | 'Advice session after' = ค่อยนัดคุยเรื่องงาน — ให้ priority ที่ถูกต้อง"},
+      {buddy:"Ha! Fair enough. Have you told anyone else yet?", hint:"บอกว่าบอกแค่คนใกล้ชิด", sample:"Just my partner. And now you — I kind of blurted it out the second I saw you!", tip:"'Blurted it out' = พูดออกมาโดยไม่ได้ตั้งใจ | แสดงว่าตื่นเต้นมากจริงๆ"},
+      {buddy:"Ha! That's so cute! Are you going to make an announcement?", hint:"บอกว่าจะรอให้ HR ประกาศก่อน", sample:"I'll wait for HR to make it official on Monday. Don't want to jump the gun.", tip:"'Jump the gun' = ทำก่อนเวลา | เป็น idiom ที่ใช้บ่อยในสถานการณ์แบบนี้"},
+      {buddy:"Smart move. Ooh let's go out for drinks to celebrate!", hint:"ตอบรับและแสดงความกระตือรือร้น", sample:"Yes! I was hoping you'd say that. You choose the place.", tip:"'I was hoping you'd say that' = ฉันหวังว่าคุณจะพูดแบบนั้น | แสดงว่าอยากฉลองมากแล้ว"},
+      {buddy:"Okay, that rooftop bar on Sukhumvit? The one we went to for Tom's birthday?", hint:"เห็นด้วยและบอกว่าชอบที่นั้น", sample:"Oh perfect! I love that place. The view is incredible.", tip:"'I love that place' = ฉันชอบที่นั้นมาก | 'The view is incredible' = วิวสวยมาก"},
+      {buddy:"And let's invite the whole team. This deserves a proper celebration.", hint:"เห็นด้วยอย่างแน่วแน่", sample:"Absolutely! They all deserve to celebrate with you. You've all been working so hard.", tip:"'They all deserve to celebrate' = ทุกคนสมควรได้เฉลิมฉลอง | ให้เครดิตทั้งทีม"},
+      {buddy:"Aw that's sweet. Okay I'll set up the group chat. Friday after work?", hint:"ยืนยันและบอกว่าจะว่าง", sample:"Perfect! I'll clear my calendar right now. This is non-negotiable.", tip:"'This is non-negotiable' = เรื่องนี้ไม่มีการต่อรอง | ฟังดูสนุกและให้ความสำคัญกับการฉลอง"},
+      {buddy:"Ha! I love it. Congratulations again — I'm so proud of you.", hint:"ขอบคุณจากใจและบอกว่าตื่นเต้น", sample:"Thank you so much. I'm honestly still buzzing. See you Friday!", tip:"'Still buzzing' = ยังตื่นเต้นอยู่ | เป็น expression ที่ vivid และ natural มากสำหรับความตื่นเต้น"},
+    ]
+  },
+  {
+    id:'remote', name:'Remote Check-in', icon:'💻', buddy:'Jordan', buddyEmoji:'🧑‍💼',
+    desc:'คุยกับเพื่อนร่วมทีมบน video call',
+    bg:'linear-gradient(135deg,#89B4F7,#B8A4E8)', shadow:'rgba(137,180,247,.4)',
+    turns:[
+      {buddy:"Hey! Can you hear me okay? My WiFi's been a bit dodgy today.", hint:"บอกว่าได้ยินชัดและถามกลับ", sample:"Yeah you're coming through loud and clear! How about me?", tip:"'Loud and clear' = ชัดเจนมาก | เป็น expression classic สำหรับ audio check"},
+      {buddy:"Perfect on my end! Okay great. Thanks for jumping on.", hint:"ขอบคุณที่รีบเปิด call", sample:"Of course! So what's the latest?", tip:"'What's the latest?' = มีอะไรใหม่ไหม | สั้น casual และ business-like"},
+      {buddy:"Good news — the client loved our proposal!", hint:"แสดงความดีใจและบอกว่ากังวลมาก", sample:"Oh thank goodness! I was honestly on edge waiting to hear.", tip:"'On edge' = กังวลใจ | 'Thank goodness' = ดีโชคดี — ฟังดูจริงใจมากกว่า 'Great'"},
+      {buddy:"I know! They said the data storytelling was particularly strong.", hint:"บอกว่าดีใจที่ส่วนนั้นโดน", sample:"Oh that's great to hear. We spent so much time on those charts.", tip:"'We spent so much time on' = เราใช้เวลาเยอะมากกับ | แสดงว่า effort ที่ทุ่มลงไปคุ้มค่า"},
+      {buddy:"It definitely paid off. They specifically mentioned the market sizing slide.", hint:"บอกว่าเกือบตัด slide นั้นทิ้ง", sample:"No way! I almost cut that slide! Good thing I kept it.", tip:"'Good thing I kept it' = โชคดีที่เก็บมันไว้ | แสดงว่าสัญชาตญาณดี"},
+      {buddy:"Ha! Trust your instincts. So they want to kick off next month.", hint:"ถามว่า timeline เป็นอย่างไร", sample:"Nice, that's fast! Do we know the exact start date yet?", tip:"'That's fast' = เร็วนะ | แสดงว่า engaged กับ timeline"},
+      {buddy:"Not confirmed yet but probably the first or second week.", hint:"บอกว่าจะเคลียร์ตาราง", sample:"Okay I'll keep those weeks clear just in case. Better to be prepared.", tip:"'Just in case' = เผื่อไว้ | 'Better to be prepared' = ดีกว่าเตรียมพร้อม"},
+      {buddy:"Good idea. Are you free to lead the project?", hint:"บอกว่าสนใจและพร้อม", sample:"Absolutely, count me in. This is exactly the kind of project I love.", tip:"'Count me in' = นับฉันด้วย | 'Exactly the kind of project I love' = แสดง genuine enthusiasm"},
+      {buddy:"Great! I was really hoping you'd be on it. Who else do you have in mind?", hint:"เสนอ team ที่คิดว่าเหมาะสม", sample:"I'm thinking Jay for design, Tom for data, and maybe Amy for client comms.", tip:"การเสนอ team ต้องบอกว่าแต่ละคนถนัดอะไร — แสดงว่าคิดมาแล้ว"},
+      {buddy:"That's a really solid lineup. I like it.", hint:"บอกว่าเลือกตาม skills", sample:"Thanks. I think it's the right mix of skills for what this client needs.", tip:"'Right mix of skills' = ทักษะที่ผสมกันได้ดี | แสดงว่าคิดเชิงกลยุทธ์"},
+      {buddy:"Agreed. Should we set up a kickoff call with them this week?", hint:"เห็นด้วยและบอกเวลาที่ว่าง", sample:"Yes, sooner the better. I'm free Thursday afternoon or Friday morning.", tip:"'Sooner the better' = ยิ่งเร็วยิ่งดี | บอกเวลาที่ว่างโดยตรง — ทำให้ easy ขึ้น"},
+      {buddy:"Perfect. They're in Singapore so the time zone works well for us.", hint:"บอกว่าดีที่ไม่ต้อง call ดึก", sample:"Oh great, no late night calls then. My favorite kind of international project.", tip:"'My favorite kind' = ชอบแบบนี้ที่สุด | เพิ่ม humor เล็กน้อยแบบ work-friendly"},
+      {buddy:"Ha! Exactly. I'll put together a project brief before the kickoff too.", hint:"เสนอช่วยทำส่วนหนึ่ง", sample:"Want me to take the timeline section? I can have a draft to you by tomorrow.", tip:"'Want me to take...?' = คุณอยากให้ฉันรับผิดชอบ...? | proactive และ collaborative"},
+      {buddy:"That would be super helpful actually. Yes please.", hint:"ยืนยันว่าจะส่งพรุ่งนี้", sample:"Done. I'll send it over by end of day tomorrow.", tip:"'Done' ที่ต้นประโยค = ตัดสินใจแล้ว | 'End of day' = ก่อนเลิกงาน"},
+      {buddy:"Amazing. Also, can you make sure it's logged in the project tracker?", hint:"ยืนยันว่าจะทำ", sample:"Already on my list. I'll update it right after this call.", tip:"'Already on my list' = อยู่ใน list แล้ว | แสดงว่าเราจัดการได้ดี"},
+      {buddy:"You're on top of things as always. Oh, one more thing — budget.", hint:"ถามเรื่องงบประมาณว่าเรารู้อะไรบ้าง", sample:"Right, do we have a confirmed budget from their side yet?", tip:"'From their side' = จากฝั่งของพวกเขา | เป็น business expression ที่ใช้บ่อย"},
+      {buddy:"They mentioned a range of 80 to 100K. But we'll discuss in the kickoff.", hint:"บอกว่านั่นสมเหตุสมผลสำหรับ scope ของงาน", sample:"That seems reasonable for the scope. We can refine it once we dig into the details.", tip:"'Refine it' = ปรับให้แม่นยำขึ้น | 'Dig into the details' = ลงลึกในรายละเอียด"},
+      {buddy:"Exactly. I think this is going to be a really good project.", hint:"เห็นด้วยและแสดง optimism", sample:"I have a really good feeling about it. The timing feels right for everyone.", tip:"'I have a good feeling' = ฉันรู้สึกดีเกี่ยวกับมัน | แสดง optimism แบบ grounded"},
+      {buddy:"Same. Okay I think we've covered everything. Anything else from your end?", hint:"บอกว่าโอเคและขอบคุณ", sample:"No I think we're good! Thanks for the update. Really exciting stuff.", tip:"'Really exciting stuff' = เรื่องที่น่าตื่นเต้นมาก | จบ call ด้วย energy ที่ดี"},
+      {buddy:"Agreed! Alright, let's catch up again after the kickoff. Talk soon!", hint:"ยืนยันและบอกลา", sample:"Sounds good. I'll have that draft to you by tomorrow. Talk soon!", tip:"'I'll have that to you by...' = ฉันจะส่งให้คุณภายใน... | จบด้วยการยืนยัน commitment"},
+    ]
+  },
+  {
+    id:'feedback', name:'Getting Feedback', icon:'📊', buddy:'Rachel', buddyEmoji:'👩‍💼',
+    desc:'รับ feedback จากหัวหน้าหรือเพื่อนร่วมงาน',
+    bg:'linear-gradient(135deg,#F4A7C0,#B8A4E8)', shadow:'rgba(244,167,192,.4)',
+    turns:[
+      {buddy:"Hey, got a few minutes? I wanted to share some thoughts on your presentation yesterday.", hint:"บอกว่าโอเคและพร้อมฟัง", sample:"Of course! Please, sit down. I was actually hoping to get your thoughts.", tip:"'I was hoping to get your thoughts' = ฉันอยากได้ความคิดเห็น | แสดงว่าเปิดใจรับ feedback"},
+      {buddy:"So overall it was really impressive. The structure was super clear.", hint:"ขอบคุณและบอกว่าใช้เวลาเยอะกับส่วนนั้น", sample:"Oh that's a relief! I spent a lot of time on the structure so I'm glad it showed.", tip:"'That's a relief' = โล่งใจมาก | 'It showed' = มันปรากฏออกมา — แสดงว่า effort มองเห็นได้"},
+      {buddy:"The opening especially was strong. A couple of people mentioned it to me after.", hint:"แสดงความดีใจและบอก intention เบื้องหลัง", sample:"Really? That's so good to hear. I wanted to hook people right from the start.", tip:"'Hook people' = ดึงดูดคนตั้งแต่ต้น | แสดงว่าคิดเรื่อง audience engagement"},
+      {buddy:"It definitely worked. Now, I do have a couple of things that could make it even better.", hint:"บอกว่าพร้อมรับฟัง", sample:"Please, go ahead. That's exactly what I need to hear.", tip:"'Go ahead' = พูดมาเลย | 'That's exactly what I need' = นั่นคือสิ่งที่ฉันต้องการ — open mindset"},
+      {buddy:"The data section in the middle — I think you were rushing a bit.", hint:"เห็นด้วยและบอกว่ารู้สึกแบบนั้นตอนนำเสนอ", sample:"Yeah I felt that too actually. I ran low on time and started speeding up.", tip:"'Ran low on time' = เวลาน้อยลง | 'Started speeding up' = เริ่มพูดเร็วขึ้น"},
+      {buddy:"It happens. But that data is actually your strongest point — it deserves more time.", hint:"ขอบคุณและบอกว่าจะปรับ", sample:"You're completely right. I should slow down and let the numbers land properly.", tip:"'Let it land' = ให้มันซึมซาบ | 'Properly' = อย่างถูกต้อง — เป็น expression ดีมาก"},
+      {buddy:"Exactly. Also — and this is minor — more eye contact with the audience.", hint:"เห็นด้วยและบอกว่ารู้ตัวว่าทำผิดตรงนั้น", sample:"I knew it! I kept catching myself looking at the slides too much.", tip:"'Catching myself' = สังเกตตัวเองได้ | แสดง self-awareness ที่ดี"},
+      {buddy:"It's a super common habit. Eye contact just makes everyone feel more included.", hint:"ถามว่ามีเทคนิคอะไรแนะนำ", sample:"Any tips for how to practice that? I really want to get better.", tip:"'Any tips for how to practice?' = มีเทคนิคฝึกไหม | แสดงว่าอยากพัฒนาจริงๆ"},
+      {buddy:"Try picking three or four friendly faces and rotate between them. It makes it easier.", hint:"บอกว่าจะลองทำ", sample:"Oh that's a great tip. I'll try that next time. Really helpful.", tip:"'I'll try that next time' = จะลองทำครั้งหน้า | แสดงว่าเอาไปใช้จริง"},
+      {buddy:"Also your slides were a bit text-heavy in some places.", hint:"เห็นด้วยและบอกว่านั่นเป็น habit ที่ต้องแก้", sample:"I know, I always over-explain on slides. Less text, more visuals — I need to train myself.", tip:"'Train myself' = ฝึกตัวเอง | 'Over-explain' = อธิบายมากเกิน — self-aware และ honest"},
+      {buddy:"Exactly. Let your speaking do the work. Slides should just support, not replace you.", hint:"เห็นด้วยกับแนวคิดนั้น", sample:"That's such a good way to put it. I'll use that as my new rule going forward.", tip:"'That's a good way to put it' = นั่นเป็นวิธีพูดที่ดี | แสดงว่าเราซึมซับแนวคิด"},
+      {buddy:"Great. But honestly, these are all small things. The core content was excellent.", hint:"ขอบคุณและบอกว่าเนื้อหาคือส่วนที่ทุ่มเทมากที่สุด", sample:"Thank you. The content was what I worked hardest on so that really means a lot.", tip:"'That really means a lot' = นั่นมีความหมายมากสำหรับฉัน | แสดงความ genuine"},
+      {buddy:"It absolutely shows. You clearly know your material inside and out.", hint:"บอกว่าอยากนำเสนอได้ดีเท่ากับที่รู้เรื่อง", sample:"That's the goal — to present it as confidently as I know it.", tip:"'That's the goal' = นั่นคือเป้าหมาย | 'As confidently as I know it' = มั่นใจเท่ากับที่รู้"},
+      {buddy:"That'll come with more practice. The more you present, the better you get.", hint:"แสดงว่าเชื่อในคำพูดนั้น", sample:"That's reassuring to hear. I do feel more comfortable each time I do it.", tip:"'Reassuring' = ทำให้รู้สึกมั่นใจขึ้น | 'More comfortable each time' = สบายใจขึ้นทุกครั้ง"},
+      {buddy:"Exactly. And good news — we have the quarterly review in six weeks.", hint:"แสดงความสนใจที่จะนำเสนออีก", sample:"Oh really? I'd love to take on a section if there's an opportunity.", tip:"'I'd love to take on a section' = ฉันอยากรับผิดชอบส่วนหนึ่ง | proactive และ แสดงความกระตือรือร้น"},
+      {buddy:"I was actually going to ask you. The market update section — want to take it?", hint:"ตอบรับทันทีและแสดงความยินดี", sample:"Absolutely yes! I'd love that. Thank you for thinking of me.", tip:"'Thank you for thinking of me' = ขอบคุณที่นึกถึงฉัน | gracious และ professional"},
+      {buddy:"Perfect. I think it'll be really good experience.", hint:"บอกว่าจะเตรียมการให้ดีกว่าครั้งนี้", sample:"For sure. I'll start preparing well in advance this time — not last minute.", tip:"'Well in advance' = ล่วงหน้ามาก | 'Not last minute' = ไม่ใช่นาทีสุดท้าย — แสดงว่าเรียนรู้จากประสบการณ์"},
+      {buddy:"Smart. And if you want someone to run through it with beforehand, I'm happy to help.", hint:"ขอบคุณสำหรับข้อเสนอนั้น", sample:"I would really appreciate that. A dry run always helps me feel more confident.", tip:"'Dry run' = การซ้อมก่อนจริง | 'Feel more confident' = รู้สึกมั่นใจขึ้น"},
+      {buddy:"Great. Any other questions about the feedback?", hint:"บอกว่าชัดเจนดีมากและขอบคุณ", sample:"No it's all really clear and actionable. Honestly this is exactly the feedback I needed.", tip:"'Actionable' = นำไปทำได้จริง | เป็น business term ที่ดีสำหรับ feedback ที่มีประโยชน์"},
+      {buddy:"Good. Keep it up — you're definitely heading in the right direction.", hint:"ขอบคุณจากใจและบอกว่าจะนำไปพัฒนา", sample:"Thank you so much Rachel. I'll take all of this on board and apply it next time.", tip:"'Take it on board' = รับเอาไปใส่ใจ | เป็น professional expression สำหรับการรับ feedback"},
+    ]
+  },
+  {
+    id:'travel', name:'Travel Talk', icon:'✈️', buddy:'Alex', buddyEmoji:'🧳',
+    desc:'คุยเรื่องการท่องเที่ยว แผนเที่ยว และประสบการณ์ต่างแดน',
+    bg:'linear-gradient(135deg,#A8D8EA,#B8F0C8)', shadow:'rgba(168,216,234,.4)',
+    turns:[
+      {buddy:"So I heard you're finally taking some time off. Where are you going?", hint:"บอกว่าจะไปญี่ปุ่นและตื่นเต้นมาก", sample:"Yeah! I'm going to Japan for ten days. I'm so excited — I've wanted to go for years.", tip:"'I've wanted to go for years' = อยากไปมาหลายปีแล้ว | Present perfect แสดงความต่อเนื่องของความต้องการ"},
+      {buddy:"No way! Japan is amazing. Have you been before?", hint:"บอกว่าไม่เคยไปและถามเขาว่าเคยไปไหม", sample:"Never! It'll be my first time. Have you been?", tip:"'It'll be my first time' = จะเป็นครั้งแรกของฉัน | 'Have you been?' = สั้น natural"},
+      {buddy:"Yeah, twice! You're going to love it. When are you going?", hint:"บอกวันที่ไปและระยะเวลา", sample:"I'm leaving next Friday and coming back the week after. Can't wait.", tip:"'Can't wait' = รอไม่ไหวแล้ว | สั้น genuine และ natural"},
+      {buddy:"That's perfect timing. What cities are you hitting?", hint:"บอกแผนเที่ยวเมืองต่างๆ", sample:"Tokyo for five days, then Kyoto for three, and Osaka for the last two.", tip:"'Hitting' (informal) = going to | ใช้กับ cities ได้ เป็น casual expression"},
+      {buddy:"Classic route! Are you doing anything specific in Tokyo?", hint:"เล่าแผนใน Tokyo", sample:"I want to see Shibuya and Shinjuku, obviously. And I'm trying to get tickets to TeamLab.", tip:"'Obviously' = แน่นอน | 'I'm trying to get tickets' = แสดงว่ากำลังพยายามอยู่"},
+      {buddy:"Oh TeamLab is incredible. Book it now if you haven't already — it sells out fast.", hint:"ขอบคุณสำหรับเคล็ดลับและถามเรื่องอาหาร", sample:"Oh really? I'll do that tonight. Any food spots I absolutely have to try?", tip:"'Any food spots I absolutely have to try?' = มีร้านอาหารที่ต้องไปไหม | 'Absolutely have to' เน้นความจำเป็น"},
+      {buddy:"Get ramen in Shibuya and try conveyor belt sushi at least once — it's actually really good.", hint:"บอกว่าชอบซูชิและถามเรื่องการสื่อสาร", sample:"I love sushi, so that's definitely on the list. Do most people speak English there?", tip:"'That's definitely on the list' = นั่นอยู่ในแผนแน่นอน | natural way to confirm a suggestion"},
+      {buddy:"In tourist areas, yes. But a translation app really helps. I used Google Translate a lot.", hint:"บอกว่าโหลดแอปแล้วและถามเรื่องการเดินทาง", sample:"Good tip. I've already downloaded it. Is it easy to get around on public transport?", tip:"'Get around' = เดินทางไปรอบๆ | 'Good tip' = เคล็ดลับดีมาก"},
+      {buddy:"Super easy. Get an IC card at the airport — it works on basically everything.", hint:"ถามว่า IC card คืออะไร", sample:"An IC card? I'm not familiar with that — is it like a prepaid travel card?", tip:"'I'm not familiar with that' = ฉันไม่คุ้นเคยกับสิ่งนั้น | สุภาพกว่า 'I don't know what that is'"},
+      {buddy:"Exactly! You top it up with cash and tap in and out at stations. So convenient.", hint:"ขอบคุณสำหรับข้อมูลและบอกว่าจะซื้อ", sample:"Oh that sounds perfect. I'll pick one up as soon as I land.", tip:"'Pick one up' = ซื้อหาไว้ | 'As soon as I land' = ทันทีที่ลงเครื่อง"},
+      {buddy:"Do it first thing! Have you sorted your accommodation?", hint:"บอกว่าจองที่พักแล้วและถามว่า Shinjuku ดีไหม", sample:"Yeah, I've booked a hotel in Shinjuku. Is that a good area to stay?", tip:"'Is that a good area to stay?' = นั่นเป็นย่านที่ดีไหม | direct และ practical"},
+      {buddy:"Great location. You'll be close to everything. Kyoto is amazing though — I almost liked it more than Tokyo.", hint:"ถามว่าเขาชอบ Kyoto ตรงไหน", sample:"Really? What did you love about it?", tip:"'What did you love about it?' = คุณชอบอะไรที่นั่น | 'love' ฟัง enthusiastic กว่า 'like'"},
+      {buddy:"The temples and old streets. Fushimi Inari is a must-do — go early before the crowds.", hint:"จดไว้ในแผนและถามเรื่องอากาศ", sample:"Noted! I've actually heard that. What's the weather like this time of year?", tip:"'Noted!' = จดแล้ว | 'I've actually heard that' = ฉันเคยได้ยินมาจริงๆ"},
+      {buddy:"Should be mild and sunny. Maybe pack a light jacket just in case.", hint:"บอกว่าแพ็คของแล้วและถามเรื่องค่าใช้จ่าย", sample:"Good to know. I've been trying to keep my luggage light. Is Japan expensive?", tip:"'Good to know' = ดีที่รู้ | 'Keep luggage light' = พยายามให้กระเป๋าเบา"},
+      {buddy:"It depends. Transport and food are really reasonable — you can eat well for not much.", hint:"ถามเรื่องมารยาทวัฒนธรรม", sample:"That's reassuring. Is there anything I should know — like cultural stuff?", tip:"'That's reassuring' = น่าโล่งใจ | 'Cultural stuff' = เรื่องวัฒนธรรม — casual แต่ get the point across"},
+      {buddy:"Take off your shoes when entering homes, and don't tip — it's actually considered rude.", hint:"บอกว่าไม่รู้เรื่องนี้และถามอีกหน่อย", sample:"Oh I didn't know that about tipping! Good to know. What else?", tip:"'What else?' = มีอะไรอีกไหม | สั้น direct และ conversational"},
+      {buddy:"Carry some cash — a lot of places still don't take cards. And be quiet on public transport.", hint:"ขอบคุณและบอกว่าจะเตรียมเงินสด", sample:"Really useful, thanks. I'll make sure to stop at an ATM. I feel much better prepared now.", tip:"'I feel much better prepared now' = รู้สึกเตรียมพร้อมมากขึ้น | แสดงว่าคำแนะนำมีประโยชน์"},
+      {buddy:"You're going to have an amazing trip. I'm a bit jealous honestly.", hint:"ชวนเขาไปด้วยครั้งหน้า", sample:"Ha! Come with me next time. We should plan a trip together sometime.", tip:"'Come with me next time' = มาด้วยครั้งหน้า | 'Plan a trip together' = วางแผนเที่ยวด้วยกัน"},
+      {buddy:"I would love that! Okay you have to send me pictures while you're there.", hint:"สัญญาว่าจะส่งรูปและขอถามเพิ่มได้ไหม", sample:"One hundred percent. And if I think of more questions, can I message you?", tip:"'One hundred percent' = แน่นอนมากๆ | 'Can I message you?' = ขอ permission อย่างสุภาพ"},
+      {buddy:"Of course! That's what I'm here for. Have an incredible trip!", hint:"ขอบคุณจากใจและบอกว่ารอไม่ไหว", sample:"Thank you so much Alex. I seriously can't wait. This is going to be amazing.", tip:"'I seriously can't wait' = 'seriously' เพิ่มความ genuine | 'This is going to be amazing' = ความกระตือรือร้นที่ natural"},
+    ]
+  },
+  {
+    id:'dinner', name:'Dinner Small Talk', icon:'🍽️', buddy:'Priya', buddyEmoji:'👩‍🍳',
+    desc:'คุยบนโต๊ะอาหาร เรื่องส่วนตัว งานอดิเรก และชีวิตนอกออฟฟิศ',
+    bg:'linear-gradient(135deg,#FFD6A5,#FFAAB5)', shadow:'rgba(255,170,181,.4)',
+    turns:[
+      {buddy:"This place is lovely, isn't it? I've been wanting to try it for a while.", hint:"เห็นด้วยและบอกว่าเมนูดูน่าสนใจ", sample:"It really is. The menu looks amazing — I'm already having trouble choosing.", tip:"'I'm already having trouble choosing' = ยังเลือกไม่ได้เลย | natural way to compliment a menu"},
+      {buddy:"Ha! I know the feeling. Are you a big foodie?", hint:"บอกว่าชอบลองอาหารต่างๆ และถามเขา", sample:"I'd say so! I love trying different cuisines. How about you?", tip:"'I'd say so' = ฉันคิดว่าใช่ | ฟังดูถ่อมตัวกว่า 'Yes, I am'"},
+      {buddy:"Absolutely. I grew up eating a lot of different food — my family's from all over.", hint:"แสดงความสนใจและถามว่าครอบครัวมาจากไหน", sample:"Oh that's so interesting! Where's your family originally from?", tip:"'Oh that's so interesting!' = น่าสนใจมากเลย | แสดง genuine curiosity"},
+      {buddy:"My parents are Indian but I grew up in the UK, so it's a bit of a mix.", hint:"พูดถึงว่าชอบ Indian food", sample:"That must be such a cool mix of cultures. I love Indian food — the spices are incredible.", tip:"'That must be such a cool mix' = นั่นต้องเป็นการผสมผสานที่เจ๋งมาก | shows enthusiasm"},
+      {buddy:"Ha yes! My mum's cooking is on another level. So what do you usually cook at home?", hint:"บอกว่าทำอาหาร simple weekdays และ experiment weekends", sample:"I try to keep it simple on weeknights — pasta, stir fry. But weekends I like experimenting.", tip:"'Keep it simple on weeknights' = วันธรรมดาทำง่ายๆ | 'Experimenting' = ทดลองทำ"},
+      {buddy:"Nice! Have you tried anything new lately?", hint:"เล่าเรื่องสูตรที่เพิ่งลองทำ", sample:"Actually yes — I tried making ramen from scratch last weekend. Took four hours but it was worth it.", tip:"'From scratch' = ทำตั้งแต่ต้น | 'Worth it' = คุ้มค่า — classic expressions"},
+      {buddy:"Four hours?! You're committed. How did it turn out?", hint:"บอกว่าออกมาดีแต่ไม่ perfect และจะลองอีก", sample:"Pretty good actually! Not restaurant quality but close enough. I'll definitely try again.", tip:"'Not restaurant quality but close enough' = ไม่ถึงกับร้าน แต่ใกล้เคียง | honest + positive framing"},
+      {buddy:"I'm impressed. I'm honestly terrible at cooking. I rely on takeout way too much.", hint:"ล้อเล่นและถามว่า takeout ร้านไหนที่ชอบ", sample:"Ha! No judgment at all. Takeout is underrated. Any go-to spots near the office?", tip:"'No judgment at all' = ไม่ตัดสินเลย | 'Go-to spots' = ร้านประจำ"},
+      {buddy:"There's a Thai place on the corner I order from constantly. The green curry is addictive.", hint:"บอกว่าชอบ Thai food และถามว่าชอบ spicy แค่ไหน", sample:"Oh I love Thai food! Do you go spicy or do you tone it down?", tip:"'Tone it down' = ลดความเผ็ด | 'Go spicy' = เลือกแบบเผ็ด — natural food chat"},
+      {buddy:"I go pretty spicy. Growing up with Indian food builds a high tolerance I think.", hint:"บอกว่าทนเผ็ดได้แค่ปานกลาง และถามเรื่อง weekend", sample:"Ha! Mine is medium at best. Anyway, do you have a good weekend coming up?", tip:"'At best' = มากที่สุดก็แค่ | 'Do you have a good weekend coming up?' = natural topic transition"},
+      {buddy:"Yeah! I'm going hiking on Saturday if the weather holds.", hint:"แสดงความสนใจและถามว่าไปที่ไหน", sample:"Oh nice — where are you heading?", tip:"'Where are you heading?' = คุณจะไปที่ไหน | casual กว่า 'Where are you going?'"},
+      {buddy:"There's a trail about an hour from here. Do you hike at all?", hint:"บอกว่าเดินป่าบ้าง แต่ไม่บ่อย", sample:"I do occasionally! Not as much as I'd like. It's such a good way to switch off from work.", tip:"'Switch off from work' = ปิดสวิตช์จากงาน | 'Occasionally' = เป็นบางครั้ง"},
+      {buddy:"Totally. I find it really clears my head. What do you do to unwind?", hint:"บอกสิ่งที่ทำหลังเลิกงาน", sample:"Honestly? I read a lot. And I've been getting back into running lately.", tip:"'Getting back into' = กลับมาทำใหม่ | 'Honestly?' ก่อน answer ฟัง genuine มาก"},
+      {buddy:"Nice! Running is great. I keep saying I'll start but never do.", hint:"ให้กำลังใจแบบ practical", sample:"Ha! I was the same. Start with just fifteen minutes — seriously, that's how I began.", tip:"'Start with just...' = เริ่มจากแค่... | practical advice ที่ encouraging"},
+      {buddy:"That's actually not intimidating at all. Maybe I'll try.", hint:"บอกว่าเริ่มง่ายกว่าที่คิดและแนะนำ app", sample:"Do it! There's an app called Couch to 5K that's perfect for beginners. I started with that.", tip:"'Do it!' = ทำเลย! | การแนะนำ app แบบ casual เป็น natural follow-up"},
+      {buddy:"I'll look it up. Oh the food is here — this looks incredible.", hint:"แสดงความตื่นเต้นกับอาหาร", sample:"Oh wow, this looks amazing. I had no idea the portions would be this big.", tip:"'I had no idea' = ฉันไม่รู้เลย | 'Portions' = ขนาดอาหาร — useful vocabulary"},
+      {buddy:"Right? I might need a takeout box. How is yours?", hint:"บอกว่าอาหารอร่อยมาก", sample:"Oh this is delicious. Like, really good. How's yours?", tip:"'Like, really good' = 'like' เพิ่ม emphasis แบบ casual | natural filler ใน conversational English"},
+      {buddy:"So good. I'm glad we picked this place. We should come back sometime.", hint:"เห็นด้วยและบอกว่าจะแนะนำทีม", sample:"Definitely. I'm going to tell the whole team about this. Great find.", tip:"'Great find' = เจอที่ดีมาก | 'Tell the whole team' = แสดงว่าประทับใจมาก"},
+      {buddy:"Ha! Yeah. By the way, how are you feeling about the new project kicking off next month?", hint:"บอกว่าตื่นเต้น แต่มีคำถามบ้าง", sample:"Excited, honestly. A little nervous too — there's a lot of moving parts. But I think we've got a good team.", tip:"'Moving parts' = ส่วนประกอบที่ต้องจัดการ | เป็น idiom ที่ใช้บ่อยใน business context"},
+      {buddy:"We do! I feel the same way. Anyway, shall we get dessert?", hint:"เห็นด้วยและพูดถึงความชอบ dessert", sample:"Absolutely. I never say no to dessert. What are you thinking?", tip:"'I never say no to dessert' = ฉันไม่เคยปฏิเสธของหวาน | charming + funny expression"},
+    ]
+  },
+  {
+    id:'finance', name:'Financial Presentation', icon:'📈', buddy:'David', buddyEmoji:'👔',
+    desc:'พรีเซนต์ผลประกอบการ ตัวเลข Q3 ให้กับหัวหน้าอย่างมั่นใจ',
+    bg:'linear-gradient(135deg,#B5D5FF,#C3B5FF)', shadow:'rgba(181,213,255,.4)',
+    turns:[
+      {buddy:"Okay, ready when you are. Walk me through the Q3 numbers.", hint:"เริ่มต้น presentation โดยบอกภาพรวมก่อน", sample:"Thanks David. So overall, Q3 was a solid quarter. Revenue came in at 4.2 million, which is up 12% year on year.", tip:"'Walk me through' = พาฉันดูทีละขั้น | 'Came in at' = ออกมาที่ตัวเลขนี้ | 'Year on year' = เทียบปีต่อปี"},
+      {buddy:"That's good to hear. How does that compare to our target?", hint:"บอกว่าทำได้ใกล้เคียง target", sample:"We hit 98% of target, so we were just slightly under. But given the market conditions, I think that's a strong result.", tip:"'Hit [X]% of target' = ทำได้ถึง [X]% ของเป้า | 'Given the market conditions' = คำนึงถึงสภาวะตลาด"},
+      {buddy:"Fair enough. What were the main revenue drivers?", hint:"อธิบาย revenue sources หลัก", sample:"The biggest driver was our enterprise segment — it grew 18%. And our new product line contributed about 15% of total revenue for the first time.", tip:"'Revenue driver' = สิ่งที่ขับเคลื่อนรายได้ | 'Contributed' = มีส่วนสนับสนุน | ใช้ตัวเลขที่ specific เสมอ"},
+      {buddy:"Interesting. What about costs? How did we do on the expense side?", hint:"อธิบาย cost structure อย่างตรงไปตรงมา", sample:"Costs came in slightly over plan — about 3% above budget. Mainly due to higher-than-expected logistics costs in Q3.", tip:"'Over plan' = เกินแผน | 'Higher-than-expected' = สูงกว่าที่คาดไว้ | honest และ straightforward"},
+      {buddy:"Three percent over — is that a concern going forward?", hint:"อธิบายว่า manage ได้และมีแผน", sample:"Not really. We've identified the issue and we're already negotiating better rates with our logistics partners for Q4.", tip:"'We've identified the issue' = เราระบุปัญหาแล้ว | 'Negotiating better rates' = เจรจาต่อรองราคา | แสดง proactiveness"},
+      {buddy:"Good. What was the gross margin for the quarter?", hint:"รายงาน gross margin พร้อมเปรียบเทียบ", sample:"Gross margin was 42%, which is up from 39% in Q2. So we're trending in the right direction.", tip:"'Trending in the right direction' = กำลังไปในทิศทางที่ถูกต้อง | positive framing ที่ professional"},
+      {buddy:"Good improvement. Any areas that underperformed?", hint:"พูดถึงส่วนที่ไม่ได้ target พร้อมเหตุผล", sample:"Our SME segment was softer than expected — about 8% below target. We think it's partly seasonal and partly some pricing sensitivity we didn't anticipate.", tip:"'Softer than expected' = อ่อนกว่าที่คาด | 'Pricing sensitivity' = ความอ่อนไหวต่อราคา | ใช้ data + explanation เสมอ"},
+      {buddy:"What's the plan to address that in Q4?", hint:"บอกแผนแก้ไข", sample:"We're running a targeted campaign for SMEs in October and adjusting our entry-level pricing. We expect to close the gap by end of Q4.", tip:"'Targeted campaign' = แคมเปญที่มุ่งเน้นกลุ่มเป้าหมาย | 'Close the gap' = ปิดช่องว่าง"},
+      {buddy:"Sounds reasonable. What's the outlook for Q4 overall?", hint:"ให้ Q4 forecast พร้อมความมั่นใจ", sample:"We're cautiously optimistic. Our pipeline looks strong — about 6.5 million in qualified deals that we expect to close at a 55% rate.", tip:"'Cautiously optimistic' = มั่นใจแต่ระมัดระวัง | 'Pipeline' = โอกาสขายที่รอปิด | essential in business English"},
+      {buddy:"What does that translate to in terms of revenue?", hint:"คำนวณและบอก projected revenue", sample:"That gets us to about 3.6 million in new revenue. Combined with renewals, we're projecting total Q4 revenue around 5 million.", tip:"'That gets us to' = นั่นทำให้เราได้ | 'Projecting' = คาดการณ์ | confident แต่ไม่ overpromise"},
+      {buddy:"That would be a record quarter. What are the key risks?", hint:"ระบุ risks หลักอย่างตรงไปตรงมา", sample:"Main risks are macro uncertainty and one large deal that's dependent on the client's budget approval. If that slips to Q1, it impacts us by about 800K.", tip:"'Macro uncertainty' = ความไม่แน่นอนของเศรษฐกิจ | 'Slips to' = เลื่อนไปเป็น | ระบุ risks เสมอ ทำให้ดูเป็น professional"},
+      {buddy:"Good to flag that. How are we tracking on new customer acquisition?", hint:"รายงานจำนวน new customers", sample:"We brought in 47 new customers in Q3, which is up from 38 in Q2. Our average deal size also increased to 89,000.", tip:"'Brought in' = ได้มา (customers) | 'Deal size' = ขนาดดีล | ใช้ตัวเลขที่ specific เสมอ"},
+      {buddy:"Nice growth there. What's driving the larger deal sizes?", hint:"อธิบายว่าทำไม deal size ใหญ่ขึ้น", sample:"Two things — we're targeting larger enterprise accounts more deliberately, and our sales team has gotten better at upselling premium packages.", tip:"'More deliberately' = อย่างจงใจมากขึ้น | 'Upselling' = การขายสินค้าระดับสูงขึ้น | shows strategic thinking"},
+      {buddy:"That's a positive trend. What about customer retention?", hint:"รายงาน retention rate", sample:"Retention was 91% in Q3, consistent with Q2. We're targeting 93% by end of year through our new customer success program.", tip:"'Consistent with' = สอดคล้องกับ | บอกทั้ง current rate และ target เสมอ"},
+      {buddy:"What's the customer success program?", hint:"อธิบาย program อย่างกระชับ", sample:"Basically dedicated account managers for our top 50 clients, plus a quarterly business review to catch issues early.", tip:"'Basically' = โดยพื้นฐาน | 'Catch issues early' = จับปัญหาได้เร็ว | simplify complex ideas for busy managers"},
+      {buddy:"Smart. Have you seen early results?", hint:"บอก early signals ที่ positive", sample:"Early signs are promising. NPS scores are up and we've had three accounts expand their contracts already.", tip:"'Early signs are promising' = สัญญาณเบื้องต้นดูดี | 'NPS scores' = Net Promoter Score | shows you track the right metrics"},
+      {buddy:"Good. Let's talk headcount. Are you on track with hiring?", hint:"รายงาน hiring status", sample:"We're slightly behind — we've filled 8 of the 11 planned roles. The remaining 3 are in final interview stages and we expect to close them by end of October.", tip:"'In final interview stages' = อยู่ในขั้นตอนสัมภาษณ์รอบสุดท้าย | specific timeline ทำให้ credible"},
+      {buddy:"Any concerns about hitting targets if those roles aren't filled in time?", hint:"บอกว่า manage ได้ พร้อมอธิบาย", sample:"We've planned for some buffer, so we should be okay through October. If hiring extends past November, it could affect Q4 delivery slightly.", tip:"'Planned for some buffer' = วางแผนไว้มีระยะเผื่อ | honest about risk while showing you're on top of it"},
+      {buddy:"Understood. Any final points you want to highlight?", hint:"สรุปจุดเด่น", sample:"Just that overall the team delivered a solid quarter in a challenging environment. And momentum going into Q4 looks good.", tip:"'Delivered a solid quarter' = ส่งผลงานที่แข็งแกร่ง | end on a positive and team-focused note"},
+      {buddy:"Good work. Send me the deck after this and we'll share with the board.", hint:"ตอบรับและถามเรื่อง timeline และความต้องการ", sample:"Will do. I'll clean it up and send it over by end of day. Is there anything specific you'd like me to add for the board?", tip:"'Will do' = รับทราบ จะทำ | 'Clean it up' = ทำให้เรียบร้อย | always ask what the next level needs"},
+    ]
+  },
+];
+
+// ═══════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════
+const S = {
+  catId:null, mode:null, exList:[], exIdx:0, scores:[],
+  progress:{}, streak:0, todayDone:0, xp:0, lastDate:null,
+};
+
+const MASCOT_MSGS = [
+  "สวัสดี! พร้อมฝึกวันนี้กันไหม? 🎯",
+  "มาพัฒนาภาษาอังกฤษกันเถอะ! 💪",
+  "ฝึกนิดเดียวทุกวัน ดีกว่าฝึกทีเดียวเยอะ ✨",
+  "วันนี้จะพูดอังกฤษอะไรดีนะ? 🌟",
+  "ฝึกบ่อยๆ แล้วจะเก่งขึ้นเอง! 🚀",
+];
+
+// ═══════════════════════════════════════════════
+// PERSISTENCE
+// ═══════════════════════════════════════════════
+function loadData() {
+  try {
+    const d = JSON.parse(localStorage.getItem('ws_v3') || '{}');
+    S.progress  = d.progress  || {};
+    S.streak    = d.streak    || 0;
+    S.lastDate  = d.lastDate  || null;
+    S.todayDone = d.todayDone || 0;
+    S.xp        = d.xp        || 0;
+    if (S.lastDate !== new Date().toDateString()) S.todayDone = 0;
+  } catch(e) {}
+}
+function saveData() {
+  const today = new Date().toDateString();
+  localStorage.setItem('ws_v3', JSON.stringify({
+    progress:S.progress, streak:S.streak,
+    lastDate:today, todayDone:S.todayDone, xp:S.xp
+  }));
+}
+
+// ═══════════════════════════════════════════════
+// ROUTING
+// ═══════════════════════════════════════════════
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById('screen-'+id).classList.add('active');
+  window.scrollTo(0,0);
+  stopSpeech();
+  if(id==='home')      renderHome();
+  if(id==='scenarios') renderScenarios();
+  if(id==='notes')     renderNotes();
+}
+
+// ═══════════════════════════════════════════════
+// HOME
+// ═══════════════════════════════════════════════
+function renderHome() {
+  loadData();
+  const totalDone = Object.values(S.progress).reduce((s,p)=>s+(p.done||0),0);
+  const bests     = Object.values(S.progress).map(p=>p.best||0).filter(b=>b>0);
+  const topBest   = bests.length ? Math.max(...bests)+'%' : '-';
+
+  document.getElementById('h-done').textContent   = totalDone;
+  document.getElementById('h-best').textContent   = topBest;
+  document.getElementById('h-streak').textContent = S.streak;
+  document.getElementById('xp-num').textContent   = S.xp;
+  document.getElementById('mascot-msg').textContent = MASCOT_MSGS[Math.floor(Math.random()*MASCOT_MSGS.length)];
+
+  const goal=5, pct=Math.min(100,(S.todayDone/goal)*100);
+  document.getElementById('daily-fill').style.width = pct+'%';
+  document.getElementById('daily-lbl').textContent  = S.todayDone+' / '+goal;
+
+  renderNotesPreview();
+  document.getElementById('cat-grid').innerHTML = CATS.map(c => {
+    const p = S.progress[c.id]||{};
+    const n = c.listen.length+c.speak.length;
+    const cpct = p.done ? Math.min(100,Math.round((p.done/n)*100)) : 0;
+    return `
+      <div class="cat-card ${c.cls}" onclick="openCat('${c.id}')">
+        <div class="cat-icon-wrap">${c.icon}</div>
+        <div class="cat-info">
+          <div class="cat-name">${c.name}</div>
+          <div class="cat-desc">${c.desc}</div>
+          <div class="cat-bar-wrap">
+            <div class="cat-bar"><div class="cat-bar-fill" style="width:${cpct}%"></div></div>
+            <div class="cat-pct">${cpct}% complete</div>
+          </div>
+        </div>
+        <span class="cat-arrow">›</span>
+      </div>`;
+  }).join('');
+}
+
+// ═══════════════════════════════════════════════
+// CATEGORY
+// ═══════════════════════════════════════════════
+function openCat(id) {
+  const c = CATS.find(x=>x.id===id);
+  S.catId = id;
+  document.getElementById('cat-hero').className     = 'cat-hero '+c.cls;
+  document.getElementById('cat-hero-icon').textContent = c.icon;
+  document.getElementById('cat-hero-name').textContent = c.name;
+  document.getElementById('cat-hero-desc').textContent = c.desc;
+
+  const MODES = [
+    {id:'listen', ico:'👂', icoClass:'mode-ico-listen', name:'Listen & Understand',
+     desc:'ฟังบทสนทนาธุรกิจจริง แล้วตอบคำถาม Comprehension', badge:c.listen.length+' exercises'},
+    {id:'speak',  ico:'🗣️', icoClass:'mode-ico-speak',  name:'Speak & Practice',
+     desc:'พูดออกเสียงแล้วรับ feedback คะแนนทันที', badge:c.speak.length+' phrases'},
+    {id:'shadow', ico:'🔄', icoClass:'mode-ico-shadow', name:'Shadow Speaking',
+     desc:'ฟังทีละประโยค แล้วพูดตาม เพิ่ม fluency', badge:'Dialogue'},
+    {id:'translate', ico:'🇹🇭', icoClass:'mode-ico-translate', name:'แปลไทย → อังกฤษ',
+     desc:'เห็นประโยคไทย แล้วนึกหรือพูดเป็นภาษาอังกฤษ สไตล์ชีวิตจริง', badge:c.translate.length+' situations'},
+  ];
+
+  document.getElementById('mode-list').innerHTML = MODES.map(m=>`
+    <div class="mode-card" onclick="startMode('${id}','${m.id}')">
+      <div class="mode-ico-wrap ${m.icoClass}">${m.ico}</div>
+      <div class="mode-info">
+        <div class="mode-name">${m.name}</div>
+        <div class="mode-desc">${m.desc}</div>
+      </div>
+      <div class="mode-right">
+        <span class="mode-badge">${m.badge}</span>
+        <span style="font-size:20px;color:var(--muted)">›</span>
+      </div>
+    </div>`).join('');
+
+  showScreen('category');
+}
+
+// ═══════════════════════════════════════════════
+// EXERCISE ENGINE
+// ═══════════════════════════════════════════════
+function startMode(catId, mode) {
+  const c = CATS.find(x=>x.id===catId);
+  S.catId=catId; S.mode=mode; S.exIdx=0; S.scores=[];
+  if(mode==='listen')       S.exList=c.listen;
+  else if(mode==='speak')   S.exList=c.speak;
+  else if(mode==='shadow')  S.exList=[c.shadow];
+  else                      S.exList=c.translate;
+
+  document.getElementById('ex-mode-tag').textContent =
+    mode==='listen'?'👂 Listen':mode==='speak'?'🗣️ Speak':mode==='shadow'?'🔄 Shadow':'🇹🇭 Translate';
+  document.getElementById('ex-back').onclick = ()=>showScreen('category');
+
+  renderExercise();
+  showScreen('exercise');
+}
+
+function renderExercise() {
+  const total=S.exList.length, idx=S.exIdx;
+  document.getElementById('ex-prog').style.width  = (idx/total*100)+'%';
+  document.getElementById('ex-count').textContent = (idx+1)+' / '+total;
+  if(S.mode==='listen')         renderListen(S.exList[idx]);
+  else if(S.mode==='speak')     renderSpeak(S.exList[idx]);
+  else if(S.mode==='shadow')    renderShadow(S.exList[idx]);
+  else                          renderTranslate(S.exList[idx]);
+}
+
+// ── LISTEN ──────────────────────────────────
+function renderListen(ex) {
+  document.getElementById('ex-title').textContent = '🎧 ฟังแล้วเลือกคำตอบ';
+  window._ex = ex;
+  document.getElementById('ex-body').innerHTML = `
+    <div class="audio-card slide-up">
+      <div class="audio-hint">กด ▶ เพื่อฟัง แล้วตอบคำถาม</div>
+      <button class="play-ring" id="play-btn" onclick="togglePlay()">▶</button>
+      <div class="play-btns-row">
+        <button class="btn btn-sm btn-outline" onclick="togglePlay(0.72)">🐢 Slow</button>
+        <button class="btn btn-sm btn-ghost" onclick="toggleTranscript()">👁 ดูบทความ</button>
+      </div>
+      <div class="transcript-wrap" id="transcript">
+        <div class="transcript-en">${ex.audio}</div>
+        <div class="transcript-th">${ex.thai}</div>
+      </div>
+    </div>
+    <div class="question-text">${ex.question}</div>
+    <div class="opts" id="opts">
+      ${ex.opts.map((o,i)=>`
+        <div class="opt" id="opt${i}" data-i="${i}">
+          <div class="opt-num">${String.fromCharCode(65+i)}</div>
+          <div>${o}</div>
+        </div>`).join('')}
+    </div>
+    <div id="tip-area"></div>
+    <div class="next-area" id="next-area"></div>`;
+
+  ex.opts.forEach((_,i)=>document.getElementById('opt'+i).addEventListener('click',()=>answerListen(i)));
+}
+
+function togglePlay(rate) {
+  const btn=document.getElementById('play-btn');
+  if(!btn) return;
+  if(speechSynthesis.speaking){stopSpeech();btn.innerHTML='▶';btn.classList.remove('playing');return;}
+  btn.innerHTML='⏹';btn.classList.add('playing');
+  speak(window._ex.audio, rate||0.88, ()=>{if(btn){btn.innerHTML='▶';btn.classList.remove('playing');}});
+}
+function toggleTranscript(){document.getElementById('transcript').classList.toggle('show')}
+
+function answerListen(sel) {
+  const ex=window._ex;
+  const opts=document.querySelectorAll('.opt');
+  if([...opts].some(o=>o.classList.contains('correct')||o.classList.contains('wrong'))) return;
+  stopSpeech();
+  opts.forEach((o,i)=>{
+    o.classList.add('disabled');
+    if(i===ex.correct) o.classList.add('correct');
+    else if(i===sel)   o.classList.add('wrong');
+  });
+  const ok=sel===ex.correct;
+  S.scores.push(ok?100:0);
+  if(ok) fireConfetti();
+  document.getElementById('tip-area').innerHTML=`<div class="tip-card">${ex.tip}</div>`;
+  showNextBtn();
+}
+
+// ── SPEAK ────────────────────────────────────
+let _recog=null, _isRec=false;
+
+function renderSpeak(ex) {
+  document.getElementById('ex-title').textContent = '🎤 พูดออกเสียงให้ถูกต้อง';
+  window._spk=ex;
+  _isRec=false;
+  stopSpeech();
+  if(_recog){try{_recog.abort()}catch(e){}}
+
+  document.getElementById('ex-body').innerHTML = `
+    <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px">
+      <span style="background:#F5D06A;color:#5a3c00;border-radius:100px;padding:3px 12px;font-size:11px;font-weight:800">🎯 B2 Level</span>
+      <span style="font-size:11px;color:var(--muted);font-weight:600">พูดให้เป็นธรรมชาติ</span>
+    </div>
+    <div class="phrase-card slide-up">
+      <div class="phrase-en">${ex.en}</div>
+      <div class="phrase-th">${ex.th}</div>
+    </div>
+    <div class="model-row">
+      <button class="btn btn-outline btn-full" onclick="playModel()">🔊 ฟังตัวอย่าง</button>
+      <button class="btn btn-full btn-ghost" onclick="playModel(0.65)">🐢 ช้าๆ</button>
+    </div>
+    <div class="record-section">
+      <button class="rec-btn" id="rec-btn">🎤</button>
+      <div class="rec-label" id="rec-lbl">กดไมค์เพื่อพูด</div>
+    </div>
+    <div id="cmp-area"></div>
+    <div class="next-area" id="next-area"></div>`;
+
+  document.getElementById('rec-btn').addEventListener('click', toggleRec);
+}
+
+function playModel(r=0.9){stopSpeech();speak(window._spk.en,r)}
+
+function toggleRec(){
+  if(_isRec){if(_recog)try{_recog.stop()}catch(e){};return}
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!SR){document.getElementById('rec-lbl').textContent='❌ ไม่รองรับ browser นี้ ลองใช้ Chrome';return}
+  stopSpeech();
+  _recog=new SR();_recog.lang='en-US';_recog.interimResults=false;_recog.maxAlternatives=3;
+  _isRec=true;
+  const btn=document.getElementById('rec-btn');
+  const lbl=document.getElementById('rec-lbl');
+  btn.classList.add('rec');btn.innerHTML='⏹';
+  lbl.textContent='🎙 กำลังฟัง...';lbl.classList.add('active');
+
+  _recog.onresult=e=>{
+    const t=e.results[0][0].transcript;
+    _isRec=false;btn.classList.remove('rec');btn.innerHTML='🎤';
+    lbl.classList.remove('active');lbl.textContent='เสร็จแล้ว!';
+    showCompare(t, window._spk.en);
+  };
+  _recog.onerror=e=>{
+    _isRec=false;btn.classList.remove('rec');btn.innerHTML='🎤';lbl.classList.remove('active');
+    lbl.textContent=e.error==='not-allowed'?'❌ ไม่ได้รับอนุญาตใช้ไมค์':'❌ ลองใหม่อีกครั้ง: '+e.error;
+  };
+  _recog.onend=()=>{_isRec=false;if(btn){btn.classList.remove('rec');btn.innerHTML='🎤';}if(lbl)lbl.classList.remove('active')};
+  _recog.start();
+}
+
+function showCompare(spoken, target) {
+  const sw=spoken.toLowerCase().replace(/[^a-z\s']/g,'').split(/\s+/).filter(Boolean);
+  const tw=target.toLowerCase().replace(/[^a-z\s']/g,'').split(/\s+/).filter(Boolean);
+  const used=[...sw]; const matched=new Set();
+  tw.forEach((w,i)=>{const j=used.indexOf(w);if(j!==-1){matched.add(i);used.splice(j,1)}});
+  const score=tw.length?Math.round(matched.size/tw.length*100):0;
+  S.scores.push(score);
+  if(score>=80) fireConfetti();
+
+  const cls=score>=80?'sc-hi':score>=50?'sc-md':'sc-lo';
+  const em=score>=80?'🎉':score>=50?'👍':'💪';
+  const msg=score>=80?'เยี่ยมมาก!':score>=50?'ดีมาก พยายามต่อไป!':'ฝึกบ่อยๆ นะ!';
+
+  const tHtml=tw.map((w,i)=>`<span class="chip ${matched.has(i)?'chip-ok':'chip-miss'}">${w}</span>`).join('');
+  const sHtml=sw.map(w=>`<span class="chip ${tw.includes(w)?'chip-ok':'chip-extra'}">${w}</span>`).join('')
+    ||'<span style="color:var(--muted);font-size:13px">ไม่ได้ยิน ลองพูดใหม่</span>';
+
+  // Auto-save to notes if score is low
+  if(score < 60) saveNote({phrase:target, context:'Speaking Practice', tip:'ฝึกพูดประโยคนี้ให้คล่อง'});
+
+  const correctionHtml = score < 60 ? `
+    <div style="background:var(--yellow-lt);border:1.5px solid #D9A800;border-radius:12px;padding:10px 14px;margin-top:10px">
+      <div style="font-size:11px;font-weight:800;color:#7a5200;margin-bottom:5px">📓 บันทึกแล้ว — ประโยคที่ถูกต้อง</div>
+      <div style="font-size:14px;font-weight:700;color:var(--text);line-height:1.5">"${target}"</div>
+      <button onclick="speak('${target.replace(/['"]/g,' ')}')" style="margin-top:8px;background:transparent;border:1.5px solid #D9A800;border-radius:100px;padding:4px 12px;font-size:12px;font-weight:700;color:#7a5200;cursor:pointer">🔊 ฟังอีกครั้ง</button>
+    </div>` : '';
+
+  document.getElementById('cmp-area').innerHTML=`
+    <div class="cmp-card fade-in">
+      <div class="cmp-score-row">
+        <div class="score-bubble ${cls}">
+          <div style="font-size:24px">${em}</div>
+          <div class="sc-big">${score}%</div>
+        </div>
+        <div class="sc-msg">${msg}</div>
+      </div>
+      <div class="cmp-lbl">เป้าหมาย</div>
+      <div class="word-row">${tHtml}</div>
+      <div class="cmp-lbl" style="margin-top:10px">คุณพูดว่า</div>
+      <div class="word-row">${sHtml}</div>
+      <div class="chip-legend">🟢 ถูก &nbsp; 🔴 พลาด &nbsp; 🟡 เกิน</div>
+      ${correctionHtml}
+    </div>`;
+  showNextBtn();
+}
+
+// ── TRANSLATE ────────────────────────────────
+function renderTranslate(ex) {
+  document.getElementById('ex-title').textContent = '🇹🇭 นึกเป็นภาษาอังกฤษ';
+  window._trx = ex;
+
+  document.getElementById('ex-body').innerHTML = `
+    <div class="th-prompt-card slide-up">
+      <div class="th-context-tag">📍 ${ex.context}</div>
+      <div class="th-prompt">${ex.th}</div>
+    </div>
+
+    <div class="think-zone" id="think-zone">
+      <span class="think-emoji">🤔</span>
+      <div class="think-text">ลองนึกดูก่อนนะ...</div>
+      <div class="think-sub">คิดประโยคภาษาอังกฤษในหัว หรือพูดออกมาได้เลย</div>
+    </div>
+
+    <div class="translate-btns">
+      <button class="btn btn-outline btn-full" onclick="revealAnswer()">👁 ดูคำตอบ</button>
+      <button class="btn btn-full" style="background:linear-gradient(180deg,#FF6B9D,#e0175c);color:#fff;box-shadow:0 5px 0 #9a0035" id="tr-rec-btn" onclick="translateRecord()">🎤 พูดดูเลย</button>
+    </div>
+
+    <div class="answer-box" id="answer-box">
+      <div class="answer-lbl">✅ คำตอบ (สำเนียงชีวิตจริง)</div>
+      <div class="answer-en" id="answer-en"></div>
+      <div class="tip-card" style="margin-top:12px" id="answer-tip"></div>
+      <div class="self-rate-row" id="self-rate">
+        <div class="rate-btn rate-yes" onclick="rateSelf(100)">😄<br>พูดได้!</div>
+        <div class="rate-btn rate-almost" onclick="rateSelf(60)">🤔<br>เกือบๆ</div>
+        <div class="rate-btn rate-no" onclick="rateSelf(20)">😅<br>ยังไม่ได้</div>
+      </div>
+    </div>
+
+    <div id="cmp-area"></div>
+    <div class="next-area" id="next-area"></div>`;
+}
+
+let _trRecog = null, _trRec = false, _trTranscript = '';
+
+function revealAnswer() {
+  const ex = window._trx;
+  const box = document.getElementById('answer-box');
+  document.getElementById('answer-en').textContent = ex.en;
+  document.getElementById('answer-tip').textContent = ex.tip;
+  box.classList.add('show');
+  box.scrollIntoView({behavior:'smooth', block:'nearest'});
+}
+
+function translateRecord() {
+  const btn = document.getElementById('tr-rec-btn');
+  if(_trRec) {
+    // Manual stop — score what we have
+    _trRec = false;
+    if(_trRecog){try{_trRecog.stop()}catch(e){} _trRecog=null;}
+    if(btn){btn.textContent='🎤 พูดดูเลย';btn.style.background='linear-gradient(180deg,#FF6B9D,#e0175c)'}
+    const said = _trTranscript.trim();
+    if(said) {
+      revealAnswer();
+      showTranslateScore(said, window._trx);
+      document.getElementById('self-rate').style.display='none';
+    }
+    return;
+  }
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!SR){if(btn)btn.textContent='❌ ลองใช้ Chrome';return}
+  stopSpeech();
+  _trTranscript='';
+  _trRec=true;
+  if(btn){btn.textContent='⏹ หยุดบันทึก';btn.style.background='linear-gradient(180deg,#FF4B4B,#cc0000)'}
+  function startListening(){
+    if(!_trRec) return;
+    _trRecog=new SR();
+    _trRecog.lang='en-US';
+    _trRecog.interimResults=true;
+    _trRecog.continuous=true;
+    _trRecog.onresult=e=>{
+      let fin='',int='';
+      for(let i=0;i<e.results.length;i++){
+        if(e.results[i].isFinal) fin+=e.results[i][0].transcript+' ';
+        else int+=e.results[i][0].transcript;
+      }
+      if(fin.trim()) _trTranscript=fin.trim();
+      const display=_trTranscript||int;
+      const cmp=document.getElementById('cmp-area');
+      if(cmp&&display) cmp.innerHTML=`<div style="padding:10px 14px;background:var(--purple-lt);border-radius:10px;font-size:13px;color:var(--text2);font-style:italic">🎤 "${display}"</div>`;
+    };
+    _trRecog.onerror=e=>{
+      if(e.error!=='no-speech'&&e.error!=='aborted'){
+        _trRec=false;
+        if(btn){btn.textContent='🎤 พูดดูเลย';btn.style.background='linear-gradient(180deg,#FF6B9D,#e0175c)'}
+      }
+    };
+    _trRecog.onend=()=>{ if(_trRec) setTimeout(startListening,100); };
+    _trRecog.start();
+  }
+  startListening();
+}
+
+function rateSelf(score) {
+  S.scores.push(score);
+  if(score>=70) fireConfetti();
+  document.getElementById('self-rate').innerHTML = `
+    <div style="text-align:center;padding:8px;font-size:13px;font-weight:700;color:var(--text2)">
+      ${score>=70?'🎉 บันทึกแล้ว! ไปต่อเลย':'💪 ฝึกอีกนิดก็เก่งแล้ว!'}
+    </div>`;
+  showNextBtn();
+}
+
+// ── SHADOW ───────────────────────────────────
+function renderShadow(ex) {
+  document.getElementById('ex-title').textContent = '🔄 '+ex.title;
+  document.getElementById('ex-body').innerHTML=`
+    <div class="shadow-guide slide-up">
+      <div class="guide-title">✨ วิธีฝึก Shadow Speaking</div>
+      <div class="guide-steps">
+        1️⃣ กด Listen เพื่อฟังประโยค<br>
+        2️⃣ พูดตามทันที (shadow!) ให้เสียงซ้อนกัน<br>
+        3️⃣ กด Done เพื่อไปส่วนถัดไป
+      </div>
+    </div>
+    <div id="segs-wrap">
+      ${ex.segs.map((s,i)=>`
+        <div class="shadow-seg ${i===0?'seg-active':''}" id="ss${i}">
+          <div class="seg-header">
+            <div class="seg-dot">${i+1}</div>
+            <div class="seg-tag">Segment ${i+1}</div>
+          </div>
+          <div class="seg-en" id="se${i}" style="${i>0?'filter:blur(5px)':''}">${s.en}</div>
+          <div class="seg-th" id="st${i}" style="${i>0?'display:none':''}">${s.th}</div>
+          <div class="seg-btns">
+            <button class="btn btn-outline btn-sm" id="sl${i}" ${i>0?'disabled':''} onclick="shadowListen(${i})">▶ Listen</button>
+            <button class="btn btn-green btn-sm"   id="sd${i}" ${i>0?'disabled':''} onclick="shadowDone(${i},${ex.segs.length})">✓ Done</button>
+          </div>
+        </div>`).join('')}
+    </div>
+    <div class="next-area" id="next-area"></div>`;
+}
+
+function shadowListen(i){stopSpeech();speak(S.exList[S.exIdx].segs[i].en,0.82)}
+
+function shadowDone(i,total){
+  document.getElementById('ss'+i).classList.replace('seg-active','seg-done');
+  const n=i+1;
+  if(n<total){
+    document.getElementById('ss'+n).classList.add('seg-active');
+    document.getElementById('se'+n).style.filter='';
+    const th=document.getElementById('st'+n); if(th)th.style.display='';
+    document.getElementById('sl'+n).disabled=false;
+    document.getElementById('sd'+n).disabled=false;
+    document.getElementById('ss'+n).scrollIntoView({behavior:'smooth',block:'center'});
+  } else {
+    S.scores.push(100);
+    fireConfetti();
+    showNextBtn();
+  }
+}
+
+// ── NEXT BUTTON ──────────────────────────────
+function showNextBtn(){
+  const isLast=S.exIdx>=S.exList.length-1;
+  const a=document.getElementById('next-area');
+  if(!a)return;
+  a.innerHTML=`<button class="btn btn-primary btn-full btn-lg" id="nxt">${isLast?'🎊 ดูผลลัพธ์':'ถัดไป →'}</button>`;
+  document.getElementById('nxt').addEventListener('click',isLast?finishSession:goNext);
+}
+function goNext(){stopSpeech();if(_recog)try{_recog.abort()}catch(e){};S.exIdx++;renderExercise();window.scrollTo(0,0)}
+
+// ═══════════════════════════════════════════════
+// RESULTS
+// ═══════════════════════════════════════════════
+function finishSession(){
+  stopSpeech();
+  const scores=S.scores;
+  const avg=scores.length?Math.round(scores.reduce((a,b)=>a+b,0)/scores.length):0;
+  const correct=scores.filter(s=>s>=70).length;
+  const total=scores.length;
+  const stars=avg>=95?5:avg>=80?4:avg>=65?3:avg>=50?2:1;
+  const xpGained=stars*10+correct*5;
+
+  // progress
+  if(!S.progress[S.catId])S.progress[S.catId]={done:0,best:0};
+  S.progress[S.catId].done+=total;
+  S.progress[S.catId].best=Math.max(S.progress[S.catId].best||0,avg);
+  S.todayDone+=total;
+  S.xp+=xpGained;
+
+  // streak
+  const today=new Date().toDateString(),yest=new Date(Date.now()-86400000).toDateString();
+  if(S.lastDate!==today){S.streak=S.lastDate===yest?S.streak+1:1;S.lastDate=today;}
+  saveData();
+
+  const hdr=document.getElementById('res-hero');
+  hdr.className='result-hero '+(avg>=80?'rh-great':avg>=60?'rh-ok':'rh-low');
+  document.getElementById('res-emoji').textContent = avg>=80?'🏆':avg>=60?'🌟':'💪';
+  document.getElementById('res-score').textContent  = avg+'%';
+  document.getElementById('res-msg').textContent    = avg>=80?'เยี่ยมมากเลย!':avg>=60?'ดีมาก ก้าวหน้าขึ้นเรื่อยๆ!':'ฝึกต่อไปนะ!';
+
+  // stars animate
+  for(let i=1;i<=5;i++){
+    const el=document.getElementById('star'+i);
+    el.classList.remove('lit');
+    if(i<=stars) setTimeout(()=>el.classList.add('lit'),(i-1)*180+200);
+  }
+
+  document.getElementById('res-correct').textContent = correct;
+  document.getElementById('res-total').textContent   = total;
+  document.getElementById('res-streak').textContent  = S.streak+'🔥';
+
+  if(S.mode==='listen'){
+    const missed=S.exList.filter((_,i)=>(S.scores[i]||0)<70);
+    document.getElementById('res-review').innerHTML = missed.length ? `
+      <div class="review-section">
+        <div class="review-title">📚 ทบทวนประโยคที่พลาด</div>
+        ${missed.map(ex=>`
+          <div class="review-item">
+            <div class="review-item-q">${ex.question}</div>
+            <div class="review-item-tip">💡 ${ex.tip}</div>
+          </div>`).join('')}
+      </div>` : `<div class="pad"><div class="info-box" style="text-align:center">🎯 <strong>ถูกทุกข้อ!</strong> เก่งมากเลย</div></div>`;
+  } else {
+    document.getElementById('res-review').innerHTML='';
+  }
+
+  document.getElementById('res-again').onclick=()=>startMode(S.catId,S.mode);
+  showScreen('results');
+  setTimeout(()=>{if(avg>=70)fireConfetti()},400);
+}
+
+// ═══════════════════════════════════════════════
+// SPEECH APIs
+// ═══════════════════════════════════════════════
+function speak(text,rate=1,onEnd){
+  if(!window.speechSynthesis)return;
+  stopSpeech();
+  const u=new SpeechSynthesisUtterance(text);
+  u.lang='en-US';u.rate=rate;u.pitch=1.05;
+  if(onEnd)u.onend=onEnd;
+  const vv=speechSynthesis.getVoices();
+  // Prefer neural/natural voices: Google > Samantha (macOS) > any en-US
+  const v=vv.find(v=>v.name==='Google US English')
+          ||vv.find(v=>v.name==='Samantha')
+          ||vv.find(v=>v.name==='Google UK English Female')
+          ||vv.find(v=>v.name==='Karen')
+          ||vv.find(v=>v.lang==='en-US'&&v.localService&&!v.name.toLowerCase().includes('compact'))
+          ||vv.find(v=>v.lang.startsWith('en-US'))
+          ||vv.find(v=>v.lang.startsWith('en'));
+  if(v)u.voice=v;
+  window._utter=u;
+  speechSynthesis.speak(u);
+}
+function stopSpeech(){if(window.speechSynthesis)speechSynthesis.cancel()}
+if(window.speechSynthesis){speechSynthesis.getVoices();speechSynthesis.onvoiceschanged=()=>speechSynthesis.getVoices()}
+
+// ═══════════════════════════════════════════════
+// CONFETTI
+// ═══════════════════════════════════════════════
+function fireConfetti(){
+  const canvas=document.getElementById('confetti-canvas');
+  const W=canvas.offsetWidth||480,H=window.innerHeight;
+  canvas.width=W;canvas.height=H;
+  const ctx=canvas.getContext('2d');
+  const COLORS=['#7C5CFC','#FF6B9D','#FFD93D','#58CC02','#4D96FF','#FF9500'];
+  const particles=Array.from({length:80},()=>({
+    x:Math.random()*W, y:-10,
+    vx:(Math.random()-0.5)*4, vy:Math.random()*4+2,
+    w:Math.random()*10+4, h:Math.random()*6+3,
+    color:COLORS[Math.floor(Math.random()*COLORS.length)],
+    rot:Math.random()*360, rv:(Math.random()-0.5)*8,
+    alpha:1,
+  }));
+  let frame=0;
+  function draw(){
+    ctx.clearRect(0,0,W,H);
+    particles.forEach(p=>{
+      p.x+=p.vx;p.y+=p.vy;p.rot+=p.rv;p.vy+=0.12;
+      p.alpha=Math.max(0,1-frame/90);
+      ctx.save();ctx.globalAlpha=p.alpha;
+      ctx.translate(p.x,p.y);ctx.rotate(p.rot*Math.PI/180);
+      ctx.fillStyle=p.color;ctx.fillRect(-p.w/2,-p.h/2,p.w,p.h);
+      ctx.restore();
+    });
+    frame++;
+    if(frame<100)requestAnimationFrame(draw);
+    else ctx.clearRect(0,0,W,H);
+  }
+  draw();
+}
+
+// ═══════════════════════════════════════════════
+// CHAT WITH BUDDY
+// ═══════════════════════════════════════════════
+const chat = { scenario:null, turn:0, messages:[], recog:null, isRec:false };
+
+function renderScenarios() {
+  document.getElementById('scenario-grid').innerHTML = SCENARIOS.map(s=>`
+    <div class="scenario-card" style="background:${s.bg};box-shadow:0 6px 18px ${s.shadow}" onclick="startScenario('${s.id}')">
+      <span class="scenario-ico">${s.icon}</span>
+      <div class="scenario-name">${s.name}</div>
+      <div class="scenario-desc">${s.desc}</div>
+    </div>`).join('');
+}
+
+function startScenario(id) {
+  const s = SCENARIOS.find(x=>x.id===id);
+  chat.scenario=s; chat.turn=0; chat.messages=[];
+  document.getElementById('chat-buddy-emoji').textContent = s.buddyEmoji;
+  document.getElementById('chat-buddy-name').textContent  = s.buddy;
+  document.getElementById('chat-scenario-tag').textContent= s.icon+' '+s.name;
+  document.getElementById('chat-back').onclick=()=>{stopSpeech();showScreen('scenarios')};
+  document.getElementById('chat-body').innerHTML='';
+  document.getElementById('chat-turn-zone').innerHTML='';
+  showScreen('chat');
+  setTimeout(()=>buddySpeak(), 400);
+}
+
+function buddySpeak() {
+  const {scenario,turn} = chat;
+  if(turn >= scenario.turns.length){ finishChat(); return; }
+  const t = scenario.turns[turn];
+  const total = scenario.turns.length;
+  document.getElementById('chat-turn-badge').textContent = (turn+1)+' / '+total;
+
+  addBubble('buddy', chat.scenario.buddy, t.buddy, t.hint);
+  stopSpeech();
+  speak(t.buddy, 1.0);
+  setTimeout(showUserTurn, 600);
+}
+
+function addBubble(who, name, text, hint='') {
+  const body = document.getElementById('chat-body');
+  const div  = document.createElement('div');
+  div.className = 'bubble bubble-'+who;
+  div.innerHTML = `
+    ${who==='buddy'?`<div class="bubble-name">${name}</div>`:''}
+    <div class="bubble-inner">${text}</div>
+    ${hint&&who==='buddy'?`<div class="bubble-hint">💬 ${hint}</div>`:''}`;
+  body.appendChild(div);
+  div.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+
+function showUserTurn() {
+  const zone = document.getElementById('chat-turn-zone');
+  zone.innerHTML=`
+    <div class="user-turn-zone">
+      <div class="turn-prompt">Your turn! 🎤<br><span style="font-size:11px;color:var(--muted)">พูดภาษาอังกฤษได้เลย</span></div>
+      <button class="chat-rec-btn" id="chat-rec-btn">🎤</button>
+      <div class="chat-rec-lbl" id="chat-rec-lbl">กดเพื่อพูด</div>
+      <button class="skip-btn" onclick="skipUserTurn()">ข้าม / ดูตัวอย่าง →</button>
+    </div>`;
+  document.getElementById('chat-rec-btn').addEventListener('click', chatToggleRec);
+}
+
+function chatToggleRec() {
+  if(chat.isRec){if(chat.recog)try{chat.recog.stop()}catch(e){};return}
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  const btn=document.getElementById('chat-rec-btn');
+  const lbl=document.getElementById('chat-rec-lbl');
+  if(!SR){if(lbl)lbl.textContent='❌ ลองใช้ Chrome';return}
+  stopSpeech();
+  chat.recog=new SR();chat.recog.lang='en-US';chat.recog.interimResults=false;
+  chat.isRec=true;
+  if(btn){btn.classList.add('rec');btn.innerHTML='⏹';}
+  if(lbl){lbl.textContent='🔴 กำลังฟัง...';lbl.classList.add('active');}
+  chat.recog.onresult=e=>{
+    const said=e.results[0][0].transcript;
+    chat.isRec=false;
+    if(btn){btn.classList.remove('rec');btn.innerHTML='🎤';}
+    if(lbl){lbl.classList.remove('active');}
+    userResponded(said);
+  };
+  chat.recog.onerror=()=>{
+    chat.isRec=false;
+    if(btn){btn.classList.remove('rec');btn.innerHTML='🎤';}
+    if(lbl){lbl.classList.remove('active');lbl.textContent='ลองอีกครั้ง';}
+  };
+  chat.recog.onend=()=>{chat.isRec=false;if(btn){btn.classList.remove('rec');btn.innerHTML='🎤';}};
+  chat.recog.start();
+}
+
+function userResponded(said) {
+  const t = chat.scenario.turns[chat.turn];
+  const zone = document.getElementById('chat-turn-zone');
+  zone.innerHTML = '';
+  addBubble('user','You',said);
+
+  // Check accuracy vs sample
+  const sw = said.toLowerCase().replace(/[^a-z\s]/g,'').split(/\s+/).filter(Boolean);
+  const tw = t.sample.toLowerCase().replace(/[^a-z\s]/g,'').split(/\s+/).filter(Boolean);
+  const used=[...sw]; let ok=0;
+  tw.forEach(w=>{const j=used.indexOf(w);if(j!==-1){ok++;used.splice(j,1)}});
+  const score = tw.length ? Math.round(ok/tw.length*100) : 0;
+
+  // Save to notes if score low
+  if(score < 60) saveNote({phrase:t.sample, context:chat.scenario.name, tip:t.tip});
+
+  // Show correction tip if low score
+  let feedbackHtml = '';
+  if(score < 60) {
+    feedbackHtml = `<div style="background:var(--yellow-lt);border-radius:12px;padding:10px 14px;margin:0 16px 8px;font-size:12px;color:#7a5200">
+      <strong>💡 ลองพูดแบบนี้:</strong><br>"${t.sample}"<br><span style="opacity:.7;margin-top:3px;display:block">${t.tip}</span>
+    </div>`;
+  }
+
+  const body = document.getElementById('chat-body');
+  body.insertAdjacentHTML('beforeend', feedbackHtml);
+  chat.turn++;
+  setTimeout(()=>buddySpeak(), 1200);
+}
+
+function skipUserTurn() {
+  const t = chat.scenario.turns[chat.turn];
+  stopSpeech();
+  if(chat.recog)try{chat.recog.abort()}catch(e){}
+  document.getElementById('chat-turn-zone').innerHTML='';
+
+  const body=document.getElementById('chat-body');
+  body.insertAdjacentHTML('beforeend',`
+    <div style="background:var(--yellow-lt);border-radius:12px;padding:10px 14px;margin:0 0 4px;font-size:12px;color:#7a5200">
+      <strong>💡 ตัวอย่าง:</strong> "${t.sample}"<br><span style="opacity:.7;margin-top:2px;display:block">${t.tip}</span>
+    </div>`);
+  chat.turn++;
+  setTimeout(()=>buddySpeak(), 800);
+}
+
+function finishChat() {
+  stopSpeech();
+  const scenario = chat.scenario;
+  const zone = document.getElementById('chat-turn-zone');
+  S.xp += 20;
+  saveData();
+  fireConfetti();
+  zone.innerHTML=`
+    <div class="convo-done">
+      <span class="convo-done-emoji">🎉</span>
+      <div style="font-size:22px;font-weight:900;color:var(--text)">บทสนทนาจบแล้ว!</div>
+      <div style="font-size:14px;color:var(--text2);margin-top:4px">+20 XP ⭐</div>
+      <div class="convo-phrases">
+        <div style="font-size:13px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">📚 ประโยคที่ได้เรียนรู้วันนี้</div>
+        ${scenario.turns.map(t=>`
+          <div class="phrase-item">
+            <div class="phrase-item-en">"${t.sample}"</div>
+            <div class="phrase-item-tip">${t.tip}</div>
+          </div>`).join('')}
+      </div>
+      <button class="btn btn-primary btn-full btn-lg" onclick="startScenario('${scenario.id}')">🔄 คุยอีกรอบ</button>
+      <div style="height:10px"></div>
+      <button class="btn btn-ghost btn-full" onclick="showScreen('scenarios')">← เลือกสถานการณ์ใหม่</button>
+    </div>`;
+  zone.scrollIntoView({behavior:'smooth'});
+}
+
+// ── NOTES ──
+function saveNote({phrase, context, tip}) {
+  const notes = JSON.parse(localStorage.getItem('ws_notes')||'[]');
+  if(!notes.find(n=>n.phrase===phrase)) {
+    notes.unshift({phrase, context, tip, date:new Date().toLocaleDateString('th-TH')});
+    if(notes.length>40) notes.pop();
+    localStorage.setItem('ws_notes', JSON.stringify(notes));
+  }
+}
+
+function renderNotes() {
+  const notes = JSON.parse(localStorage.getItem('ws_notes')||'[]');
+  const list  = document.getElementById('notes-list');
+  const clrBtn= document.getElementById('clear-notes-btn');
+  if(!notes.length) {
+    list.innerHTML=`<div class="card" style="text-align:center;padding:30px">
+      <div style="font-size:40px;margin-bottom:10px">📭</div>
+      <div style="font-weight:700;color:var(--text2)">ยังไม่มีโน้ต</div>
+      <div style="font-size:13px;color:var(--muted);margin-top:4px">เมื่อพูดพลาด ระบบจะบันทึกประโยคนั้นไว้ที่นี่อัตโนมัติ</div>
+    </div>`;
+    if(clrBtn) clrBtn.style.display='none';
+    return;
+  }
+  if(clrBtn) clrBtn.style.display='block';
+  list.innerHTML=`
+    <div style="font-size:13px;color:var(--muted);font-weight:600;margin-bottom:10px">${notes.length} ประโยคที่ต้องทบทวน</div>
+    ${notes.map((n,i)=>`
+      <div class="card" style="margin-bottom:10px;border-left:4px solid var(--yellow-dk)">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">
+          <div style="flex:1">
+            <div style="font-size:15px;font-weight:800;color:var(--text);line-height:1.45">"${n.phrase}"</div>
+            <div style="font-size:12px;color:var(--text2);margin-top:4px;line-height:1.5">${n.tip}</div>
+            <div style="font-size:11px;color:var(--muted);margin-top:6px">📅 ${n.date} · ${n.context}</div>
+          </div>
+          <button onclick="speak('${n.phrase.replace(/['"]/g,' ')}')" style="background:var(--yellow-lt);border:1.5px solid var(--yellow-dk);border-radius:100px;padding:5px 12px;font-size:12px;font-weight:700;color:#7a5200;cursor:pointer;white-space:nowrap;flex-shrink:0">🔊 ฟัง</button>
+        </div>
+      </div>`).join('')}`;
+}
+
+function renderNotesPreview() {
+  const notes = JSON.parse(localStorage.getItem('ws_notes')||'[]');
+  const el    = document.getElementById('notes-preview');
+  if(!el) return;
+  if(!notes.length) {
+    el.innerHTML=`<div class="card" style="text-align:center;padding:14px;color:var(--muted);font-size:13px">
+      📭 ยังไม่มีโน้ต — เมื่อพูดพลาด ระบบจะบันทึกให้อัตโนมัติ
+    </div>`;
+    return;
+  }
+  el.innerHTML=`
+    <div class="card" style="border-left:4px solid var(--yellow-dk)">
+      <div style="font-size:12px;font-weight:800;color:var(--muted);margin-bottom:8px">${notes.length} ประโยคที่ต้องทบทวน → กดดูทั้งหมด</div>
+      ${notes.slice(0,2).map(n=>`
+        <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px">"${n.phrase}"</div>
+        <div style="font-size:11px;color:var(--text2);margin-bottom:8px">${n.tip}</div>`).join('<hr style="border:none;border-top:1px dashed var(--border);margin:6px 0">')}
+    </div>`;
+}
+
+function clearNotes() {
+  if(confirm('ลบโน้ตทั้งหมดไหม?')) {
+    localStorage.removeItem('ws_notes');
+    renderNotes();
+  }
+}
+
+// ═══════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════
+loadData();
+renderHome();
+</script>
+</body>
+</html>
