@@ -2056,28 +2056,9 @@ function answerListen(sel) {
   showNextBtn();
 }
 
-// ── Speech Recognition shared helper ─────────
-// Must call start() synchronously inside user gesture (iOS requirement)
-// gotResult flag prevents onend from resetting UI when speech was captured
-function startSR(opts) {
-  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-  if (!SR) return null;
-  const r = new SR();
-  r.lang            = opts.lang            || 'en-US';
-  r.continuous      = opts.continuous      || false;
-  r.interimResults  = opts.interimResults  || false;
-  r.maxAlternatives = opts.maxAlternatives || 1;
-  let gotResult = false;
-  r.onresult = e => { gotResult = true; if(opts.onResult) opts.onResult(e); };
-  r.onerror  = e => { if(e.error !== 'no-speech' && opts.onError) opts.onError(e); };
-  r.onend    = () => {
-    if (!gotResult && opts.onNoResult) opts.onNoResult();
-    else if (opts.onEnd) opts.onEnd();
-  };
-  try { r.start(); }
-  catch(e) { if(opts.onError) opts.onError({error:'start-failed'}); }
-  return r;
-}
+// ── Speech Recognition ────────────────────────
+// Mobile browsers (iOS/Android) fire onend quickly on silence.
+// Solution: auto-restart until we get a result or user manually stops.
 
 // ── SPEAK ────────────────────────────────────
 let _recog=null, _isRec=false;
@@ -2124,39 +2105,35 @@ function toggleRec(){
     if(lbl){lbl.classList.remove('active');lbl.textContent='กดเพื่อพูด';}
     return;
   }
-  if(!(window.SpeechRecognition||window.webkitSpeechRecognition)){
-    if(lbl)lbl.textContent='❌ ไม่รองรับ ลองใช้ Chrome';return;
-  }
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!SR){if(lbl)lbl.textContent='❌ ไม่รองรับ ลองใช้ Chrome';return;}
   stopSpeech();
-  if(_recog){try{_recog.abort()}catch(e){} _recog=null;}
   _isRec=true;
   if(btn){btn.classList.add('rec');btn.innerHTML='⏹';}
   if(lbl){lbl.textContent='🎙 กำลังฟัง...';lbl.classList.add('active');}
-  _recog=startSR({
-    maxAlternatives:3,
-    onResult:e=>{
-      const t=e.results[0][0].transcript;
-      _isRec=false;
+  let _done=false;
+  function _attempt(){
+    if(!_isRec||_done) return;
+    if(_recog){try{_recog.abort()}catch(e){}}
+    const r=new SR(); _recog=r;
+    r.lang='en-US'; r.interimResults=false; r.maxAlternatives=3;
+    r.onresult=e=>{
+      _done=true; _isRec=false;
       if(btn){btn.classList.remove('rec');btn.innerHTML='🎤';}
       if(lbl){lbl.classList.remove('active');lbl.textContent='เสร็จแล้ว!';}
-      showCompare(t,window._spk.en);
-    },
-    onNoResult:()=>{
-      _isRec=false;
-      if(btn){btn.classList.remove('rec');btn.innerHTML='🎤';}
-      if(lbl){lbl.classList.remove('active');lbl.textContent='ไม่ได้ยิน — กดอีกครั้งนะ 🎤';}
-    },
-    onError:e=>{
-      _isRec=false;
-      if(btn){btn.classList.remove('rec');btn.innerHTML='🎤';}
-      if(lbl){lbl.classList.remove('active');lbl.textContent=e.error==='not-allowed'?'❌ ไม่ได้รับอนุญาตใช้ไมค์':'❌ ลองใหม่';}
-    },
-    onEnd:()=>{
-      _isRec=false;
-      if(btn){btn.classList.remove('rec');btn.innerHTML='🎤';}
-      if(lbl) lbl.classList.remove('active');
-    }
-  });
+      showCompare(e.results[0][0].transcript,window._spk.en);
+    };
+    r.onerror=e=>{
+      if(e.error==='not-allowed'){
+        _done=true; _isRec=false;
+        if(btn){btn.classList.remove('rec');btn.innerHTML='🎤';}
+        if(lbl){lbl.classList.remove('active');lbl.textContent='❌ ไม่ได้รับอนุญาตใช้ไมค์';}
+      }
+    };
+    r.onend=()=>{ if(_isRec&&!_done) setTimeout(_attempt,100); };
+    try{r.start();}catch(e){if(_isRec&&!_done) setTimeout(_attempt,200);}
+  }
+  _attempt();
 }
 
 function showCompare(spoken, target) {
@@ -2567,38 +2544,35 @@ function chatToggleRec() {
     if(lbl){lbl.classList.remove('active');lbl.textContent='กดเพื่อพูด';}
     return;
   }
-  if(!(window.SpeechRecognition||window.webkitSpeechRecognition)){
-    if(lbl)lbl.textContent='❌ ลองใช้ Chrome';return;
-  }
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!SR){if(lbl)lbl.textContent='❌ ลองใช้ Chrome';return;}
   stopSpeech();
-  if(chat.recog){try{chat.recog.abort()}catch(e){} chat.recog=null;}
   chat.isRec=true;
   if(btn){btn.classList.add('rec');btn.innerHTML='⏹';}
   if(lbl){lbl.textContent='🔴 กำลังฟัง...';lbl.classList.add('active');}
-  chat.recog=startSR({
-    onResult:e=>{
-      const said=e.results[0][0].transcript;
-      chat.isRec=false;
+  let _done=false;
+  function _attempt(){
+    if(!chat.isRec||_done) return;
+    if(chat.recog){try{chat.recog.abort()}catch(e){}}
+    const r=new SR(); chat.recog=r;
+    r.lang='en-US'; r.interimResults=false;
+    r.onresult=e=>{
+      _done=true; chat.isRec=false;
       if(btn){btn.classList.remove('rec');btn.innerHTML='🎤';}
       if(lbl) lbl.classList.remove('active');
-      userResponded(said);
-    },
-    onNoResult:()=>{
-      chat.isRec=false;
-      if(btn){btn.classList.remove('rec');btn.innerHTML='🎤';}
-      if(lbl){lbl.classList.remove('active');lbl.textContent='ไม่ได้ยิน — กดอีกครั้งนะ 🎤';}
-    },
-    onError:()=>{
-      chat.isRec=false;
-      if(btn){btn.classList.remove('rec');btn.innerHTML='🎤';}
-      if(lbl){lbl.classList.remove('active');lbl.textContent='ลองอีกครั้ง';}
-    },
-    onEnd:()=>{
-      chat.isRec=false;
-      if(btn){btn.classList.remove('rec');btn.innerHTML='🎤';}
-      if(lbl) lbl.classList.remove('active');
-    }
-  });
+      userResponded(e.results[0][0].transcript);
+    };
+    r.onerror=e=>{
+      if(e.error==='not-allowed'){
+        _done=true; chat.isRec=false;
+        if(btn){btn.classList.remove('rec');btn.innerHTML='🎤';}
+        if(lbl){lbl.classList.remove('active');lbl.textContent='❌ ไม่ได้รับอนุญาตใช้ไมค์';}
+      }
+    };
+    r.onend=()=>{ if(chat.isRec&&!_done) setTimeout(_attempt,100); };
+    try{r.start();}catch(e){if(chat.isRec&&!_done) setTimeout(_attempt,200);}
+  }
+  _attempt();
 }
 
 function userResponded(said) {
