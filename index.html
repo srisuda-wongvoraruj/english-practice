@@ -2157,9 +2157,10 @@ function toggleRec(){
   const lbl=document.getElementById('rec-lbl');
   if(_isRec){
     _isRec=false;
-    if(_recog){try{_recog.abort()}catch(e){} _recog=null;}
+    if(_recog){_recog.onresult=null;_recog.onerror=null;_recog.onend=null;try{_recog.abort()}catch(e){} _recog=null;}
     if(btn){btn.classList.remove('rec');btn.innerHTML='🎤';}
     if(lbl){lbl.classList.remove('active');lbl.textContent='กดเพื่อพูด';}
+    _flushSpeak();
     return;
   }
   const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
@@ -2168,18 +2169,23 @@ function toggleRec(){
   _isRec=true;
   if(btn){btn.classList.add('rec');btn.innerHTML='⏹';}
   if(lbl){lbl.textContent='🎙 กำลังฟัง...';lbl.classList.add('active');}
-  let _done=false;
+  let _done=false, _finalText='';
   function _attempt(){
     if(!_isRec||_done) return;
-    // Null out handlers before abort to prevent stale onend re-fire (causes race condition)
     if(_recog){_recog.onresult=null;_recog.onerror=null;_recog.onend=null;try{_recog.abort()}catch(e){}}
     const r=new SR(); _recog=r;
-    r.lang='en-US'; r.interimResults=false; r.maxAlternatives=3;
+    r.lang='en-US'; r.continuous=true; r.interimResults=true; r.maxAlternatives=3;
     r.onresult=e=>{
-      _done=true; _isRec=false;
-      if(btn){btn.classList.remove('rec');btn.innerHTML='🎤';}
-      if(lbl){lbl.classList.remove('active');lbl.textContent='เสร็จแล้ว!';}
-      showCompare(e.results[0][0].transcript,window._spk.en);
+      let interim='', final='';
+      for(let i=e.resultIndex;i<e.results.length;i++){
+        if(e.results[i].isFinal) final+=e.results[i][0].transcript+' ';
+        else interim+=e.results[i][0].transcript;
+      }
+      if(interim&&lbl) lbl.textContent='🎙 '+interim;
+      if(final){
+        _finalText+=final;
+        if(lbl) lbl.textContent='🎙 '+_finalText;
+      }
     };
     r.onerror=e=>{
       if(e.error==='not-allowed'||e.error==='service-not-allowed'){
@@ -2188,11 +2194,30 @@ function toggleRec(){
         if(lbl){lbl.classList.remove('active');lbl.textContent='❌ ไม่ได้รับอนุญาตใช้ไมค์';}
       }
     };
-    // Direct call (no setTimeout) keeps iOS Safari event chain intact
-    r.onend=()=>{ if(_isRec&&!_done) _attempt(); };
+    r.onend=()=>{
+      if(!_isRec||_done) return;
+      if(_finalText.trim()){
+        // Got speech — process it
+        _done=true; _isRec=false;
+        if(btn){btn.classList.remove('rec');btn.innerHTML='🎤';}
+        if(lbl){lbl.classList.remove('active');lbl.textContent='เสร็จแล้ว!';}
+        showCompare(_finalText.trim(),window._spk.en);
+      } else {
+        // No speech yet — restart to keep listening
+        _attempt();
+      }
+    };
     try{r.start();}catch(e){if(_isRec&&!_done) setTimeout(_attempt,200);}
   }
   _attempt();
+}
+
+function _flushSpeak(){
+  // Called when user taps ⏹ manually — process whatever was collected
+  if(_finalText.trim()){
+    const t=_finalText.trim(); _finalText='';
+    showCompare(t,window._spk.en);
+  }
 }
 
 function showCompare(spoken, target) {
@@ -2598,7 +2623,7 @@ function chatToggleRec() {
   const lbl=document.getElementById('chat-rec-lbl');
   if(chat.isRec){
     chat.isRec=false;
-    if(chat.recog){try{chat.recog.abort()}catch(e){} chat.recog=null;}
+    if(chat.recog){chat.recog.onresult=null;chat.recog.onerror=null;chat.recog.onend=null;try{chat.recog.abort()}catch(e){} chat.recog=null;}
     if(btn){btn.classList.remove('rec');btn.innerHTML='🎤';}
     if(lbl){lbl.classList.remove('active');lbl.textContent='กดเพื่อพูด';}
     return;
@@ -2609,17 +2634,20 @@ function chatToggleRec() {
   chat.isRec=true;
   if(btn){btn.classList.add('rec');btn.innerHTML='⏹';}
   if(lbl){lbl.textContent='🔴 กำลังฟัง...';lbl.classList.add('active');}
-  let _done=false;
+  let _done=false, _chatFinal='';
   function _attempt(){
     if(!chat.isRec||_done) return;
     if(chat.recog){chat.recog.onresult=null;chat.recog.onerror=null;chat.recog.onend=null;try{chat.recog.abort()}catch(e){}}
     const r=new SR(); chat.recog=r;
-    r.lang='en-US'; r.interimResults=false;
+    r.lang='en-US'; r.continuous=true; r.interimResults=true;
     r.onresult=e=>{
-      _done=true; chat.isRec=false;
-      if(btn){btn.classList.remove('rec');btn.innerHTML='🎤';}
-      if(lbl) lbl.classList.remove('active');
-      userResponded(e.results[0][0].transcript);
+      let interim='', final='';
+      for(let i=e.resultIndex;i<e.results.length;i++){
+        if(e.results[i].isFinal) final+=e.results[i][0].transcript+' ';
+        else interim+=e.results[i][0].transcript;
+      }
+      if(interim&&lbl) lbl.textContent='🔴 '+interim;
+      if(final) _chatFinal+=final;
     };
     r.onerror=e=>{
       if(e.error==='not-allowed'||e.error==='service-not-allowed'){
@@ -2628,7 +2656,17 @@ function chatToggleRec() {
         if(lbl){lbl.classList.remove('active');lbl.textContent='❌ ไม่ได้รับอนุญาตใช้ไมค์';}
       }
     };
-    r.onend=()=>{ if(chat.isRec&&!_done) _attempt(); };
+    r.onend=()=>{
+      if(!chat.isRec||_done) return;
+      if(_chatFinal.trim()){
+        _done=true; chat.isRec=false;
+        if(btn){btn.classList.remove('rec');btn.innerHTML='🎤';}
+        if(lbl) lbl.classList.remove('active');
+        userResponded(_chatFinal.trim());
+      } else {
+        _attempt();
+      }
+    };
     try{r.start();}catch(e){if(chat.isRec&&!_done) setTimeout(_attempt,200);}
   }
   _attempt();
