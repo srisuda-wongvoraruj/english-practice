@@ -1458,38 +1458,51 @@ function startRepeatMode() {
 }
 
 let _repeatRecog=null, _repeatIsRec=false;
-function recordRepeat() {
-  const target = window._repeatTarget;
-  if(!target) return;
-  if(_repeatIsRec){if(_repeatRecog)try{_repeatRecog.stop()}catch(e){};return}
-  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+function recordRepeat(){
+  const target=window._repeatTarget; if(!target) return;
   const btn=document.getElementById('repeat-rec-btn');
+  const scoreEl=document.getElementById('repeat-score-area');
+  if(_repeatIsRec){
+    _repeatIsRec=false;
+    if(_repeatRecog){_repeatRecog.onresult=null;_repeatRecog.onerror=null;_repeatRecog.onend=null;try{_repeatRecog.abort()}catch(e){}}
+    if(btn)btn.textContent='🎤 พูดตาม'; return;
+  }
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
   if(!SR){if(btn)btn.textContent='❌ ต้องใช้ Chrome';return}
   stopSpeech();
-  _repeatRecog=new SR();_repeatRecog.lang='en-US';_repeatRecog.interimResults=false;
-  _repeatIsRec=true;
-  if(btn){btn.textContent='⏹ หยุด';}
+  _repeatIsRec=true; if(btn)btn.textContent='⏹ หยุด';
+  let _rFinal='',_rConf=0,_rConfN=0;
+  _repeatRecog=new SR();
+  _repeatRecog.lang='en-US'; _repeatRecog.continuous=true; _repeatRecog.interimResults=true;
   _repeatRecog.onresult=e=>{
-    const said=e.results[0][0].transcript;
-    const conf=Math.round((e.results[0][0].confidence||0.75)*100);
-    _repeatIsRec=false;if(btn)btn.textContent='🎤 พูดตาม';
-    const tw=target.toLowerCase().replace(/[^a-z\s]/g,'').split(/\s+/).filter(Boolean);
-    const sw=said.toLowerCase().replace(/[^a-z\s]/g,'').split(/\s+/).filter(Boolean);
+    let interim='',final='';
+    for(let i=e.resultIndex;i<e.results.length;i++){
+      if(e.results[i].isFinal){final+=e.results[i][0].transcript+' ';_rConf+=(e.results[i][0].confidence||0.75);_rConfN++;}
+      else interim+=e.results[i][0].transcript;
+    }
+    if(interim&&scoreEl) scoreEl.innerHTML=`<div style="color:var(--muted);font-size:12px;text-align:center">🎙 ${interim}</div>`;
+    if(final) _rFinal+=final;
+  };
+  _repeatRecog.onerror=e=>{
+    if(e.error==='not-allowed'||e.error==='service-not-allowed'){
+      _repeatIsRec=false; if(btn)btn.textContent='🎤 พูดตาม';
+      if(scoreEl) scoreEl.innerHTML='<div style="color:red;font-size:12px">❌ ไม่ได้รับอนุญาตใช้ไมค์</div>';
+    }
+  };
+  _repeatRecog.onend=()=>{
+    _repeatIsRec=false; if(btn)btn.textContent='🎤 พูดตาม';
+    if(!_rFinal.trim()) return;
+    const said=_rFinal.trim();
+    const tw=target.toLowerCase().replace(/[^a-z\s']/g,'').split(/\s+/).filter(Boolean);
+    const sw=said.toLowerCase().replace(/[^a-z\s']/g,'').split(/\s+/).filter(Boolean);
     const used=[...sw];let ok=0;const matched=new Set();
     tw.forEach((w,i)=>{const j=used.indexOf(w);if(j!==-1){ok++;matched.add(i);used.splice(j,1)}});
-    const acc=Math.round(ok/tw.length*100);
-    const score=Math.round(acc*0.5+conf*0.5);
-    const scoreEl=document.getElementById('repeat-score-area');
-    if(scoreEl) scoreEl.innerHTML=`
-      <div style="background:${score>=80?'var(--green-lt)':score>=60?'var(--yellow-lt)':'var(--red-lt)'};border-radius:12px;padding:10px;text-align:center">
-        <div style="font-size:24px;font-weight:900;color:${score>=80?'var(--green)':score>=60?'#7a5200':'var(--red)'}">${score}%</div>
-        <div style="font-size:12px;font-weight:700;color:var(--text2);margin-top:2px">${score>=80?'สำเนียงดีมาก! 🌟':score>=60?'ดีนะ ลองอีกครั้ง 😊':'ฝึกต่อไปนะ 💪'}</div>
-        <div style="font-size:11px;color:var(--muted);margin-top:4px">Pronunciation ${conf}% · Accuracy ${acc}%</div>
-      </div>
-      <button class="btn btn-sm btn-outline" style="margin-top:8px;width:100%" onclick="recordRepeat()">🔄 ลองอีกครั้ง</button>`;
+    const accuracy=Math.round(ok/tw.length*100);
+    const pronunciation=_rConfN?Math.round(_rConf/_rConfN*100):75;
+    const naturalness=calcNaturalness(said);
+    if(scoreEl) scoreEl.innerHTML=renderScoreCard(accuracy,pronunciation,naturalness,target,said)+
+      `<button class="btn btn-sm btn-outline" style="margin-top:8px;width:100%" onclick="recordRepeat()">🔄 ลองอีกครั้ง</button>`;
   };
-  _repeatRecog.onerror=()=>{_repeatIsRec=false;if(btn)btn.textContent='🎤 พูดตาม';};
-  _repeatRecog.onend=()=>{_repeatIsRec=false;if(btn)btn.textContent='🎤 พูดตาม';};
   _repeatRecog.start();
 }
 
@@ -2497,27 +2510,62 @@ function finishSession(){
 // ═══════════════════════════════════════════════
 // SPEECH APIs
 // ═══════════════════════════════════════════════
+// ── Voice selection ───────────────────────────
+let _voiceA=null, _voiceB=null; // A=female-ish, B=male-ish for dialogue
+function _initVoices(){
+  const vv=speechSynthesis.getVoices();
+  if(!vv.length) return;
+  // Best American female voices (in priority order)
+  const femaleNames=['Samantha','Zoe','Ava','Allison','Kate','Susan','Victoria','Joanna','Microsoft Aria Online (Natural)','Google US English'];
+  // Best American male voices
+  const maleNames=['Alex','Tom','Daniel','Arthur','Oliver','Matthew','Aaron','Microsoft Guy Online (Natural)'];
+  _voiceA=femaleNames.map(n=>vv.find(v=>v.name===n)).find(Boolean)
+    ||vv.find(v=>v.lang==='en-US'&&v.localService&&!v.name.toLowerCase().includes('compact'))
+    ||vv.find(v=>v.lang.startsWith('en-US'));
+  _voiceB=maleNames.map(n=>vv.find(v=>v.name===n)).find(Boolean)
+    ||vv.find(v=>v.lang==='en-US'&&v.localService&&!v.name.toLowerCase().includes('compact')&&v!==_voiceA)
+    ||vv.find(v=>v.lang.startsWith('en')&&v!==_voiceA);
+}
+function _bestVoice(){
+  const vv=speechSynthesis.getVoices();
+  return vv.find(v=>v.name==='Google US English')
+    ||vv.find(v=>v.name==='Microsoft Aria Online (Natural)')
+    ||vv.find(v=>v.name==='Samantha')
+    ||vv.find(v=>v.name==='Alex')
+    ||vv.find(v=>v.name==='Zoe')
+    ||vv.find(v=>v.lang==='en-US'&&v.localService&&!v.name.toLowerCase().includes('compact'))
+    ||vv.find(v=>v.lang.startsWith('en-US'))
+    ||vv.find(v=>v.lang.startsWith('en'));
+}
 function speak(text,rate=1,onEnd){
   if(!window.speechSynthesis)return;
   stopSpeech();
   const u=new SpeechSynthesisUtterance(text);
-  u.lang='en-US';u.rate=rate;u.pitch=1.05;
+  u.lang='en-US';u.rate=rate;u.pitch=1.0;
+  const v=_bestVoice(); if(v)u.voice=v;
   if(onEnd)u.onend=onEnd;
-  const vv=speechSynthesis.getVoices();
-  // Prefer neural/natural voices: Google > Samantha (macOS) > any en-US
-  const v=vv.find(v=>v.name==='Google US English')
-          ||vv.find(v=>v.name==='Samantha')
-          ||vv.find(v=>v.name==='Google UK English Female')
-          ||vv.find(v=>v.name==='Karen')
-          ||vv.find(v=>v.lang==='en-US'&&v.localService&&!v.name.toLowerCase().includes('compact'))
-          ||vv.find(v=>v.lang.startsWith('en-US'))
-          ||vv.find(v=>v.lang.startsWith('en'));
-  if(v)u.voice=v;
-  window._utter=u;
-  speechSynthesis.speak(u);
+  window._utter=u; speechSynthesis.speak(u);
+}
+// Speak as a specific dialogue speaker (A or B) with distinct voice
+function speakAs(text,speaker,rate=0.92,onEnd){
+  if(!window.speechSynthesis)return;
+  stopSpeech();
+  if(!_voiceA) _initVoices();
+  const u=new SpeechSynthesisUtterance(text);
+  u.lang='en-US'; u.rate=rate;
+  if(speaker==='A'){
+    u.voice=_voiceA||_bestVoice(); u.pitch=1.1;
+  } else {
+    u.voice=(_voiceB&&_voiceB!==_voiceA)?_voiceB:_bestVoice(); u.pitch=0.82;
+  }
+  if(onEnd)u.onend=onEnd;
+  window._utter=u; speechSynthesis.speak(u);
 }
 function stopSpeech(){if(window.speechSynthesis)speechSynthesis.cancel()}
-if(window.speechSynthesis){speechSynthesis.getVoices();speechSynthesis.onvoiceschanged=()=>speechSynthesis.getVoices()}
+if(window.speechSynthesis){
+  const _iv=()=>{speechSynthesis.getVoices();_initVoices()};
+  _iv(); speechSynthesis.onvoiceschanged=_iv;
+}
 
 // ═══════════════════════════════════════════════
 // CONFETTI
@@ -2983,7 +3031,7 @@ function playDlgLine(i){
   });
   const el=document.getElementById(`dlg-ln-${i}`);
   if(el) el.scrollIntoView({behavior:'smooth',block:'nearest'});
-  speak(_dlg.lines[i].text,0.9,()=>{ if(_dlgPlaying) setTimeout(()=>playDlgLine(i+1),350); });
+  speakAs(_dlg.lines[i].text,_dlg.lines[i].spk,0.92,()=>{ if(_dlgPlaying) setTimeout(()=>playDlgLine(i+1),400); });
 }
 
 function dlgAnswer(qi,sel,correct){
