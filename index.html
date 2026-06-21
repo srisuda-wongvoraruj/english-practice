@@ -2873,7 +2873,6 @@ const DIALOGUES = [
 let _dlg=null, _dlgPlaying=false, _dlgAnswered=0, _dlgCorrect=0;
 
 function renderDlgList(){
-  showScreen('dlg-list');
   const el=document.getElementById('dlg-card-list');
   if(!el)return;
   el.innerHTML=DIALOGUES.map((d,i)=>`
