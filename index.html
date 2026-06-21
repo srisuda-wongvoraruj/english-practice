@@ -689,10 +689,56 @@ body{
 }
 .phrase-item-en{font-weight:700;color:var(--text);margin-bottom:3px}
 .phrase-item-tip{color:var(--text2);font-size:12px}
+/* ── DIALOGUE LISTENING ── */
+.listen-teaser{background:linear-gradient(135deg,#89B4F7,#9B7FE8);border-radius:18px;padding:14px 16px;margin:0 16px;display:flex;align-items:center;gap:12px;cursor:pointer;color:#fff;box-shadow:var(--shadow-md)}
+.listen-teaser-icon{font-size:30px}
+.listen-teaser-info{flex:1}
+.listen-teaser-title{font-size:14px;font-weight:900}
+.listen-teaser-sub{font-size:11px;opacity:.85;margin-top:2px}
+.dlg-list{padding:14px 16px;display:flex;flex-direction:column;gap:10px}
+.dlg-card{border-radius:16px;padding:14px 16px;display:flex;align-items:center;gap:12px;cursor:pointer;color:#fff;box-shadow:var(--shadow-md)}
+.dlg-card-emoji{font-size:28px}
+.dlg-card-info{flex:1}
+.dlg-card-title{font-size:14px;font-weight:900}
+.dlg-card-sub{font-size:11px;opacity:.85;margin-top:2px}
+.dialogue-wrap{display:flex;flex-direction:column;gap:10px;margin:14px 0}
+.dlg-bubble{border-radius:14px;padding:10px 13px;transition:opacity .3s,transform .3s;max-width:90%}
+.dlg-bubble.active-line{transform:scale(1.02)}
+.dlg-A{background:var(--blue-lt);border:1.5px solid var(--blue);align-self:flex-start}
+.dlg-B{background:var(--purple-lt);border:1.5px solid var(--purple);align-self:flex-end;text-align:right}
+.dlg-name{font-size:10px;font-weight:800;color:var(--text2);margin-bottom:3px}
+.dlg-text{font-size:13px;color:var(--text);line-height:1.5}
 </style>
 </head>
 <body>
 <canvas id="confetti-canvas"></canvas>
+
+<!-- ══════════════ DIALOGUE LIST ══════════════ -->
+<div id="screen-dlg-list" class="screen">
+  <div class="hero">
+    <div class="hero-row">
+      <button class="back-btn" onclick="showScreen('home')">← Back</button>
+    </div>
+    <div style="margin-top:12px">
+      <div style="font-size:36px">🎧</div>
+      <div class="app-title" style="margin-top:6px">ฝึกฟังบทสนทนา</div>
+      <div class="app-sub">ฟังแล้วจับใจความ รับคำแปลและ Key Phrases</div>
+    </div>
+  </div>
+  <div class="dlg-list" id="dlg-card-list"></div>
+</div>
+
+<!-- ══════════════ DIALOGUE PLAY ══════════════ -->
+<div id="screen-dlg-play" class="screen">
+  <div style="background:linear-gradient(135deg,#89B4F7,#9B7FE8);padding:14px 16px 18px;color:#fff">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+      <button class="back-btn" onclick="showScreen('dlg-list')" style="background:rgba(255,255,255,.2);color:#fff;border:none">← Back</button>
+      <div id="dlg-play-title" style="font-size:15px;font-weight:900;flex:1"></div>
+      <span id="dlg-play-ctx" style="font-size:10px;background:rgba(255,255,255,.2);padding:3px 8px;border-radius:100px;font-weight:700"></span>
+    </div>
+  </div>
+  <div id="dlg-play-body" style="padding:14px 16px 40px;overflow-y:auto;max-height:calc(100vh - 80px)"></div>
+</div>
 
 <!-- ══════════════ NOTES ══════════════ -->
 <div id="screen-notes" class="screen">
@@ -806,6 +852,16 @@ body{
     <div class="buddy-teaser-info">
       <div class="buddy-teaser-name">Chat with a Foreign Friend</div>
       <div class="buddy-teaser-sub">ฝึกสนทนาจริงๆ เลือกสถานการณ์ได้เลย →</div>
+    </div>
+    <span style="font-size:22px;opacity:.8">›</span>
+  </div>
+  <div style="height:4px"></div>
+  <div class="sec-title">🎧 ฝึกฟังบทสนทนา</div>
+  <div class="listen-teaser" onclick="showScreen('dlg-list')">
+    <div class="listen-teaser-icon">🎧</div>
+    <div class="listen-teaser-info">
+      <div class="listen-teaser-title">Listening Comprehension</div>
+      <div class="listen-teaser-sub">ฟังบทสนทนาจริง แล้วตอบคำถามจับใจความ →</div>
     </div>
     <span style="font-size:22px;opacity:.8">›</span>
   </div>
@@ -1786,6 +1842,7 @@ function showScreen(id) {
   if(id==='home')      renderHome();
   if(id==='scenarios') renderScenarios();
   if(id==='notes')     renderNotes();
+  if(id==='dlg-list')  renderDlgList();
 }
 
 // ═══════════════════════════════════════════════
@@ -2114,7 +2171,8 @@ function toggleRec(){
   let _done=false;
   function _attempt(){
     if(!_isRec||_done) return;
-    if(_recog){try{_recog.abort()}catch(e){}}
+    // Null out handlers before abort to prevent stale onend re-fire (causes race condition)
+    if(_recog){_recog.onresult=null;_recog.onerror=null;_recog.onend=null;try{_recog.abort()}catch(e){}}
     const r=new SR(); _recog=r;
     r.lang='en-US'; r.interimResults=false; r.maxAlternatives=3;
     r.onresult=e=>{
@@ -2124,13 +2182,14 @@ function toggleRec(){
       showCompare(e.results[0][0].transcript,window._spk.en);
     };
     r.onerror=e=>{
-      if(e.error==='not-allowed'){
+      if(e.error==='not-allowed'||e.error==='service-not-allowed'){
         _done=true; _isRec=false;
         if(btn){btn.classList.remove('rec');btn.innerHTML='🎤';}
         if(lbl){lbl.classList.remove('active');lbl.textContent='❌ ไม่ได้รับอนุญาตใช้ไมค์';}
       }
     };
-    r.onend=()=>{ if(_isRec&&!_done) setTimeout(_attempt,100); };
+    // Direct call (no setTimeout) keeps iOS Safari event chain intact
+    r.onend=()=>{ if(_isRec&&!_done) _attempt(); };
     try{r.start();}catch(e){if(_isRec&&!_done) setTimeout(_attempt,200);}
   }
   _attempt();
@@ -2553,7 +2612,7 @@ function chatToggleRec() {
   let _done=false;
   function _attempt(){
     if(!chat.isRec||_done) return;
-    if(chat.recog){try{chat.recog.abort()}catch(e){}}
+    if(chat.recog){chat.recog.onresult=null;chat.recog.onerror=null;chat.recog.onend=null;try{chat.recog.abort()}catch(e){}}
     const r=new SR(); chat.recog=r;
     r.lang='en-US'; r.interimResults=false;
     r.onresult=e=>{
@@ -2563,13 +2622,13 @@ function chatToggleRec() {
       userResponded(e.results[0][0].transcript);
     };
     r.onerror=e=>{
-      if(e.error==='not-allowed'){
+      if(e.error==='not-allowed'||e.error==='service-not-allowed'){
         _done=true; chat.isRec=false;
         if(btn){btn.classList.remove('rec');btn.innerHTML='🎤';}
         if(lbl){lbl.classList.remove('active');lbl.textContent='❌ ไม่ได้รับอนุญาตใช้ไมค์';}
       }
     };
-    r.onend=()=>{ if(chat.isRec&&!_done) setTimeout(_attempt,100); };
+    r.onend=()=>{ if(chat.isRec&&!_done) _attempt(); };
     try{r.start();}catch(e){if(chat.isRec&&!_done) setTimeout(_attempt,200);}
   }
   _attempt();
@@ -2645,6 +2704,294 @@ function finishChat() {
       <button class="btn btn-ghost btn-full" onclick="showScreen('scenarios')">← เลือกสถานการณ์ใหม่</button>
     </div>`;
   zone.scrollIntoView({behavior:'smooth'});
+}
+
+// ── DIALOGUE LISTENING ─────────────────────────
+const DIALOGUES = [
+  {
+    title:'Project Update',emoji:'📋',context:'Office Meeting',
+    bg:'linear-gradient(135deg,#7B5FD0,#9B7FE8)',
+    lines:[
+      {spk:'A',name:'Mark', text:"Hey Lisa, can you give me a quick update on the Henderson account?"},
+      {spk:'B',name:'Lisa', text:"Sure! So we're about 70% done with the proposal. We hit a small snag with the data, though."},
+      {spk:'A',name:'Mark', text:"What kind of snag? Is it going to affect the deadline?"},
+      {spk:'B',name:'Lisa', text:"It might push us back by a day or two. I'm waiting on numbers from the finance team."},
+      {spk:'A',name:'Mark', text:"Okay, have you looped them in already?"},
+      {spk:'B',name:'Lisa', text:"Yeah, I sent them a message this morning. I should hear back by end of day."},
+      {spk:'A',name:'Mark', text:"Perfect. And what about the design part — is that done?"},
+      {spk:'B',name:'Lisa', text:"The design is actually already signed off. The client loved the mockups."},
+      {spk:'A',name:'Mark', text:"That's great news! Okay, just keep me posted on the finance numbers."},
+      {spk:'B',name:'Lisa', text:"Will do. I'll send you an update by 5 PM."}
+    ],
+    questions:[
+      {q:"What is Lisa working on?",opts:["A proposal for Henderson","A budget report","A design mockup","A client email"],ans:0},
+      {q:"Why might the deadline be pushed back?",opts:["Design issues","Waiting for finance data","Client complaints","Team is on leave"],ans:1},
+      {q:"What has already been approved by the client?",opts:["The proposal","The budget","The design mockups","The timeline"],ans:2}
+    ],
+    translation:[
+      {name:'Mark', th:"เฮ้ Lisa อัปเดตเรื่อง Henderson account ให้ฟังหน่อยได้ไหม"},
+      {name:'Lisa', th:"ได้เลย! ตอนนี้ proposal เสร็จไปแล้วประมาณ 70% แต่เจอปัญหาเล็กน้อยเรื่องข้อมูล"},
+      {name:'Mark', th:"ปัญหาแบบไหน? จะกระทบ deadline ไหม?"},
+      {name:'Lisa', th:"อาจจะช้าไปหนึ่งหรือสองวัน กำลังรอตัวเลขจากทีม finance อยู่"},
+      {name:'Mark', th:"โอเค แล้วดึงพวกเขาเข้ามารู้เรื่องแล้วหรือยัง?"},
+      {name:'Lisa', th:"ส่งข้อความไปตอนเช้าแล้ว น่าจะได้รับคำตอบก่อนเลิกงาน"},
+      {name:'Mark', th:"โอเค แล้วส่วน design ล่ะ เสร็จแล้วหรือยัง?"},
+      {name:'Lisa', th:"ส่วน design ผ่านการอนุมัติแล้ว ลูกค้าชอบ mockup มากเลย"},
+      {name:'Mark', th:"ข่าวดีมาก! โอเค อัปเดตตัวเลข finance ให้ด้วยนะ"},
+      {name:'Lisa', th:"ได้เลย จะส่ง update ให้ภายใน 5 โมงเย็น"}
+    ],
+    keyPhrases:[
+      {en:"give me a quick update",th:"อัปเดตสั้นๆ ให้ฟังหน่อย",tip:"ใช้ในที่ทำงานเพื่อขอสรุปสถานการณ์"},
+      {en:"hit a small snag",th:"เจอปัญหาเล็กน้อย",tip:"snag = ปัญหาที่ไม่คาดคิด ฟังดูเป็นธรรมชาติกว่า 'problem'"},
+      {en:"loop them in",th:"ดึงให้เข้ามาร่วมด้วย / แจ้งให้รู้",tip:"ใช้บ่อยมากในอีเมลและที่ประชุม"},
+      {en:"signed off",th:"ผ่านการอนุมัติแล้ว",tip:"sign off on something = อนุมัติอย่างเป็นทางการ"},
+      {en:"keep me posted",th:"อัปเดตให้ฉันทราบด้วยนะ",tip:"礼 ใช้แทน 'please inform me' ฟังเป็นธรรมชาติมากกว่า"}
+    ]
+  },
+  {
+    title:'Client Call',emoji:'📞',context:'Business Phone Call',
+    bg:'linear-gradient(135deg,#F4A7C0,#E0789F)',
+    lines:[
+      {spk:'A',name:'Emma', text:"Hi Mr. Davies, thanks for jumping on this call. How's everything going on your end?"},
+      {spk:'B',name:'Davies', text:"Pretty good, thanks. We just wrapped up our Q3 review, so it's been a busy week."},
+      {spk:'A',name:'Emma', text:"I hear you! So I wanted to touch base about the delivery schedule. We're looking at late October."},
+      {spk:'B',name:'Davies', text:"Actually, that might be a problem. Our launch is set for the 15th. Can we move it up at all?"},
+      {spk:'A',name:'Emma', text:"I'll need to check with our production team, but I think we can aim for the 10th. Would that work?"},
+      {spk:'B',name:'Davies', text:"That would be ideal, yes. And did you get my email about the packaging changes?"},
+      {spk:'A',name:'Emma', text:"I did! We're making those adjustments now. You'll see revised samples by end of this week."},
+      {spk:'B',name:'Davies', text:"Excellent. And the pricing stays the same?"},
+      {spk:'A',name:'Emma', text:"Yes, no changes there. Everything else stays as agreed."},
+      {spk:'B',name:'Davies', text:"Perfect. Let's lock that in then. Thanks, Emma."}
+    ],
+    questions:[
+      {q:"Why is the original delivery date a problem?",opts:["It's too expensive","The client's launch is on the 15th","Production isn't ready","The packaging isn't done"],ans:1},
+      {q:"What does Emma offer as a solution?",opts:["Deliver on the 20th","Cancel the order","Deliver by the 10th","Hire more staff"],ans:2},
+      {q:"What will Mr. Davies receive by end of week?",opts:["A new price list","Revised packaging samples","A contract update","A refund"],ans:1}
+    ],
+    translation:[
+      {name:'Emma', th:"สวัสดีค่ะคุณ Davies ขอบคุณที่สละเวลาคุยกัน ทุกอย่างเป็นยังไงบ้าง?"},
+      {name:'Davies', th:"ดีมากครับ เพิ่งเสร็จจาก review Q3 สัปดาห์นี้ยุ่งมากเลย"},
+      {name:'Emma', th:"เข้าใจเลย! โทรมาเพื่ออัปเดตเรื่องตารางส่งของค่ะ ดูเหมือนจะเป็นปลายเดือนตุลาคม"},
+      {name:'Davies', th:"อ๋อ นั่นอาจเป็นปัญหาครับ เราเปิดตัววันที่ 15 เลื่อนให้เร็วขึ้นได้ไหม?"},
+      {name:'Emma', th:"ต้องเช็คกับทีม production ก่อนค่ะ แต่คิดว่าน่าจะทำได้ภายในวันที่ 10 พอไหมคะ?"},
+      {name:'Davies', th:"ดีมากเลยครับ แล้วได้รับอีเมลเรื่องเปลี่ยนแพกเกจไหม?"},
+      {name:'Emma', th:"ได้รับแล้วค่ะ กำลังปรับอยู่ คุณ Davies จะเห็นตัวอย่างใหม่ภายในสัปดาห์นี้"},
+      {name:'Davies', th:"เยี่ยมมาก แล้วราคาเหมือนเดิมนะ?"},
+      {name:'Emma', th:"ใช่ค่ะ ไม่มีการเปลี่ยนแปลง ส่วนอื่นๆ ก็เหมือนที่ตกลงกันไว้"},
+      {name:'Davies', th:"ตกลงเลย ขอบคุณมากนะ Emma"}
+    ],
+    keyPhrases:[
+      {en:"jumping on this call",th:"เข้าร่วมการโทรนี้",tip:"ฟังเป็นธรรมชาติกว่า 'joining this call'"},
+      {en:"touch base",th:"ติดต่อเพื่ออัปเดตสถานการณ์",tip:"'Let's touch base later' = คุยกันทีหลัง"},
+      {en:"move it up",th:"เลื่อนให้เร็วขึ้น",tip:"ตรงข้าม = 'push it back' = เลื่อนออกไป"},
+      {en:"wrap up",th:"เสร็จสิ้น / จบแล้ว",tip:"ใช้ได้กับทั้งงานและการประชุม"},
+      {en:"lock that in",th:"ยืนยันและตกลงกันแล้ว",tip:"ใช้เมื่อสรุปข้อตกลงอย่างเป็นทางการ"}
+    ]
+  },
+  {
+    title:'Networking Event',emoji:'🤝',context:'Business Conference',
+    bg:'linear-gradient(135deg,#6DC78A,#3d8f5e)',
+    lines:[
+      {spk:'A',name:'Jake', text:"Hi there! I don't think we've met. I'm Jake — I work in marketing at TechFlow."},
+      {spk:'B',name:'Nina', text:"Oh nice! I'm Nina. I'm a product manager at Bloom Digital. Are you enjoying the conference?"},
+      {spk:'A',name:'Jake', text:"Honestly, yeah! The keynote this morning was really eye-opening. What about you?"},
+      {spk:'B',name:'Nina', text:"Same! The talk on AI in customer service was especially relevant to what we're doing."},
+      {spk:'A',name:'Jake', text:"Oh really? How are you guys using AI in your work?"},
+      {spk:'B',name:'Nina', text:"We're testing a chatbot for onboarding new users. It's early stages but showing promising results."},
+      {spk:'A',name:'Jake', text:"That's really interesting. We've been looking into something similar for lead generation."},
+      {spk:'B',name:'Nina', text:"Oh, we should definitely compare notes sometime. Are you on LinkedIn?"},
+      {spk:'A',name:'Jake', text:"Absolutely — Jake Moran, M-O-R-A-N. Send me a connection request!"},
+      {spk:'B',name:'Nina', text:"Will do! Are you going to the networking dinner tonight?"}
+    ],
+    questions:[
+      {q:"Where does Jake work?",opts:["Bloom Digital","TechFlow","Innovate Labs","NinaCorp"],ans:1},
+      {q:"What is Nina's company currently testing?",opts:["A marketing tool","An HR chatbot","An AI chatbot for onboarding","A sales platform"],ans:2},
+      {q:"How do Jake and Nina plan to stay in touch?",opts:["Email","Phone","LinkedIn","WhatsApp"],ans:2}
+    ],
+    translation:[
+      {name:'Jake', th:"สวัสดี! คิดว่าเราคงยังไม่เคยเจอกัน ผม Jake ทำ marketing ที่ TechFlow"},
+      {name:'Nina', th:"ยินดีมากเลย ดิฉัน Nina เป็น product manager ที่ Bloom Digital มางานนี้สนุกไหม?"},
+      {name:'Jake', th:"สนุกมากเลย keynote เช้านี้เปิดโลกทัศน์มาก แล้วคุณล่ะ?"},
+      {name:'Nina', th:"เหมือนกัน! การพูดเรื่อง AI ใน customer service เกี่ยวข้องกับงานที่ทำอยู่มาก"},
+      {name:'Jake', th:"โอ้จริงๆ เหรอ? ทำงานบริษัทใช้ AI ยังไงบ้าง?"},
+      {name:'Nina', th:"กำลังทดสอบ chatbot สำหรับ onboard ผู้ใช้ใหม่อยู่ ยังช่วงแรกๆ แต่ผลดีมีแนวโน้มดี"},
+      {name:'Jake', th:"น่าสนใจมากเลย เราก็กำลังมองหาอะไรคล้ายๆ กันสำหรับ lead generation เหมือนกัน"},
+      {name:'Nina', th:"โอ้ เราน่าจะได้แลกเปลี่ยนข้อมูลกันซักวัน อยู่ใน LinkedIn ไหม?"},
+      {name:'Jake', th:"อยู่สิ — Jake Moran, M-O-R-A-N ส่ง connection request มาได้เลย!"},
+      {name:'Nina', th:"ได้เลย! แล้วคืนนี้ไป networking dinner ด้วยไหม?"}
+    ],
+    keyPhrases:[
+      {en:"I don't think we've met",th:"คิดว่าเราคงยังไม่เคยเจอกัน",tip:"วิธีแนะนำตัวที่สุภาพและเป็นธรรมชาติ"},
+      {en:"eye-opening",th:"เปิดโลกทัศน์ / น่าประทับใจ",tip:"'The presentation was really eye-opening'"},
+      {en:"early stages",th:"ช่วงเริ่มต้น / ยังเป็น prototype",tip:"ใช้แทน 'not finished yet' ฟังดูเป็นมืออาชีพกว่า"},
+      {en:"compare notes",th:"แลกเปลี่ยนข้อมูลและประสบการณ์กัน",tip:"ไม่ได้แปลว่า 'ดูโน้ตของกัน' แต่หมายถึงแบ่งปันข้อมูล"},
+      {en:"send me a connection request",th:"ส่งคำขอ connect มาหาฉัน",tip:"ประโยคปิดบทสนทนาในงาน networking ที่ใช้กันมาก"}
+    ]
+  },
+  {
+    title:'Performance Review',emoji:'⭐',context:'Annual Review',
+    bg:'linear-gradient(135deg,#F5D06A,#e6a800)',
+    lines:[
+      {spk:'A',name:'Rachel', text:"Hi David, thanks for coming in. Ready for your annual review?"},
+      {spk:'B',name:'David', text:"Yes, a bit nervous to be honest! But ready."},
+      {spk:'A',name:'Rachel', text:"No need to be nervous — it's mostly positive. You've had a really strong year overall."},
+      {spk:'B',name:'David', text:"That's great to hear. I worked really hard on the Henderson project especially."},
+      {spk:'A',name:'Rachel', text:"And it shows! The client gave you excellent feedback. They mentioned how responsive you were."},
+      {spk:'B',name:'David', text:"Oh, that means a lot. I tried to reply to their emails within a couple of hours."},
+      {spk:'A',name:'Rachel', text:"That's exactly what we need. Now, one area to work on — your presentation skills."},
+      {spk:'B',name:'David', text:"Yeah, I know. I get nervous in front of large groups. Any suggestions?"},
+      {spk:'A',name:'Rachel', text:"We could enroll you in a public speaking workshop. Would you be open to that?"},
+      {spk:'B',name:'David', text:"Definitely! I'd really appreciate that opportunity."}
+    ],
+    questions:[
+      {q:"How does Rachel describe David's year?",opts:["Average","Disappointing","Strong and positive","Needs improvement"],ans:2},
+      {q:"What did the client specifically mention about David?",opts:["His technical skills","How responsive he was","His presentations","His leadership"],ans:1},
+      {q:"What development opportunity does Rachel suggest?",opts:["A leadership course","A writing workshop","A public speaking workshop","A technical training"],ans:2}
+    ],
+    translation:[
+      {name:'Rachel', th:"สวัสดี David ขอบคุณที่มา พร้อมสำหรับ annual review แล้วหรือยัง?"},
+      {name:'David', th:"พร้อมแล้วครับ แต่ซื่อสัตย์พูดเลยคือตื่นเต้นนิดหน่อย!"},
+      {name:'Rachel', th:"ไม่ต้องตื่นเต้นนะ ส่วนใหญ่เป็นข่าวดี ปีนี้คุณทำได้ดีมากโดยรวม"},
+      {name:'David', th:"ดีใจมากเลย โดยเฉพาะ Henderson project ทุ่มเทมากเป็นพิเศษ"},
+      {name:'Rachel', th:"มันเห็นได้ชัดเลย! ลูกค้าให้ feedback ดีมาก เขาพูดถึงว่าคุณ responsive มากแค่ไหน"},
+      {name:'David', th:"โอ้ ดีใจมากเลย พยายามตอบอีเมลภายในไม่กี่ชั่วโมงตลอด"},
+      {name:'Rachel', th:"นั่นแหละที่เราต้องการเลย ทีนี้มีส่วนที่ต้องพัฒนา — ทักษะการนำเสนอ"},
+      {name:'David', th:"ใช่ครับ รู้ตัวเอง ตื่นเต้นมากเวลาพูดหน้าคนเยอะๆ มีคำแนะนำไหม?"},
+      {name:'Rachel', th:"เราอาจสมัครคุณเข้า workshop public speaking ได้ คุณสนใจไหม?"},
+      {name:'David', th:"สนใจมากเลยครับ! ขอบคุณมากสำหรับโอกาสนี้"}
+    ],
+    keyPhrases:[
+      {en:"to be honest",th:"พูดตรงๆ เลย / ซื่อสัตย์พูดเลย",tip:"ใช้ก่อนความคิดเห็นที่อาจฟังดูละเอียดอ่อน"},
+      {en:"and it shows",th:"มันเห็นได้ชัดเจน / สังเกตได้",tip:"คำชมที่แสดงให้รู้ว่าความพยายามมีผล"},
+      {en:"that means a lot",th:"นั่นหมายความมากสำหรับฉัน / ดีใจมาก",tip:"วิธีขอบคุณหรือรับคำชมที่ฟังเป็นธรรมชาติ"},
+      {en:"open to that",th:"เปิดรับสิ่งนั้น / ยินดีลองดู",tip:"'Are you open to feedback?' = รับ feedback ได้ไหม?"},
+      {en:"enroll you in",th:"สมัครให้คุณเข้าร่วม",tip:"enroll in a course/workshop = ลงทะเบียนเรียน"}
+    ]
+  }
+];
+
+let _dlg=null, _dlgPlaying=false, _dlgAnswered=0, _dlgCorrect=0;
+
+function renderDlgList(){
+  showScreen('dlg-list');
+  const el=document.getElementById('dlg-card-list');
+  if(!el)return;
+  el.innerHTML=DIALOGUES.map((d,i)=>`
+    <div class="dlg-card" onclick="startDialogue(${i})" style="background:${d.bg}">
+      <div class="dlg-card-emoji">${d.emoji}</div>
+      <div class="dlg-card-info">
+        <div class="dlg-card-title">${d.title}</div>
+        <div class="dlg-card-sub">${d.context} · ${d.lines.length} lines</div>
+      </div>
+      <span style="font-size:10px;background:rgba(255,255,255,.25);padding:3px 8px;border-radius:100px;font-weight:800;color:#fff">B2</span>
+    </div>`).join('');
+}
+
+function startDialogue(idx){
+  _dlg=DIALOGUES[idx]; _dlgPlaying=false; _dlgAnswered=0; _dlgCorrect=0;
+  document.getElementById('dlg-play-title').textContent=_dlg.title;
+  document.getElementById('dlg-play-ctx').textContent=_dlg.context;
+  const bubblesHtml=_dlg.lines.map((l,i)=>`
+    <div class="dlg-bubble dlg-${l.spk}" id="dlg-ln-${i}" style="opacity:.35">
+      <div class="dlg-name">${l.spk==='A'?'👤':'👥'} ${l.name}</div>
+      <div class="dlg-text">${l.text}</div>
+    </div>`).join('');
+  const qHtml=_dlg.questions.map((q,qi)=>`
+    <div style="margin-bottom:14px">
+      <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:8px">${qi+1}. ${q.q}</div>
+      <div id="dlg-opts-${qi}">
+        ${q.opts.map((o,oi)=>`
+          <div class="opt" onclick="dlgAnswer(${qi},${oi},${q.ans})">
+            <div class="opt-num">${String.fromCharCode(65+oi)}</div><div>${o}</div>
+          </div>`).join('')}
+      </div>
+    </div>`).join('');
+  document.getElementById('dlg-play-body').innerHTML=`
+    <div class="dialogue-wrap">${bubblesHtml}</div>
+    <div style="text-align:center;margin:10px 0 4px">
+      <button class="play-ring" id="dlg-play-btn" onclick="playDialogueLines()">▶</button>
+      <div style="font-size:12px;color:var(--muted);margin-top:6px">กด ▶ ฟังบทสนทนาทั้งหมดก่อน</div>
+    </div>
+    <div id="dlg-q-zone" style="display:none;margin-top:16px">
+      <div style="font-size:13px;font-weight:800;color:var(--text);margin-bottom:10px">❓ ตอบคำถามหลังฟัง</div>
+      ${qHtml}
+      <button class="btn btn-primary btn-full" id="dlg-reveal-btn" style="display:none;margin-top:4px" onclick="dlgReveal()">📖 ดูคำแปล + Key Phrases</button>
+    </div>
+    <div id="dlg-result"></div>`;
+  showScreen('dlg-play');
+}
+
+function playDialogueLines(){
+  if(_dlgPlaying){stopSpeech();_dlgPlaying=false;const b=document.getElementById('dlg-play-btn');if(b){b.innerHTML='▶';b.classList.remove('playing');}return;}
+  _dlgPlaying=true;
+  const btn=document.getElementById('dlg-play-btn');
+  if(btn){btn.innerHTML='⏹';btn.classList.add('playing');}
+  playDlgLine(0);
+}
+
+function playDlgLine(i){
+  if(!_dlgPlaying||i>=_dlg.lines.length){
+    _dlgPlaying=false;
+    const btn=document.getElementById('dlg-play-btn');
+    if(btn){btn.innerHTML='▶';btn.classList.remove('playing');}
+    if(i>=_dlg.lines.length){
+      const qz=document.getElementById('dlg-q-zone');
+      if(qz){qz.style.display='block';qz.scrollIntoView({behavior:'smooth',block:'start'});}
+    }
+    return;
+  }
+  _dlg.lines.forEach((_,j)=>{
+    const el=document.getElementById(`dlg-ln-${j}`);
+    if(el){el.style.opacity=j===i?'1':'0.3';el.classList.toggle('active-line',j===i);}
+  });
+  const el=document.getElementById(`dlg-ln-${i}`);
+  if(el) el.scrollIntoView({behavior:'smooth',block:'nearest'});
+  speak(_dlg.lines[i].text,0.9,()=>{ if(_dlgPlaying) setTimeout(()=>playDlgLine(i+1),350); });
+}
+
+function dlgAnswer(qi,sel,correct){
+  const opts=document.querySelectorAll(`#dlg-opts-${qi} .opt`);
+  if([...opts].some(o=>o.classList.contains('correct')||o.classList.contains('wrong'))) return;
+  opts.forEach((o,i)=>{
+    o.classList.add('disabled');
+    if(i===correct) o.classList.add('correct');
+    else if(i===sel) o.classList.add('wrong');
+  });
+  if(sel===correct) _dlgCorrect++;
+  _dlgAnswered++;
+  if(_dlgAnswered>=_dlg.questions.length){
+    const btn=document.getElementById('dlg-reveal-btn');
+    if(btn) btn.style.display='block';
+  }
+}
+
+function dlgReveal(){
+  const pct=Math.round(_dlgCorrect/_dlg.questions.length*100);
+  if(pct>=70) fireConfetti();
+  _dlg.keyPhrases.forEach(p=>saveNote({phrase:p.en,context:_dlg.title+' — Listening',tip:p.tip}));
+  const transHtml=_dlg.translation.map(t=>`
+    <div style="margin-bottom:8px">
+      <span style="font-size:10px;font-weight:800;color:var(--purple)">${t.name}:</span>
+      <span style="font-size:12px;color:var(--text2);margin-left:4px">${t.th}</span>
+    </div>`).join('');
+  const phHtml=_dlg.keyPhrases.map(p=>`
+    <div style="padding:9px 0;border-bottom:1px solid var(--border)">
+      <div style="font-size:13px;font-weight:800;color:var(--purple)">"${p.en}"</div>
+      <div style="font-size:12px;color:var(--text2);margin-top:2px">${p.th}</div>
+      <div style="font-size:11px;color:var(--muted);margin-top:2px">💡 ${p.tip}</div>
+    </div>`).join('');
+  document.getElementById('dlg-reveal-btn').style.display='none';
+  document.getElementById('dlg-result').innerHTML=`
+    <div class="cmp-card fade-in" style="margin-top:12px">
+      <div style="text-align:center;margin-bottom:12px">
+        <div style="font-size:22px;font-weight:900;color:var(--purple)">${pct>=80?'🌟':pct>=60?'😊':'💪'} ${_dlgCorrect}/${_dlg.questions.length} ถูก</div>
+      </div>
+      <div style="font-size:13px;font-weight:800;margin-bottom:8px">🇹🇭 คำแปลบทสนทนา</div>
+      <div style="background:var(--purple-lt);border-radius:10px;padding:12px;margin-bottom:14px">${transHtml}</div>
+      <div style="font-size:13px;font-weight:800;margin-bottom:6px">🔑 Key Phrases <span style="font-size:11px;color:var(--green);font-weight:700">(บันทึกใน Notes แล้ว ✓)</span></div>
+      ${phHtml}
+      <button onclick="playDialogueLines()" style="margin-top:12px;background:transparent;border:1.5px solid var(--purple);border-radius:100px;padding:6px 16px;font-size:12px;font-weight:700;color:var(--purple);cursor:pointer;width:100%">🔊 ฟังอีกครั้ง</button>
+    </div>`;
 }
 
 // ── NOTES ──
