@@ -1461,6 +1461,9 @@ let _repeatRecog=null, _repeatIsRec=false;
 // Module-level so stop-tap can access accumulated text
 let _rFinal='', _rConf=0, _rConfN=0;
 
+let _shadowRecog=null, _shadowIsRec=false, _shadowSegIdx=-1;
+let _sRFinal='', _sRConf=0, _sRConfN=0;
+
 function _calcRepeatScore(target, said, conf, confN){
   const scoreEl=document.getElementById('repeat-score-area');
   if(!scoreEl||!said.trim()) return;
@@ -2192,23 +2195,21 @@ function toggleRec(){
   _isRec=true;
   if(btn){btn.classList.add('rec');btn.innerHTML='⏹';}
   if(lbl){lbl.textContent='🎙 กำลังฟัง...';lbl.classList.add('active');}
-  let _done=false; _finalText=''; // reset module-level var
+  let _done=false; _finalText='';
   function _attempt(){
     if(!_isRec||_done) return;
     if(_recog){_recog.onresult=null;_recog.onerror=null;_recog.onend=null;try{_recog.abort()}catch(e){}}
     const r=new SR(); _recog=r;
-    r.lang='en-US'; r.continuous=true; r.interimResults=true; r.maxAlternatives=3;
+    // continuous:false works more reliably on iOS Safari
+    r.lang='en-US'; r.continuous=false; r.interimResults=false; r.maxAlternatives=3;
     r.onresult=e=>{
-      let interim='', final='';
-      for(let i=e.resultIndex;i<e.results.length;i++){
-        if(e.results[i].isFinal) final+=e.results[i][0].transcript+' ';
-        else interim+=e.results[i][0].transcript;
-      }
-      if(interim&&lbl) lbl.textContent='🎙 '+interim;
-      if(final){
-        _finalText+=final;
-        if(lbl) lbl.textContent='🎙 '+_finalText;
-      }
+      if(!e.results||!e.results.length) return;
+      const said=e.results[0][0].transcript;
+      if(!said.trim()) return;
+      _done=true; _isRec=false;
+      if(btn){btn.classList.remove('rec');btn.innerHTML='🎤';}
+      if(lbl){lbl.classList.remove('active');lbl.textContent='"'+said+'"';}
+      showCompare(said, window._spk.en);
     };
     r.onerror=e=>{
       if(e.error==='not-allowed'||e.error==='service-not-allowed'){
@@ -2218,19 +2219,9 @@ function toggleRec(){
       }
     };
     r.onend=()=>{
-      if(!_isRec||_done) return;
-      if(_finalText.trim()){
-        // Got speech — process it
-        _done=true; _isRec=false;
-        if(btn){btn.classList.remove('rec');btn.innerHTML='🎤';}
-        if(lbl){lbl.classList.remove('active');lbl.textContent='เสร็จแล้ว!';}
-        showCompare(_finalText.trim(),window._spk.en);
-      } else {
-        // No speech yet — restart to keep listening
-        _attempt();
-      }
+      if(_isRec&&!_done) _attempt(); // restart if no result yet
     };
-    try{r.start();}catch(e){if(_isRec&&!_done) setTimeout(_attempt,200);}
+    try{r.start();}catch(e){if(_isRec&&!_done) setTimeout(_attempt,300);}
   }
   _attempt();
 }
@@ -2405,8 +2396,9 @@ function renderShadow(ex) {
       <div class="guide-title">✨ วิธีฝึก Shadow Speaking</div>
       <div class="guide-steps">
         1️⃣ กด Listen เพื่อฟังประโยค<br>
-        2️⃣ พูดตามทันที (shadow!) ให้เสียงซ้อนกัน<br>
-        3️⃣ กด Done เพื่อไปส่วนถัดไป
+        2️⃣ กด 🎤 พูดตาม แล้วพูดตามเลย (shadow!)<br>
+        3️⃣ กด ⏹ หยุด เพื่อดูคะแนน<br>
+        4️⃣ กด Done เพื่อไปส่วนถัดไป
       </div>
     </div>
     <div id="segs-wrap">
@@ -2420,14 +2412,76 @@ function renderShadow(ex) {
           <div class="seg-th" id="st${i}" style="${i>0?'display:none':''}">${s.th}</div>
           <div class="seg-btns">
             <button class="btn btn-outline btn-sm" id="sl${i}" ${i>0?'disabled':''} onclick="shadowListen(${i})">▶ Listen</button>
+            <button class="btn btn-primary btn-sm" id="sr${i}" ${i>0?'disabled':''} onclick="shadowRecord(${i})">🎤 พูดตาม</button>
             <button class="btn btn-green btn-sm"   id="sd${i}" ${i>0?'disabled':''} onclick="shadowDone(${i},${ex.segs.length})">✓ Done</button>
           </div>
+          <div id="shadow-sc-${i}" style="margin-top:8px"></div>
         </div>`).join('')}
     </div>
     <div class="next-area" id="next-area"></div>`;
 }
 
 function shadowListen(i){stopSpeech();speak(S.exList[S.exIdx].segs[i].en,0.82)}
+
+function _calcShadowScore(segIdx, target, said, conf, confN){
+  const scoreEl=document.getElementById('shadow-sc-'+segIdx);
+  if(!scoreEl||!said.trim()) return;
+  const tw=target.toLowerCase().replace(/[^a-z\s']/g,'').split(/\s+/).filter(Boolean);
+  const sw=said.toLowerCase().replace(/[^a-z\s']/g,'').split(/\s+/).filter(Boolean);
+  const used=[...sw];let ok=0;
+  tw.forEach(w=>{const j=used.indexOf(w);if(j!==-1){ok++;used.splice(j,1)}});
+  const accuracy=Math.round(ok/tw.length*100);
+  const pronunciation=confN?Math.round(conf/confN*100):75;
+  const naturalness=calcNaturalness(said);
+  const avg=Math.round((accuracy+pronunciation+naturalness)/3);
+  if(!S._shadowScores) S._shadowScores={};
+  S._shadowScores[segIdx]=avg;
+  scoreEl.innerHTML=renderScoreCard(accuracy,pronunciation,naturalness,target,said)+
+    `<button class="btn btn-sm btn-outline" style="margin-top:8px;width:100%" onclick="shadowRecord(${segIdx})">🔄 ลองอีกครั้ง</button>`;
+}
+
+function shadowRecord(i){
+  const target=S.exList[S.exIdx].segs[i].en; if(!target) return;
+  const btn=document.getElementById('sr'+i);
+  const scoreEl=document.getElementById('shadow-sc-'+i);
+  if(_shadowIsRec && _shadowSegIdx===i){
+    _shadowIsRec=false; _shadowSegIdx=-1;
+    if(_shadowRecog){_shadowRecog.onresult=null;_shadowRecog.onerror=null;_shadowRecog.onend=null;try{_shadowRecog.abort()}catch(e){}}
+    if(btn){btn.textContent='🎤 พูดตาม';btn.classList.remove('rec');}
+    _calcShadowScore(i,target,_sRFinal,_sRConf,_sRConfN);
+    return;
+  }
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!SR){if(btn)btn.textContent='❌ ต้องใช้ Chrome';return}
+  stopSpeech();
+  _shadowIsRec=true; _shadowSegIdx=i; _sRFinal=''; _sRConf=0; _sRConfN=0;
+  if(btn){btn.textContent='⏹ หยุด';btn.classList.add('rec');}
+  if(scoreEl) scoreEl.innerHTML='<div style="color:var(--muted);font-size:12px;text-align:center">🎙 กำลังฟัง...</div>';
+  _shadowRecog=new SR();
+  _shadowRecog.lang='en-US'; _shadowRecog.continuous=true; _shadowRecog.interimResults=true;
+  _shadowRecog.onresult=e=>{
+    let interim='',final='';
+    for(let j=e.resultIndex;j<e.results.length;j++){
+      if(e.results[j].isFinal){final+=e.results[j][0].transcript+' ';_sRConf+=(e.results[j][0].confidence||0.75);_sRConfN++;}
+      else interim+=e.results[j][0].transcript;
+    }
+    if(interim&&scoreEl) scoreEl.innerHTML=`<div style="color:var(--muted);font-size:12px;text-align:center">🎙 ${interim}</div>`;
+    if(final) _sRFinal+=final;
+  };
+  _shadowRecog.onerror=e=>{
+    if(e.error==='not-allowed'||e.error==='service-not-allowed'){
+      _shadowIsRec=false; _shadowSegIdx=-1;
+      if(btn){btn.textContent='🎤 พูดตาม';btn.classList.remove('rec');}
+      if(scoreEl) scoreEl.innerHTML='<div style="color:red;font-size:12px">❌ ไม่ได้รับอนุญาตใช้ไมค์</div>';
+    }
+  };
+  _shadowRecog.onend=()=>{
+    _shadowIsRec=false; _shadowSegIdx=-1;
+    if(btn){btn.textContent='🎤 พูดตาม';btn.classList.remove('rec');}
+    _calcShadowScore(i,target,_sRFinal,_sRConf,_sRConfN);
+  };
+  _shadowRecog.start();
+}
 
 function shadowDone(i,total){
   document.getElementById('ss'+i).classList.replace('seg-active','seg-done');
@@ -2437,10 +2491,16 @@ function shadowDone(i,total){
     document.getElementById('se'+n).style.filter='';
     const th=document.getElementById('st'+n); if(th)th.style.display='';
     document.getElementById('sl'+n).disabled=false;
+    document.getElementById('sr'+n).disabled=false;
     document.getElementById('sd'+n).disabled=false;
     document.getElementById('ss'+n).scrollIntoView({behavior:'smooth',block:'center'});
   } else {
-    S.scores.push(100);
+    // Average shadow scores if available, else 100
+    const sc=S._shadowScores||{};
+    const vals=Object.values(sc);
+    const avg=vals.length?Math.round(vals.reduce((a,b)=>a+b,0)/vals.length):100;
+    S.scores.push(avg);
+    S._shadowScores={};
     fireConfetti();
     showNextBtn();
   }
