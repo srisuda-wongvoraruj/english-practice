@@ -2141,7 +2141,7 @@ function answerListen(sel) {
 // Solution: auto-restart until we get a result or user manually stops.
 
 // ── SPEAK ────────────────────────────────────
-let _recog=null, _isRec=false;
+let _recog=null, _isRec=false, _finalText='';
 
 function renderSpeak(ex) {
   document.getElementById('ex-title').textContent = '🎤 พูดออกเสียงให้ถูกต้อง';
@@ -2192,7 +2192,7 @@ function toggleRec(){
   _isRec=true;
   if(btn){btn.classList.add('rec');btn.innerHTML='⏹';}
   if(lbl){lbl.textContent='🎙 กำลังฟัง...';lbl.classList.add('active');}
-  let _done=false, _finalText='';
+  let _done=false; _finalText=''; // reset module-level var
   function _attempt(){
     if(!_isRec||_done) return;
     if(_recog){_recog.onresult=null;_recog.onerror=null;_recog.onend=null;try{_recog.abort()}catch(e){}}
@@ -2370,7 +2370,7 @@ function translateRecord() {
         if(e.results[i].isFinal) fin+=e.results[i][0].transcript+' ';
         else int+=e.results[i][0].transcript;
       }
-      if(fin.trim()) _trTranscript=fin.trim();
+      if(fin.trim()) _trTranscript+=fin.trim()+' ';
       const display=_trTranscript||int;
       const cmp=document.getElementById('cmp-area');
       if(cmp&&display) cmp.innerHTML=`<div style="padding:10px 14px;background:var(--purple-lt);border-radius:10px;font-size:13px;color:var(--text2);font-style:italic">🎤 "${display}"</div>`;
@@ -2525,24 +2525,30 @@ let _voiceA=null, _voiceB=null; // A=female-ish, B=male-ish for dialogue
 function _initVoices(){
   const vv=speechSynthesis.getVoices();
   if(!vv.length) return;
-  // Best American female voices (in priority order)
-  const femaleNames=['Samantha','Zoe','Ava','Allison','Kate','Susan','Victoria','Joanna','Microsoft Aria Online (Natural)','Google US English'];
-  // Best American male voices
-  const maleNames=['Alex','Tom','Daniel','Arthur','Oliver','Matthew','Aaron','Microsoft Guy Online (Natural)'];
+  // iOS Enhanced female (Settings→Accessibility→Spoken Content→Voices→English→Enhanced)
+  // Desktop: Google/Microsoft Neural, macOS: Samantha/Ava
+  const femaleNames=['Nicky','Zoe','Ava','Allison','Samantha','Kate','Susan','Victoria','Joanna',
+    'Microsoft Aria Online (Natural)','Google US English Female','Google US English'];
+  const maleNames=['Aaron','Oliver','Tom','Alex','Daniel','Matthew','Arthur','Fred',
+    'Microsoft Guy Online (Natural)','Microsoft David Online (Natural)'];
+  const notCompact=v=>v.localService&&!v.name.toLowerCase().includes('compact');
   _voiceA=femaleNames.map(n=>vv.find(v=>v.name===n)).find(Boolean)
-    ||vv.find(v=>v.lang==='en-US'&&v.localService&&!v.name.toLowerCase().includes('compact'))
+    ||vv.find(v=>v.lang==='en-US'&&notCompact(v))
     ||vv.find(v=>v.lang.startsWith('en-US'));
   _voiceB=maleNames.map(n=>vv.find(v=>v.name===n)).find(Boolean)
-    ||vv.find(v=>v.lang==='en-US'&&v.localService&&!v.name.toLowerCase().includes('compact')&&v!==_voiceA)
+    ||vv.find(v=>v.lang==='en-US'&&notCompact(v)&&v!==_voiceA)
     ||vv.find(v=>v.lang.startsWith('en')&&v!==_voiceA);
 }
 function _bestVoice(){
   const vv=speechSynthesis.getVoices();
+  // Priority: Neural online > iOS Enhanced > macOS standard > any en-US
   return vv.find(v=>v.name==='Google US English')
     ||vv.find(v=>v.name==='Microsoft Aria Online (Natural)')
-    ||vv.find(v=>v.name==='Samantha')
-    ||vv.find(v=>v.name==='Alex')
-    ||vv.find(v=>v.name==='Zoe')
+    ||vv.find(v=>v.name==='Nicky')    // iOS Enhanced
+    ||vv.find(v=>v.name==='Zoe')      // iOS Enhanced
+    ||vv.find(v=>v.name==='Aaron')    // iOS Enhanced male
+    ||vv.find(v=>v.name==='Samantha') // macOS standard
+    ||vv.find(v=>v.name==='Alex')     // macOS male
     ||vv.find(v=>v.lang==='en-US'&&v.localService&&!v.name.toLowerCase().includes('compact'))
     ||vv.find(v=>v.lang.startsWith('en-US'))
     ||vv.find(v=>v.lang.startsWith('en'));
