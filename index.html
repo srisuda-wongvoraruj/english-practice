@@ -157,6 +157,29 @@ body{
 .cat-hero.presentations{background:linear-gradient(135deg,#F4A7C0,#F08080)}
 .cat-hero.communication{background:linear-gradient(135deg,#89C4F4,#89B4F7)}
 .cat-hero.networking {background:linear-gradient(135deg,#82D9A0,#6DC78A)}
+.cat-card.smalltalk  {background:linear-gradient(135deg,#FFB347,#FF7F50);box-shadow:0 6px 18px rgba(255,127,80,.35)}
+.cat-hero.smalltalk  {background:linear-gradient(135deg,#FFB347,#FF7F50)}
+/* ── SITUATION CARDS ── */
+.sit-hero{border-radius:18px;padding:22px 18px;color:#fff;text-align:center;margin-bottom:14px}
+.sit-hero-emoji{font-size:52px;margin-bottom:8px}
+.sit-hero-topic{font-size:20px;font-weight:900;margin-bottom:6px;text-shadow:0 2px 6px rgba(0,0,0,.15)}
+.sit-hero-ctx{font-size:13px;background:rgba(255,255,255,.22);border-radius:8px;padding:6px 14px;display:inline-block}
+.sit-sec{background:#fff;border-radius:16px;padding:16px;margin-bottom:12px;box-shadow:0 2px 8px rgba(0,0,0,.06)}
+.sit-sec-ttl{font-size:12px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin-bottom:12px}
+.sit-phrase{display:flex;gap:10px;padding:12px 0;border-bottom:1px solid #f2f2f2}
+.sit-phrase:last-of-type{border-bottom:none;padding-bottom:0}
+.sit-num{width:26px;height:26px;border-radius:50%;background:var(--primary);color:#fff;font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px}
+.sit-phrase-body{flex:1;min-width:0}
+.sit-en{font-size:15px;font-weight:700;color:var(--text);margin-bottom:3px}
+.sit-th{font-size:13px;color:var(--muted);margin-bottom:5px}
+.sit-tip{font-size:11px;color:#4a9cb5;background:#e8f6fd;border-radius:6px;padding:4px 8px;margin-bottom:7px;line-height:1.4}
+.sit-btns{display:flex;gap:6px;flex-wrap:wrap}
+.sit-fup{padding:10px 0;border-bottom:1px solid #f2f2f2;display:flex;align-items:center;gap:10px}
+.sit-fup:last-child{border-bottom:none;padding-bottom:0}
+.sit-fup-body{flex:1}
+.sit-fup-en{font-size:14px;font-weight:600;color:var(--text)}
+.sit-fup-th{font-size:12px;color:var(--muted);margin-top:2px}
+.sit-sc{margin-top:6px;font-size:12px}
 .cat-hero-icon{font-size:44px;margin:14px 0 4px;animation:float 3s ease-in-out infinite}
 .cat-hero-name{font-size:20px;font-weight:900;text-shadow:0 2px 6px rgba(0,0,0,.15)}
 .cat-hero-desc{font-size:13px;opacity:.85;margin-top:3px}
@@ -1817,6 +1840,274 @@ const SCENARIOS = [
       {buddy:"Good work. Send me the deck after this and we'll share with the board.", hint:"ตอบรับและถามเรื่อง timeline และความต้องการ", sample:"Will do. I'll clean it up and send it over by end of day. Is there anything specific you'd like me to add for the board?", tip:"'Will do' = รับทราบ จะทำ | 'Clean it up' = ทำให้เรียบร้อย | always ask what the next level needs"},
     ]
   },
+  // ── SMALL TALK ─────────────────────────────────────────
+  {
+    id:'smalltalk', name:'Small Talk', cls:'smalltalk',
+    icon:'💬', desc:'ชวนชาวต่างชาติพูดคุย — เริ่มบทสนทนาอย่างเป็นธรรมชาติ',
+    listen:[
+      {
+        audio:"Oh really, you're from Bangkok? I've been there twice and I absolutely love it! The food scene is incredible — I honestly can't get enough of pad see ew. Are you heading back soon?",
+        question:"What does the speaker say about Bangkok?",
+        opts:["They've never visited","They've visited twice and love it","They live there","They want to visit someday"],
+        correct:1,
+        thai:"จริงๆ เหรอ คุณมาจากกรุงเทพ ฉันไปมาสองครั้งแล้วและรักมากเลย! วงการอาหารสุดยอดมาก ชอบผัดซีอิ๊วมากจนเลิกไม่ได้เลย กำลังจะกลับไปเร็วๆ นี้ไหม?",
+        tip:"'Food scene' = วงการอาหาร | 'Can't get enough of' = ติดใจ ชอบมากจนเลิกไม่ได้"
+      },
+      {
+        audio:"So what do you do? Oh that's interesting! How long have you been in that field? I'm actually in a completely different industry — I work in graphic design, mostly for startups. It's pretty hectic but I love the creative side.",
+        question:"What does the speaker do for work?",
+        opts:["Software engineering","Teaching","Graphic design","Marketing"],
+        correct:2,
+        thai:"คุณทำงานอะไร โอ้ น่าสนใจมาก ทำงานด้านนั้นมานานแค่ไหน ฉันเองทำคนละอุตสาหกรรมเลย — ทำกราฟิกดีไซน์ ส่วนใหญ่ให้ startup ยุ่งมากแต่ชอบงานสร้างสรรค์",
+        tip:"'Hectic' = วุ่นวาย ยุ่งมาก | 'That field' = ในวงการนั้น — ใช้แทนการพูดซ้ำชื่ออาชีพ"
+      },
+      {
+        audio:"Do you have any recommendations around here? I only just arrived yesterday and I'm still figuring out the area. I heard there's a really good night market nearby — is that worth checking out?",
+        question:"Why does the person ask for recommendations?",
+        opts:["They are a local guide","They just arrived and don't know the area","They are a food blogger","They are lost"],
+        correct:1,
+        thai:"มีที่ไหนแนะนำแถวนี้บ้างไหม เพิ่งมาถึงเมื่อวานและยังสำรวจพื้นที่อยู่ ได้ยินว่ามีตลาดกลางคืนดีๆ ใกล้ๆ — ไปคุ้มไหม?",
+        tip:"'Still figuring out the area' = ยังคุ้นเคยกับพื้นที่อยู่ | 'Worth checking out' = คุ้มที่จะไปลอง"
+      },
+      {
+        audio:"I got totally hooked on Thai series recently — have you watched any? My friend recommended one and I finished it in like three days. I didn't think I'd get into subtitles but honestly now I prefer it.",
+        question:"How did the speaker feel about watching with subtitles?",
+        opts:["They always loved subtitles","They were surprised they enjoyed it","They still don't like it","They watch without subtitles"],
+        correct:1,
+        thai:"ฉันติดซีรีส์ไทยมากช่วงนี้ คุณดูบ้างไหม? เพื่อนแนะนำมา แล้วดูจบใน 3 วัน ไม่คิดว่าจะชอบดูแบบมีซับ แต่ตอนนี้ชอบมากกว่าด้วยซ้ำ",
+        tip:"'Got hooked on' = ติด/หลงใหล | 'I prefer it' = ฉันชอบแบบนี้มากกว่า"
+      },
+      {
+        audio:"I've been trying to stay active — I do yoga three times a week and I just started running. I'm not fast at all but it's more about the mental health benefits for me. Do you do any sports or exercise?",
+        question:"Why does the speaker exercise?",
+        opts:["To compete in races","For mental health benefits mainly","To lose weight","For social reasons"],
+        correct:1,
+        thai:"พยายามออกกำลังกายอยู่ ทำโยคะสัปดาห์ละ 3 ครั้ง และเพิ่งเริ่มวิ่ง ไม่ได้เร็วเลยแต่สำหรับฉันมันเป็นเรื่องสุขภาพจิตมากกว่า คุณเล่นกีฬาหรือออกกำลังกายบ้างไหม?",
+        tip:"'Stay active' = รักษาการเคลื่อนไหว ออกกำลังกาย | 'Mental health benefits' = ประโยชน์ด้านสุขภาพจิต"
+      }
+    ],
+    speak:[
+      {en:"Where are you from originally?", th:"คุณมาจากที่ไหนครับ/ค่ะ?"},
+      {en:"Is this your first time in Bangkok?", th:"มาเที่ยวกรุงเทพครั้งแรกไหมครับ/ค่ะ?"},
+      {en:"How long have you been here?", th:"อยู่ที่นี่มานานแค่ไหนแล้วครับ/ค่ะ?"},
+      {en:"Have you tried any Thai street food yet?", th:"ได้ลองอาหารข้างถนนไทยบ้างไหมครับ/ค่ะ?"},
+      {en:"What brings you to Thailand?", th:"อะไรพามาที่ไทยครับ/ค่ะ?"},
+      {en:"What do you do for work?", th:"คุณทำงานอะไรครับ/ค่ะ?"},
+      {en:"What do you like to do in your free time?", th:"เวลาว่างชอบทำอะไรครับ/ค่ะ?"},
+      {en:"Have you seen any good shows or movies lately?", th:"ช่วงนี้ดูซีรีส์หรือหนังดีๆ บ้างไหมครับ/ค่ะ?"},
+      {en:"Do you have any recommendations for places to visit?", th:"มีที่ไหนแนะนำให้ไปเที่ยวบ้างไหมครับ/ค่ะ?"},
+      {en:"It was really nice chatting with you!", th:"คุยด้วยสนุกมากเลยครับ/ค่ะ!"}
+    ],
+    shadow:{
+      title:"Meeting Someone New",
+      segs:[
+        {en:"Hey, I don't think we've met. I'm Mike.", th:"เฮ้ เราเหมือนจะยังไม่เคยเจอกัน ฉันชื่อ Mike"},
+        {en:"Oh hi! Nice to meet you. I'm Nida. Are you new here?", th:"โอ้ สวัสดี ยินดีที่รู้จัก ฉัน Nida คุณเพิ่งมาใหม่ไหม?"},
+        {en:"Yeah, just started last month. Still figuring everything out!", th:"ใช่ เพิ่งมาเดือนที่แล้ว ยังคุ้นเคยกับทุกอย่างอยู่เลย!"},
+        {en:"Ha, I remember that feeling. Let me know if you need anything.", th:"ฮ่า จำความรู้สึกนั้นได้เลย บอกได้เลยถ้าต้องการอะไร"},
+        {en:"Thanks so much, really appreciate it!", th:"ขอบคุณมากเลย ซาบซึ้งมากๆ"}
+      ]
+    },
+    translate:[
+      {th:"ยินดีที่รู้จักครับ คุณมาจากที่ไหนครับ?", context:"เจอคนใหม่",
+       en:"Nice to meet you! Where are you from?",
+       tip:"'Nice to meet you' ใช้บ่อยกว่า 'Glad to meet you' มาก — standard และเป็นธรรมชาติที่สุด"},
+      {th:"อยู่ไทยมานานไหมครับ?", context:"ชวนคุย",
+       en:"Have you been in Thailand long?",
+       tip:"'Have you been here long?' = สั้นกว่าและเป็นธรรมชาติกว่า 'How long have you been in Thailand?'"},
+      {th:"มีร้านอาหารดีๆ แนะนำแถวนี้บ้างไหมครับ?", context:"ถามเรื่องอาหาร",
+       en:"Do you know any good places to eat around here?",
+       tip:"'Around here' = แถวนี้ — phrase ที่ใช้บ่อยมากในชีวิตประจำวัน"},
+      {th:"เวลาว่างชอบทำอะไรบ้างครับ?", context:"ถามงานอดิเรก",
+       en:"What do you like to do in your spare time?",
+       tip:"'Spare time' = 'free time' — ใช้ได้ทั้งคู่ แต่ spare time ฟังดู casual กว่า"},
+      {th:"คุยด้วยสนุกมากเลย หวังว่าจะได้คุยกันอีกนะครับ", context:"ปิดบทสนทนา",
+       en:"It was really nice talking to you. Hope to chat again soon!",
+       tip:"'It was nice talking TO you' ใช้ตอนลา | 'Nice to talk WITH you' ใช้ระหว่างคุย — ต่างกันนิดนึง!"}
+    ],
+    longListen:[
+      {
+        title:"Coffee Shop Encounter",
+        speakers:"Alex (visitor), Nida (local Thai)",
+        audio:"Oh sorry, is this seat taken? Great, thanks! I'm Alex by the way. I just moved here last month and I'm still finding all the best spots. — No worries at all, I'm Nida! Welcome to Bangkok. Is this your first time living here? — Well I visited about two years ago and fell completely in love with the city. The energy here is just incredible. — Ha, I know exactly what you mean. So what brought you back this time? Work? — Yeah, I'm with a tech startup downtown. It's been a great experience so far, though the traffic still gets me! — Oh the traffic — classic! You'll get used to it. Do you speak any Thai yet? — Just the basics — sawadee krap and khob khun. I'm definitely trying to learn more though. — That's a great start! People really appreciate the effort. What do you think about the food so far? — Oh my goodness, the food is unbelievable. I've been having pad see ew almost every other day. — That's one of my favorites too! You should try khao man gai next — it's amazing. And if you haven't been to Chatuchak market yet, you absolutely have to go. — I haven't! I was literally just looking that up this morning. Is it far from here? — About thirty minutes by BTS. I can send you the station name if you like. — That would be amazing, thank you! And honestly, thank you for chatting with me — I'm still getting to know people here. — Of course! Bangkok is full of amazing people. You're going to love it here.",
+        thai:"โอ้ ขอโทษนะ ที่นั่งนี้มีคนนั่งไหม? โอเค ขอบคุณ! ฉันชื่อ Alex เพิ่งย้ายมาเดือนที่แล้วและกำลังหาที่ดีๆ อยู่ — ไม่เป็นไรเลย ฉัน Nida ยินดีต้อนรับสู่กรุงเทพ! มาอยู่ครั้งแรกเลยไหม? — มาเที่ยวเมื่อสองปีก่อนและหลงรักเลย บรรยากาศที่นี่สุดยอดมาก — ฮ่า เข้าใจความรู้สึกนั้นดีเลย อะไรพากลับมาครั้งนี้? ทำงานเหรอ? — ใช่ อยู่กับ tech startup แถวใจกลางเมือง ประสบการณ์ดีมากจนถึงตอนนี้ แต่รถติดก็ยังไม่ชิน! — โอ้ รถติดนั่นแหละ คลาสสิกเลย จะชินเอง พูดไทยได้บ้างไหม? — แค่พื้นฐาน — สวัสดีครับ และขอบคุณ พยายามเรียนอยู่ — เริ่มต้นได้ดีมาก คนไทยชอบที่พยายาม อาหารเป็นยังไงบ้าง? — โอ้โห อาหารที่นี่ไม่น่าเชื่อเลย กินผัดซีอิ๊วแทบทุกวันเว้นวัน — นั่นก็โปรดของฉันเหมือนกัน! ลองข้าวมันไก่ต่อไปนะ อร่อยมาก แล้วถ้ายังไม่ได้ไปตลาดจตุจักรต้องไปเลย — ยังไม่ได้ไปเลย! เพิ่งหาข้อมูลเช้านี้พอดี ไกลจากที่นี่ไหม? — BTS ประมาณสามสิบนาที ส่งชื่อสถานีให้ได้ถ้าอยาก — ขอบคุณมากเลย! และขอบคุณที่คุยด้วย ยังคุ้นเคยกับคนที่นี่อยู่ — แน่นอน! กรุงเทพมีคนดีเยอะมาก จะชอบที่นี่แน่ๆ",
+        keyPhrases:[
+          {en:"Fell completely in love with", th:"หลงรักโดยสมบูรณ์", tip:"ใช้แทน 'really liked' — แสดงความรู้สึกลึกซึ้งกว่า"},
+          {en:"Gets me", th:"ทำให้รู้สึก (ในแง่ลบ)", tip:"'The traffic gets me' = รถติดทำให้รู้สึกหงุดหงิด/กดดัน — idiom ใช้บ่อยมาก"},
+          {en:"You'll get used to it", th:"คุณจะชินเองเลย", tip:"ใช้ปลอบใจหรือให้กำลังใจเมื่อมีสิ่งที่ยังไม่คุ้น"},
+          {en:"Every other day", th:"วันเว้นวัน", tip:"'Every other day' = วันเว้นวัน | 'Every day' = ทุกวัน | 'Once in a while' = นานๆ ครั้ง"},
+          {en:"Getting to know people", th:"ทำความรู้จักกับผู้คน", tip:"'Get to know' = ทำความรู้จักอย่างค่อยเป็นค่อยไป — ใช้บ่อยกว่า 'meeting people'"}
+        ],
+        questions:[
+          {q:"Why did Alex move to Bangkok?", opts:["Tourism","Study","Work at a tech startup","Family"], ans:2},
+          {q:"What food does Alex eat almost every other day?", opts:["Pad thai","Pad see ew","Khao man gai","Tom yum"], ans:1},
+          {q:"What does Nida recommend Alex visit?", opts:["Grand Palace","Chatuchak market","Lumphini Park","Asiatique"], ans:1}
+        ],
+        translation:[
+          {name:"Alex", th:"โอ้ ขอโทษนะ ที่นั่งนี้มีคนนั่งไหม? เยี่ยมเลย ขอบคุณ! ฉันชื่อ Alex เพิ่งย้ายมาเดือนที่แล้ว"},
+          {name:"Nida", th:"ไม่เป็นไรเลย ฉัน Nida! ยินดีต้อนรับสู่กรุงเทพ มาอยู่ครั้งแรกเลยไหม?"},
+          {name:"Alex", th:"มาเที่ยวเมื่อสองปีก่อนและหลงรักกรุงเทพเลย บรรยากาศที่นี่สุดยอดมาก"},
+          {name:"Nida", th:"เข้าใจความรู้สึกนั้นดี อะไรพากลับมาครั้งนี้? ทำงานเหรอ?"},
+          {name:"Alex", th:"ใช่ อยู่กับ tech startup ประสบการณ์ดีมาก แต่รถติดก็ยังไม่ชินเลย!"},
+          {name:"Nida", th:"รถติดนั่นแหละ คลาสสิกเลย จะชินเอง พูดไทยได้บ้างไหม?"},
+          {name:"Alex", th:"แค่พื้นฐาน — สวัสดีครับ ขอบคุณ พยายามเรียนอยู่"},
+          {name:"Nida", th:"เริ่มต้นได้ดีมาก! อาหารที่นี่เป็นยังไงบ้าง?"},
+          {name:"Alex", th:"อาหารที่นี่ไม่น่าเชื่อเลย กินผัดซีอิ๊วแทบทุกวันเว้นวัน"},
+          {name:"Nida", th:"นั่นก็โปรดของฉันด้วย! ลองข้าวมันไก่ต่อไปนะ แล้วก็ต้องไปตลาดจตุจักรด้วย"},
+          {name:"Alex", th:"ยังไม่ได้ไปเลย! ไกลจากที่นี่ไหม?"},
+          {name:"Nida", th:"BTS ประมาณสามสิบนาที ส่งชื่อสถานีให้ได้ถ้าอยาก"},
+          {name:"Alex", th:"ขอบคุณมากเลย! และขอบคุณที่คุยด้วย ยังคุ้นเคยกับคนที่นี่อยู่"},
+          {name:"Nida", th:"แน่นอน! กรุงเทพมีคนดีเยอะมาก คุณจะชอบที่นี่แน่ๆ"}
+        ]
+      }
+    ],
+    situation:[
+      {
+        topic:"มาจากไหน / มาทำอะไร",
+        emoji:"🌍",
+        context:"เจอชาวต่างชาติที่ร้านกาแฟ ลิฟต์ หรืองาน event",
+        bg:"linear-gradient(135deg,#667eea,#764ba2)",
+        starters:[
+          {en:"Is this your first time in Bangkok?", th:"มาเที่ยวกรุงเทพครั้งแรกไหมครับ/ค่ะ?", tip:"Opener ที่ดีมาก — ถ้าตอบว่าอยู่นานแล้วต่อด้วย 'What do you enjoy most here?'"},
+          {en:"Where are you from originally?", th:"มาจากประเทศไหนครับ/ค่ะ?", tip:"'Originally' ทำให้ฟังดู genuine กว่าแค่ 'Where are you from?'"},
+          {en:"How long have you been in Thailand?", th:"อยู่ไทยมานานแค่ไหนแล้วครับ/ค่ะ?", tip:"ถ้าตอบว่าอยู่นาน ต่อด้วย 'What brought you here?' เพื่อให้บทสนทนาลึกขึ้น"},
+          {en:"Are you here for work or just visiting?", th:"มาทำงานหรือมาเที่ยวครับ/ค่ะ?", tip:"ช่วยรู้ context ทันที แล้วต่อบทสนทนาได้ตรงจุด"},
+          {en:"Have you had a chance to explore much of the city?", th:"มีโอกาสสำรวจเมืองบ้างไหมครับ/ค่ะ?", tip:"'Explore' ฟังดูน่าสนใจและ active กว่าแค่ 'visit'"}
+        ],
+        followups:[
+          {en:"What do you like most about Bangkok so far?", th:"ที่ชอบที่สุดในกรุงเทพจนถึงตอนนี้คืออะไรครับ/ค่ะ?"},
+          {en:"Is the weather what you expected?", th:"อากาศเป็นอย่างที่คิดไว้ไหมครับ/ค่ะ?"},
+          {en:"Any places you'd recommend others visit?", th:"มีที่ไหนแนะนำให้คนอื่นไปบ้างไหมครับ/ค่ะ?"}
+        ]
+      },
+      {
+        topic:"เรื่องอาหาร",
+        emoji:"🍜",
+        context:"ที่ร้านอาหาร ตลาด หรือพูดเรื่องอาหารทั่วไป",
+        bg:"linear-gradient(135deg,#f093fb,#f5576c)",
+        starters:[
+          {en:"Have you tried pad thai yet?", th:"ได้ลองผัดไทยยังครับ/ค่ะ?", tip:"ง่าย เป็นธรรมชาติ เปิดบทสนทนาเรื่องอาหารได้ดีที่สุด"},
+          {en:"What's your favorite Thai dish so far?", th:"ตอนนี้ชอบเมนูไทยอะไรที่สุดครับ/ค่ะ?", tip:"'So far' = จนถึงตอนนี้ — ทำให้ฟังดูเป็นธรรมชาติ"},
+          {en:"Are you into spicy food?", th:"ชอบอาหารเผ็ดไหมครับ/ค่ะ?", tip:"คุยได้ยาวมาก เพราะอาหารไทยมักเผ็ด — ชวนแนะนำระดับความเผ็ดได้"},
+          {en:"I know a great place nearby if you're interested.", th:"รู้จักร้านอาหารดีๆ ใกล้ๆ ถ้าสนใจนะครับ/ค่ะ", tip:"เสนอแนะอย่างสุภาพ ไม่กดดัน — ฟังดู helpful มาก"},
+          {en:"Do you have any dietary restrictions?", th:"มีข้อจำกัดเรื่องอาหารไหมครับ/ค่ะ?", tip:"สำคัญมากก่อนพาไปร้านอาหาร — แสดงว่าเราใส่ใจ"}
+        ],
+        followups:[
+          {en:"How spicy can you handle?", th:"เผ็ดได้ระดับไหนครับ/ค่ะ?"},
+          {en:"Have you been to a night market yet?", th:"ไปตลาดกลางคืนยังครับ/ค่ะ?"},
+          {en:"What do you usually eat back home?", th:"ปกติกินอะไรที่บ้านครับ/ค่ะ?"}
+        ]
+      },
+      {
+        topic:"งานและอาชีพ",
+        emoji:"💼",
+        context:"งาน networking, ออฟฟิส, หรืองานสัมมนา",
+        bg:"linear-gradient(135deg,#4facfe,#00f2fe)",
+        starters:[
+          {en:"What do you do for work?", th:"ทำงานอะไรครับ/ค่ะ?", tip:"Classic แต่สำคัญ — ตามด้วย 'How did you get into that?' เพื่อให้บทสนทนาลึกขึ้น"},
+          {en:"How long have you been in this field?", th:"ทำงานด้านนี้มานานแค่ไหนแล้วครับ/ค่ะ?", tip:"ถามหลังจากรู้แล้วว่าเขาทำงานอะไร — แสดงความสนใจจริงๆ"},
+          {en:"Do you enjoy what you do?", th:"ชอบงานที่ทำอยู่ไหมครับ/ค่ะ?", tip:"ถามแบบนี้ทำให้บทสนทนาลึกและ personal กว่า 'Do you like your job?'"},
+          {en:"What's the most interesting part of your job?", th:"ส่วนที่น่าสนใจที่สุดในงานคืออะไรครับ/ค่ะ?", tip:"ได้คำตอบที่น่าสนใจกว่า yes/no — เปิดโอกาสให้เล่าได้เยอะ"},
+          {en:"Is this your first time at an event like this?", th:"มาร่วมงานแบบนี้ครั้งแรกไหมครับ/ค่ะ?", tip:"ใช้ในงาน networking หรือ conference — เปิดบทสนทนาได้สบายๆ"}
+        ],
+        followups:[
+          {en:"What made you choose this career?", th:"อะไรทำให้เลือกทำงานนี้ครับ/ค่ะ?"},
+          {en:"Are you based here in Bangkok?", th:"ทำงานอยู่กรุงเทพไหมครับ/ค่ะ?"},
+          {en:"What do you find most challenging about it?", th:"อะไรที่ท้าทายที่สุดในงานครับ/ค่ะ?"}
+        ]
+      },
+      {
+        topic:"งานอดิเรก",
+        emoji:"🎵",
+        context:"เพื่อน งาน หรือในการสนทนาทั่วไป",
+        bg:"linear-gradient(135deg,#43e97b,#38f9d7)",
+        starters:[
+          {en:"What do you like to do in your free time?", th:"เวลาว่างชอบทำอะไรครับ/ค่ะ?", tip:"เปิดกว้าง ให้เขาเลือกตอบในแบบของตัวเอง — versatile มาก"},
+          {en:"Are you into music? Do you play any instruments?", th:"ชอบดนตรีไหมครับ/ค่ะ? เล่นเครื่องดนตรีไหม?", tip:"ถ้าตอบว่าใช่ — บทสนทนาจะยาวและสนุกมาก"},
+          {en:"Do you do any sports or work out?", th:"เล่นกีฬาหรือออกกำลังกายบ้างไหมครับ/ค่ะ?", tip:"หัวข้อที่คุยได้สบายๆ และไม่ personal เกินไป"},
+          {en:"Have you read anything good lately?", th:"อ่านอะไรดีๆ อยู่บ้างไหมช่วงนี้ครับ/ค่ะ?", tip:"ถ้าเขาชอบอ่านหนังสือ — บทสนทนาจะน่าสนใจและลึกมาก"},
+          {en:"What kind of music are you into?", th:"ชอบดนตรีแนวไหนครับ/ค่ะ?", tip:"ถามหลังจากรู้ว่าเขาชอบดนตรี — ตามด้วย 'Any artists you'd recommend?'"}
+        ],
+        followups:[
+          {en:"How did you get into that?", th:"เริ่มสนใจตอนไหนครับ/ค่ะ?"},
+          {en:"Any recommendations for beginners?", th:"มีอะไรแนะนำสำหรับมือใหม่บ้างไหมครับ/ค่ะ?"},
+          {en:"I've been wanting to try that!", th:"ฉันอยากลองทำแบบนั้นมากเลย!"}
+        ]
+      },
+      {
+        topic:"การท่องเที่ยว / แนะนำสถานที่",
+        emoji:"🏖️",
+        context:"พูดคุยเรื่องการเดินทาง หรือแนะนำสถานที่",
+        bg:"linear-gradient(135deg,#fa709a,#fee140)",
+        starters:[
+          {en:"Have you had a chance to travel around Thailand yet?", th:"มีโอกาสเที่ยวรอบๆ ไทยบ้างไหมครับ/ค่ะ?", tip:"เปิดโอกาสให้เขาเล่าประสบการณ์ — ถ้ายังไม่ได้ไปก็แนะนำได้เลย"},
+          {en:"If you could visit anywhere in Thailand, where would you go?", th:"ถ้าเลือกได้จะไปที่ไหนในไทยครับ/ค่ะ?", tip:"คำถามที่สนุกและทำให้เห็น interests ของเขา"},
+          {en:"I'd really recommend Chiang Mai if you haven't been.", th:"ขอแนะนำเชียงใหม่มากเลย ถ้ายังไม่ได้ไปนะครับ/ค่ะ", tip:"แนะนำอย่างเป็นธรรมชาติ ไม่ได้ถาม แต่เสนอข้อมูลที่มีประโยชน์"},
+          {en:"What's been your favorite place you've visited so far?", th:"สถานที่ที่ชอบที่สุดที่เคยไปจนถึงตอนนี้คืออะไรครับ/ค่ะ?", tip:"คำถามที่ทำให้บทสนทนาไหลได้ดี และได้รู้ taste ของเขา"},
+          {en:"Do you prefer the beach or the mountains?", th:"ชอบทะเลหรือภูเขามากกว่าครับ/ค่ะ?", tip:"ช่วยรู้ preference แล้วแนะนำได้ตรงจุดกว่า"}
+        ],
+        followups:[
+          {en:"How long are you planning to stay?", th:"วางแผนจะอยู่นานแค่ไหนครับ/ค่ะ?"},
+          {en:"Have you been to any of the islands?", th:"ไปเกาะต่างๆ ยังครับ/ค่ะ?"},
+          {en:"What kind of experiences are you looking for?", th:"กำลังมองหาประสบการณ์แบบไหนครับ/ค่ะ?"}
+        ]
+      },
+      {
+        topic:"หนัง / ซีรีส์ / เพลง",
+        emoji:"🎬",
+        context:"งาน สังสรรค์ หรือระหว่างรอ — คุยได้ทุกสถานการณ์",
+        bg:"linear-gradient(135deg,#a18cd1,#fbc2eb)",
+        starters:[
+          {en:"Have you seen anything good on Netflix lately?", th:"ดู Netflix อะไรดีๆ ช่วงนี้ไหมครับ/ค่ะ?", tip:"คุยได้ทุกคน เป็น icebreaker ชั้นดี — ทุกคนดู Netflix!"},
+          {en:"Are you into any Thai series? They're really popular now.", th:"ดูซีรีส์ไทยบ้างไหมครับ/ค่ะ? ตอนนี้ดังมากเลย", tip:"แนะนำให้รู้จักสิ่งที่ไทยมีและแลกเปลี่ยนวัฒนธรรมด้วย"},
+          {en:"What kind of movies do you enjoy?", th:"ชอบหนังแนวไหนครับ/ค่ะ?", tip:"เปิดกว้าง ให้เขาเล่าเอง — ตามด้วย 'Any directors you like?'"},
+          {en:"Have you listened to any Thai music?", th:"ฟังเพลงไทยบ้างไหมครับ/ค่ะ?", tip:"บทสนทนาที่แลกเปลี่ยนวัฒนธรรมได้ดีมาก — แนะนำศิลปินไทยได้เลย"},
+          {en:"Is there a show you'd recommend?", th:"มีซีรีส์อะไรแนะนำบ้างไหมครับ/ค่ะ?", tip:"ทำให้เขารู้สึกว่าความเห็นเขามีคุณค่า — ฟังแล้วก็ได้ idea ดูต่อด้วย"}
+        ],
+        followups:[
+          {en:"What's it about?", th:"เรื่องเกี่ยวกับอะไรครับ/ค่ะ?"},
+          {en:"Who's your favorite actor or director?", th:"ชอบนักแสดงหรือผู้กำกับคนไหนที่สุดครับ/ค่ะ?"},
+          {en:"I'll have to check that out!", th:"ต้องลองดูเลย!"}
+        ]
+      },
+      {
+        topic:"เทคโนโลยี / โซเชียลมีเดีย",
+        emoji:"🤳",
+        context:"คุยเรื่องเทรนด์ แอป หรือชีวิตดิจิทัล",
+        bg:"linear-gradient(135deg,#30cfd0,#667eea)",
+        starters:[
+          {en:"Are you on Instagram? I'd love to follow your travels.", th:"มีอินสตาแกรมไหมครับ/ค่ะ? อยากติดตามการเดินทางเลย", tip:"เป็น social connector ที่ดีมาก — ต่อยอดเป็น connection ได้เลย"},
+          {en:"Have you tried using AI tools for work yet?", th:"ลองใช้ AI tools ในงานบ้างไหมครับ/ค่ะ?", tip:"เรื่องที่ทุกคนกำลังสนใจในปี 2025-2026"},
+          {en:"What apps do you find most useful for traveling?", th:"แอปอะไรที่ใช้ท่องเที่ยวได้มีประโยชน์ที่สุดครับ/ค่ะ?", tip:"ได้ tips จริงๆ ไปใช้ด้วย — win-win"},
+          {en:"Do you work remotely? It seems like more people do now.", th:"ทำงาน remote ไหมครับ/ค่ะ? ดูเหมือนคนทำแบบนี้มากขึ้น", tip:"เรื่องที่ relevant มากในยุคนี้ — เชื่อมต่อกับเรื่องการย้ายมาอยู่ไทยได้ดี"},
+          {en:"Are you a TikTok person or more of an Instagram person?", th:"ใช้ TikTok มากกว่าหรือ Instagram มากกว่าครับ/ค่ะ?", tip:"คำถาม light และสนุก — ทำให้บทสนทนาเบาและเป็นธรรมชาติ"}
+        ],
+        followups:[
+          {en:"What do you use to get around the city?", th:"ใช้อะไรเดินทางในเมืองครับ/ค่ะ?"},
+          {en:"Have you found any good translation apps?", th:"เจอแอปแปลภาษาดีๆ ไหมครับ/ค่ะ?"},
+          {en:"Where do you usually find good local spots?", th:"ปกติหาร้านดีๆ local ได้จากที่ไหนครับ/ค่ะ?"}
+        ]
+      },
+      {
+        topic:"สุขภาพ / กีฬา",
+        emoji:"🏃",
+        context:"ที่ฟิตเนส สวนสาธารณะ หรือพูดเรื่องสุขภาพทั่วไป",
+        bg:"linear-gradient(135deg,#f77062,#fe5196)",
+        starters:[
+          {en:"Do you work out? I'm looking for a gym around here.", th:"ออกกำลังกายไหมครับ/ค่ะ? กำลังหาฟิตเนสแถวนี้อยู่", tip:"Opener ที่เหมาะมากถ้าอยู่ใกล้ฟิตเนสหรือสวนสาธารณะ"},
+          {en:"Are you into running? The park here is beautiful in the morning.", th:"ชอบวิ่งไหมครับ/ค่ะ? สวนที่นี่สวยมากตอนเช้า", tip:"ชวนออกกำลังกายด้วยกันได้เลย — เป็น connection ที่ดีมาก"},
+          {en:"Do you follow any sports teams?", th:"ติดตามทีมกีฬาไหนไหมครับ/ค่ะ?", tip:"เรื่องที่คุยได้ทันทีและสนุก — ถ้าตอบตรงกันก็ยิ่งดี"},
+          {en:"Have you been doing any yoga or meditation while here?", th:"ทำโยคะหรือเมดิเตชันบ้างไหมครับ/ค่ะ?", tip:"เหมาะกับคนที่มาเที่ยวหรือสนใจวัฒนธรรมไทย"},
+          {en:"What do you do to stay active when you travel?", th:"ท่องเที่ยวแล้วทำอะไรเพื่อรักษาการออกกำลังกายครับ/ค่ะ?", tip:"เปิดโอกาสให้เขาเล่า routine — ได้ idea ดีๆ ไปด้วย"}
+        ],
+        followups:[
+          {en:"How often do you work out?", th:"ออกกำลังกายบ่อยแค่ไหนครับ/ค่ะ?"},
+          {en:"Do you have a favorite sport?", th:"มีกีฬาที่ชอบที่สุดไหมครับ/ค่ะ?"},
+          {en:"I've been trying to get more active too!", th:"ฉันก็พยายามออกกำลังกายมากขึ้นเหมือนกัน!"}
+        ]
+      }
+    ]
+  },
 ];
 
 // ═══════════════════════════════════════════════
@@ -1923,6 +2214,8 @@ function openCat(id) {
   document.getElementById('cat-hero-desc').textContent = c.desc;
 
   const MODES = [
+    ...(c.situation ? [{id:'situation', ico:'💬', icoClass:'mode-ico-speak', name:'Situation Cards',
+     desc:'ฝึกชวนชาวต่างชาติคุย — ประโยคเปิดบทสนทนาตามสถานการณ์จริง พร้อมฝึกพูด', badge:c.situation.length+' topics'}] : []),
     {id:'longListen', ico:'🎙️', icoClass:'mode-ico-listen', name:'ฟังบทสนทนายาว',
      desc:'ฟังบทสนทนาจริง จับใจความ แล้วดูคำแปลและ Key Phrases', badge:c.longListen.length+' dialogues'},
     {id:'listen', ico:'👂', icoClass:'mode-ico-listen', name:'Listen & Understand',
@@ -1961,10 +2254,12 @@ function startMode(catId, mode) {
   else if(mode==='speak')       S.exList=c.speak;
   else if(mode==='shadow')      S.exList=[c.shadow];
   else if(mode==='longListen')  S.exList=c.longListen;
+  else if(mode==='situation')   S.exList=c.situation;
   else                          S.exList=c.translate;
 
   document.getElementById('ex-mode-tag').textContent =
-    mode==='listen'?'👂 Listen':mode==='speak'?'🗣️ Speak':mode==='shadow'?'🔄 Shadow':'🇹🇭 Translate';
+    mode==='listen'?'👂 Listen':mode==='speak'?'🗣️ Speak':mode==='shadow'?'🔄 Shadow':
+    mode==='situation'?'💬 Situation':'🇹🇭 Translate';
   document.getElementById('ex-back').onclick = ()=>showScreen('category');
 
   renderExercise();
@@ -1979,6 +2274,7 @@ function renderExercise() {
   else if(S.mode==='listen')    renderListen(S.exList[idx]);
   else if(S.mode==='speak')     renderSpeak(S.exList[idx]);
   else if(S.mode==='shadow')    renderShadow(S.exList[idx]);
+  else if(S.mode==='situation') renderSituation(S.exList[idx]);
   else                          renderTranslate(S.exList[idx]);
 }
 
@@ -2504,6 +2800,137 @@ function shadowDone(i,total){
     fireConfetti();
     showNextBtn();
   }
+}
+
+// ── SITUATION CARDS ──────────────────────────
+let _sitRecog=null, _sitIsRec=false, _sitPhraseIdx=-1;
+let _sitFinal='', _sitConf=0, _sitConfN=0;
+
+function renderSituation(sit) {
+  document.getElementById('ex-title').textContent = sit.emoji+' '+sit.topic;
+  document.getElementById('ex-body').innerHTML=`
+    <div class="sit-hero slide-up" style="background:${sit.bg}">
+      <div class="sit-hero-emoji">${sit.emoji}</div>
+      <div class="sit-hero-topic">${sit.topic}</div>
+      <div class="sit-hero-ctx">📍 ${sit.context}</div>
+    </div>
+    <div class="sit-sec">
+      <div class="sit-sec-ttl">💬 ประโยคเปิดบทสนทนา</div>
+      ${sit.starters.map((s,i)=>`
+        <div class="sit-phrase">
+          <div class="sit-num">${i+1}</div>
+          <div class="sit-phrase-body">
+            <div class="sit-en">${s.en}</div>
+            <div class="sit-th">${s.th}</div>
+            <div class="sit-tip">💡 ${s.tip}</div>
+            <div class="sit-btns">
+              <button class="btn btn-outline btn-sm" onclick="sitListen(${i})">🔊 ฟัง</button>
+              <button class="btn btn-primary btn-sm" id="sit-rec-${i}" onclick="sitSpeak(${i})">🎤 พูด</button>
+            </div>
+            <div id="sit-sc-${i}" class="sit-sc"></div>
+          </div>
+        </div>`).join('')}
+    </div>
+    <div class="sit-sec">
+      <div class="sit-sec-ttl">🔄 Follow-up Questions</div>
+      ${sit.followups.map((f,fi)=>`
+        <div class="sit-fup">
+          <div class="sit-fup-body">
+            <div class="sit-fup-en">${f.en}</div>
+            <div class="sit-fup-th">${f.th}</div>
+          </div>
+          <button class="btn btn-outline btn-sm" onclick="sitListenF(${fi})">🔊</button>
+        </div>`).join('')}
+    </div>
+    <div class="next-area" id="next-area">
+      <button class="btn btn-primary btn-full btn-lg" onclick="sitDone()">✓ หัวข้อถัดไป →</button>
+    </div>`;
+}
+
+function sitListen(phraseIdx) {
+  const sit = S.exList[S.exIdx];
+  speak(sit.starters[phraseIdx].en, 0.92);
+}
+function sitListenF(fi) {
+  const sit = S.exList[S.exIdx];
+  speak(sit.followups[fi].en, 0.92);
+}
+
+function sitSpeak(phraseIdx) {
+  const sit = S.exList[S.exIdx];
+  const target = sit.starters[phraseIdx].en;
+  const btn = document.getElementById('sit-rec-'+phraseIdx);
+  const scoreEl = document.getElementById('sit-sc-'+phraseIdx);
+
+  if(_sitIsRec && _sitPhraseIdx===phraseIdx) {
+    // Stop recording
+    _sitIsRec=false; _sitPhraseIdx=-1;
+    if(_sitRecog){_sitRecog.onresult=null;_sitRecog.onerror=null;_sitRecog.onend=null;try{_sitRecog.abort()}catch(e){}}
+    if(btn){btn.textContent='🎤 พูด';btn.classList.remove('rec');}
+    _sitShowResult(phraseIdx, _sitFinal.trim(), target);
+    return;
+  }
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!SR){if(btn)btn.textContent='❌ ต้องใช้ Chrome';return;}
+  stopSpeech();
+  _sitIsRec=true; _sitPhraseIdx=phraseIdx; _sitFinal=''; _sitConf=0; _sitConfN=0;
+  if(btn){btn.textContent='⏹ หยุด';btn.classList.add('rec');}
+  if(scoreEl) scoreEl.innerHTML='<div style="color:var(--muted);font-size:12px;text-align:center">🎙 กำลังฟัง...</div>';
+  _sitRecog=new SR();
+  _sitRecog.lang='en-US'; _sitRecog.continuous=true; _sitRecog.interimResults=true;
+  _sitRecog.onresult=e=>{
+    let interim='',final='';
+    for(let j=e.resultIndex;j<e.results.length;j++){
+      if(e.results[j].isFinal){final+=e.results[j][0].transcript+' ';_sitConf+=(e.results[j][0].confidence||0.75);_sitConfN++;}
+      else interim+=e.results[j][0].transcript;
+    }
+    if(interim&&scoreEl) scoreEl.innerHTML=`<div style="color:var(--muted);font-size:12px;text-align:center">🎙 ${interim}</div>`;
+    if(final) _sitFinal+=final;
+  };
+  _sitRecog.onerror=e=>{
+    if(e.error==='not-allowed'||e.error==='service-not-allowed'){
+      _sitIsRec=false; _sitPhraseIdx=-1;
+      if(btn){btn.textContent='🎤 พูด';btn.classList.remove('rec');}
+      if(scoreEl) scoreEl.innerHTML='<div style="color:red;font-size:12px">❌ ไม่ได้รับอนุญาตใช้ไมค์</div>';
+    }
+  };
+  _sitRecog.onend=()=>{
+    _sitIsRec=false; _sitPhraseIdx=-1;
+    if(btn){btn.textContent='🎤 พูด';btn.classList.remove('rec');}
+    _sitShowResult(phraseIdx, _sitFinal.trim(), target);
+  };
+  _sitRecog.start();
+}
+
+function _sitShowResult(phraseIdx, said, target) {
+  const scoreEl=document.getElementById('sit-sc-'+phraseIdx);
+  if(!scoreEl||!said) return;
+  const tw=target.toLowerCase().replace(/[^a-z\s']/g,'').split(/\s+/).filter(Boolean);
+  const sw=said.toLowerCase().replace(/[^a-z\s']/g,'').split(/\s+/).filter(Boolean);
+  const used=[...sw]; let ok=0;
+  tw.forEach(w=>{const j=used.indexOf(w);if(j!==-1){ok++;used.splice(j,1)}});
+  const score=tw.length?Math.round(ok/tw.length*100):0;
+  const em=score>=80?'🎉':score>=50?'👍':'💪';
+  const color=score>=80?'var(--green)':score>=50?'var(--accent)':'var(--coral)';
+  const tHtml=tw.map(w=>`<span class="chip ${sw.includes(w)?'chip-ok':'chip-miss'}">${w}</span>`).join('');
+  const sHtml=sw.map(w=>`<span class="chip ${tw.includes(w)?'chip-ok':'chip-extra'}">${w}</span>`).join('')
+    ||'<span style="color:var(--muted);font-size:12px">ไม่ได้ยิน ลองพูดใหม่</span>';
+  scoreEl.innerHTML=`<div class="cmp-card fade-in" style="padding:10px 12px;margin-top:6px">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+      <span style="font-size:18px">${em}</span>
+      <span style="font-size:15px;font-weight:800;color:${color}">${score}%</span>
+    </div>
+    <div class="cmp-lbl">เป้าหมาย</div><div class="word-row">${tHtml}</div>
+    <div class="cmp-lbl" style="margin-top:6px">คุณพูดว่า</div><div class="word-row">${sHtml}</div>
+    <div class="chip-legend" style="margin-top:6px">🟢 ถูก &nbsp; 🔴 พลาด &nbsp; 🟡 เกิน</div>
+    <button class="btn btn-sm btn-outline" style="margin-top:6px;width:100%" onclick="sitSpeak(${phraseIdx})">🔄 ลองอีกครั้ง</button>
+  </div>`;
+}
+
+function sitDone() {
+  S.scores.push(90);
+  const isLast=S.exIdx>=S.exList.length-1;
+  if(isLast){ finishSession(); } else { goNext(); }
 }
 
 // ── NEXT BUTTON ──────────────────────────────
