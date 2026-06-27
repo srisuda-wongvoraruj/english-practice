@@ -2110,6 +2110,12 @@ const SCENARIOS = [
   },
 ];
 
+// 'smalltalk' is a learning category (listen/speak/shadow/translate/situation), not a buddy
+// conversation. It was authored as the last element of SCENARIOS by mistake — relocate it into
+// CATS so it renders as the 5th category card on the home screen.
+const _stIdx = SCENARIOS.findIndex(s => s && s.id === 'smalltalk');
+if (_stIdx > -1) CATS.push(SCENARIOS.splice(_stIdx, 1)[0]);
+
 // ═══════════════════════════════════════════════
 // STATE
 // ═══════════════════════════════════════════════
