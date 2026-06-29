@@ -554,6 +554,34 @@ body{
 .rev-listen{background:#EDE9FE;color:#5b54e8}
 .rev-known{background:#E8F5E9;color:#2e7d32}
 
+/* IELTS Speaking */
+.cat-card.ielts{background:linear-gradient(135deg,#0EA5E9,#14B8A6);box-shadow:0 6px 18px rgba(14,165,233,.35)}
+.cat-hero.ielts{background:linear-gradient(135deg,#0EA5E9,#14B8A6)}
+.ielts-hero{background:linear-gradient(135deg,#0EA5E9,#14B8A6);color:#fff;border-radius:20px;padding:20px 18px;margin:0 16px 14px;box-shadow:0 6px 18px rgba(14,165,233,.3)}
+.ielts-badge{display:inline-block;background:rgba(255,255,255,.25);color:#fff;font-weight:800;font-size:11px;letter-spacing:.6px;padding:3px 10px;border-radius:10px;margin-bottom:8px}
+.ielts-q{font-size:18px;font-weight:800;line-height:1.4}
+.ielts-q-th{font-size:13px;opacity:.95;margin-top:6px}
+.ielts-cue{background:var(--surface);border:2px solid var(--border);border-radius:16px;padding:14px;margin:0 16px 12px}
+.ielts-cue-ttl{font-weight:800;color:var(--text);margin-bottom:6px}
+.ielts-cue-li{color:var(--text2);line-height:1.8}
+.ielts-prep{background:#FFF7ED;border:1px solid #fed7aa;color:#9a3412;border-radius:14px;padding:11px 14px;margin:0 16px 12px;font-size:13px;font-weight:600;line-height:1.6}
+.ielts-actions{padding:0 16px;margin-bottom:6px}
+.ielts-actions .btn{width:100%}
+.ielts-sc{padding:0 16px}
+.ielts-model{padding:0 16px;margin-top:10px}
+.ielts-model-body{background:var(--surface);border:2px solid var(--border);border-radius:16px;padding:14px;margin-top:8px}
+.ielts-model-ttl{font-weight:800;color:var(--text);margin-bottom:6px}
+.ielts-model-en{font-weight:700;color:var(--text);line-height:1.6}
+.ielts-model-th{color:var(--text2);font-size:13px;line-height:1.6;margin:6px 0 8px}
+.ielts-key-ttl{font-weight:800;color:var(--text);margin:10px 0 4px}
+.ielts-key{font-size:13px;color:var(--text2);line-height:1.7}
+.ielts-key-en{font-weight:700;color:#0d9488}
+.ielts-tip{background:#F0FDFA;border-left:3px solid #14B8A6;padding:8px 10px;border-radius:8px;margin-top:10px;font-size:12.5px;color:#0f766e;line-height:1.5}
+.ielts-stat{display:flex;gap:10px;margin:8px 0}
+.ielts-stat-box{flex:1;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:8px;text-align:center}
+.ielts-stat-v{font-weight:800;font-size:16px;color:var(--text)}
+.ielts-stat-l{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.3px}
+
 .divider{height:1.5px;background:var(--border);margin:14px 16px}
 
 /* ── CONFETTI CANVAS ── */
@@ -1316,6 +1344,56 @@ const CATS = [
           {q:"What does Priya propose at the end?", opts:["A formal partnership","Coffee chat after the session","A job offer","A call next week"], correct:1},
         ]
       }
+    ]
+  },
+  // ── IELTS SPEAKING ─────────────────────────────────────
+  {
+    id:'ielts', name:'IELTS Speaking', cls:'ielts',
+    icon:'🎓', desc:'ฝึกพูดสไตล์ข้อสอบ IELTS — Part 1/2/3 พร้อมตัวอย่างคำตอบ band 7+ และฟีดแบ็กความลื่นไหล',
+    ielts:[
+      {part:1,
+       question:"Let's talk about your hometown. Where are you from?",
+       th:"คุยเรื่องบ้านเกิดกันหน่อย คุณมาจากที่ไหน?",
+       model:"I'm originally from Chiang Mai, a city in the north of Thailand. It's well known for its temples and its laid-back atmosphere, which I really appreciate. Although I've been living in Bangkok for work, Chiang Mai will always feel like home to me.",
+       modelTh:"ฉันมาจากเชียงใหม่ เมืองทางภาคเหนือของไทย ขึ้นชื่อเรื่องวัดและบรรยากาศสบายๆ ที่ฉันชอบมาก ถึงตอนนี้จะมาทำงานที่กรุงเทพ แต่เชียงใหม่ก็ยังเป็นบ้านสำหรับฉันเสมอ",
+       key:[{en:"originally from",th:"เดิมมาจาก"},{en:"well known for",th:"ขึ้นชื่อเรื่อง"},{en:"laid-back atmosphere",th:"บรรยากาศสบายๆ"},{en:"will always feel like home",th:"จะยังเป็นบ้านเสมอ"}],
+       tip:"Part 1 ตอบ 2–3 ประโยคพอ อย่าตอบสั้นคำเดียว — ขยายด้วยเหตุผลหรือรายละเอียดเล็กน้อยเสมอ"},
+      {part:1,
+       question:"Do you work, or are you a student?",
+       th:"คุณทำงานหรือเรียนอยู่?",
+       model:"I'm currently working as a marketing executive at a tech company. I've been in this role for about three years now. What I enjoy most is that no two days are the same — there's always a new challenge to tackle, which keeps things interesting.",
+       modelTh:"ตอนนี้ทำงานเป็น marketing executive ที่บริษัทเทค ทำตำแหน่งนี้มาประมาณสามปีแล้ว สิ่งที่ชอบที่สุดคือไม่มีวันไหนเหมือนกันเลย มีความท้าทายใหม่ๆ ให้จัดการตลอด ทำให้ไม่เบื่อ",
+       key:[{en:"currently working as",th:"ตอนนี้ทำงานเป็น"},{en:"no two days are the same",th:"ไม่มีวันไหนเหมือนกัน"},{en:"a new challenge to tackle",th:"ความท้าทายใหม่ให้จัดการ"},{en:"keeps things interesting",th:"ทำให้น่าสนใจอยู่เสมอ"}],
+       tip:"เพิ่มความเห็นส่วนตัว (What I enjoy most...) ช่วยให้คำตอบดู natural และได้คะแนน fluency"},
+      {part:1,
+       question:"What do you like to do in your free time?",
+       th:"เวลาว่างชอบทำอะไร?",
+       model:"In my free time, I'm really into hiking. I try to get out of the city at least once a month to explore national parks. I find it's a great way to unwind and clear my head after a busy week at work.",
+       modelTh:"เวลาว่างฉันชอบเดินป่ามาก พยายามออกจากเมืองอย่างน้อยเดือนละครั้งไปเที่ยวอุทยานแห่งชาติ ฉันว่ามันเป็นวิธีผ่อนคลายและเคลียร์ความคิดที่ดีมากหลังทำงานหนักมาทั้งสัปดาห์",
+       key:[{en:"I'm really into",th:"ฉันชอบ...มาก"},{en:"unwind",th:"ผ่อนคลาย"},{en:"clear my head",th:"เคลียร์ความคิด"},{en:"at least once a month",th:"อย่างน้อยเดือนละครั้ง"}],
+       tip:"ใช้ collocation อย่าง 'I'm really into...' / 'unwind' แทน 'I like' / 'relax' จะดูมีคลังศัพท์กว้างกว่า"},
+      {part:2, prep:true,
+       question:"Describe a place you enjoy visiting.",
+       th:"บรรยายสถานที่ที่คุณชอบไปเยือน",
+       cue:["where it is","how often you go there","what you do there","and explain why you enjoy it"],
+       model:"I'd like to talk about a small beach town called Pranburi, which is about three hours south of Bangkok. I try to visit every couple of months, usually for a long weekend. When I'm there, I mostly relax — I'll go for early morning walks along the beach, try the fresh seafood, and read by the sea. The main reason I enjoy it so much is the peace and quiet. Unlike the more touristy beaches, it's never crowded, so it's the perfect place to escape the hustle and bustle of the city and recharge.",
+       modelTh:"ฉันอยากเล่าเรื่องเมืองชายทะเลเล็กๆ ชื่อปราณบุรี อยู่ทางใต้ของกรุงเทพประมาณสามชั่วโมง ฉันไปทุกๆ สองเดือน มักไปช่วงวันหยุดยาว เวลาอยู่ที่นั่นส่วนใหญ่ก็พักผ่อน เดินเล่นริมหาดตอนเช้า กินซีฟู้ดสดๆ อ่านหนังสือริมทะเล เหตุผลหลักที่ชอบมากคือความสงบ ต่างจากหาดที่นักท่องเที่ยวเยอะ ที่นี่ไม่เคยแออัด เป็นที่หนีความวุ่นวายของเมืองและชาร์จพลังได้ดีมาก",
+       key:[{en:"I'd like to talk about",th:"ฉันอยากเล่าเรื่อง (วิธีเปิด Part 2)"},{en:"every couple of months",th:"ทุกๆ สองเดือน"},{en:"the peace and quiet",th:"ความสงบเงียบ"},{en:"escape the hustle and bustle",th:"หนีความวุ่นวาย"},{en:"recharge",th:"ชาร์จพลัง"}],
+       tip:"Part 2 พูด 1–2 นาที ครอบให้ครบทุก bullet ใช้ตัวเชื่อม (When I'm there... The main reason... Unlike...) ให้คำตอบไหลลื่นเป็นเรื่องเดียว"},
+      {part:3,
+       question:"Why do you think people enjoy traveling to new places?",
+       th:"ทำไมคนถึงชอบไปเที่ยวที่ใหม่ๆ?",
+       model:"I think there are several reasons. Firstly, traveling broadens your horizons — you get exposed to different cultures, food, and ways of life, which can be really eye-opening. On top of that, it's a break from routine. People spend most of the year working, so a trip somewhere new gives them a chance to recharge and create lasting memories.",
+       modelTh:"ฉันว่ามีหลายเหตุผล อย่างแรก การเดินทางช่วยเปิดโลกทัศน์ ได้เจอวัฒนธรรม อาหาร และวิถีชีวิตที่ต่างออกไป ซึ่งเปิดหูเปิดตามาก นอกจากนั้นยังเป็นการพักจากกิจวัตร คนเราทำงานเกือบทั้งปี การได้ไปที่ใหม่จึงเป็นโอกาสชาร์จพลังและสร้างความทรงจำดีๆ",
+       key:[{en:"broadens your horizons",th:"เปิดโลกทัศน์"},{en:"eye-opening",th:"เปิดหูเปิดตา"},{en:"a break from routine",th:"พักจากกิจวัตร"},{en:"On top of that",th:"นอกจากนั้น (ตัวเชื่อม)"}],
+       tip:"Part 3 ต้องให้เหตุผลและขยายความ ใช้ตัวเชื่อม Firstly / On top of that / For instance เพื่อจัดโครงสร้างคำตอบ"},
+      {part:3,
+       question:"How has tourism changed in your country over the years?",
+       th:"การท่องเที่ยวในประเทศคุณเปลี่ยนไปอย่างไรในช่วงหลายปีที่ผ่านมา?",
+       model:"It's changed quite dramatically. In the past, tourism was concentrated in a few major destinations, but these days travelers are looking for more off-the-beaten-track experiences. Social media has played a huge role in this — a single viral post can suddenly put a small, unknown place on the map. While that's great for the local economy, it does raise concerns about over-tourism and its impact on the environment.",
+       modelTh:"เปลี่ยนไปค่อนข้างมาก สมัยก่อนการท่องเที่ยวกระจุกอยู่ไม่กี่ที่หลักๆ แต่เดี๋ยวนี้นักท่องเที่ยวมองหาประสบการณ์นอกเส้นทางมากขึ้น โซเชียลมีเดียมีบทบาทมาก โพสต์ไวรัลเดียวทำให้ที่เล็กๆ ที่ไม่มีใครรู้จักดังขึ้นมาได้ ถึงจะดีต่อเศรษฐกิจท้องถิ่น แต่ก็ทำให้กังวลเรื่องนักท่องเที่ยวล้นและผลกระทบต่อสิ่งแวดล้อม",
+       key:[{en:"off-the-beaten-track",th:"นอกเส้นทางท่องเที่ยวหลัก"},{en:"put ... on the map",th:"ทำให้...เป็นที่รู้จัก"},{en:"over-tourism",th:"นักท่องเที่ยวล้นเกิน"},{en:"raise concerns about",th:"ทำให้เกิดข้อกังวลเรื่อง"}],
+       tip:"Part 3 ขั้นสูง: แสดงสองมุม (While that's great... it does raise concerns...) ช่วยดันคะแนน band ให้สูงขึ้น"}
     ]
   }
 ];
@@ -2267,7 +2345,7 @@ function renderHome() {
   renderNotesPreview();
   document.getElementById('cat-grid').innerHTML = CATS.map(c => {
     const p = S.progress[c.id]||{};
-    const n = c.listen.length+c.speak.length;
+    const n = (c.listen?c.listen.length:0)+(c.speak?c.speak.length:0)+(c.ielts?c.ielts.length:0);
     const cpct = p.done ? Math.min(100,Math.round((p.done/n)*100)) : 0;
     return `
       <div class="cat-card ${c.cls}" onclick="openCat('${c.id}')">
@@ -2297,18 +2375,20 @@ function openCat(id) {
   document.getElementById('cat-hero-desc').textContent = c.desc;
 
   const MODES = [
+    ...(c.ielts ? [{id:'ielts', ico:'🎓', icoClass:'mode-ico-speak', name:'IELTS Speaking',
+     desc:'ฝึกตอบข้อสอบ IELTS Part 1-3 — พูดอิสระแล้วรับ feedback ความคล่อง พร้อมดู model answer', badge:c.ielts.length+' questions'}] : []),
     ...(c.situation ? [{id:'situation', ico:'💬', icoClass:'mode-ico-speak', name:'Situation Cards',
      desc:'ฝึกชวนชาวต่างชาติคุย — ประโยคเปิดบทสนทนาตามสถานการณ์จริง พร้อมฝึกพูด', badge:c.situation.length+' topics'}] : []),
-    {id:'longListen', ico:'🎙️', icoClass:'mode-ico-listen', name:'ฟังบทสนทนายาว',
-     desc:'ฟังบทสนทนาจริง จับใจความ แล้วดูคำแปลและ Key Phrases', badge:c.longListen.length+' dialogues'},
-    {id:'listen', ico:'👂', icoClass:'mode-ico-listen', name:'Listen & Understand',
-     desc:'ฟังบทสนทนาธุรกิจจริง แล้วตอบคำถาม Comprehension', badge:c.listen.length+' exercises'},
-    {id:'speak',  ico:'🗣️', icoClass:'mode-ico-speak',  name:'Speak & Practice',
-     desc:'พูดออกเสียงแล้วรับ feedback คะแนนทันที', badge:c.speak.length+' phrases'},
-    {id:'shadow', ico:'🔄', icoClass:'mode-ico-shadow', name:'Shadow Speaking',
-     desc:'ฟังทีละประโยค แล้วพูดตาม เพิ่ม fluency', badge:'Dialogue'},
-    {id:'translate', ico:'🇹🇭', icoClass:'mode-ico-translate', name:'แปลไทย → อังกฤษ',
-     desc:'เห็นประโยคไทย แล้วนึกหรือพูดเป็นภาษาอังกฤษ สไตล์ชีวิตจริง', badge:c.translate.length+' situations'},
+    ...(c.longListen ? [{id:'longListen', ico:'🎙️', icoClass:'mode-ico-listen', name:'ฟังบทสนทนายาว',
+     desc:'ฟังบทสนทนาจริง จับใจความ แล้วดูคำแปลและ Key Phrases', badge:c.longListen.length+' dialogues'}] : []),
+    ...(c.listen ? [{id:'listen', ico:'👂', icoClass:'mode-ico-listen', name:'Listen & Understand',
+     desc:'ฟังบทสนทนาธุรกิจจริง แล้วตอบคำถาม Comprehension', badge:c.listen.length+' exercises'}] : []),
+    ...(c.speak ? [{id:'speak',  ico:'🗣️', icoClass:'mode-ico-speak',  name:'Speak & Practice',
+     desc:'พูดออกเสียงแล้วรับ feedback คะแนนทันที', badge:c.speak.length+' phrases'}] : []),
+    ...(c.shadow ? [{id:'shadow', ico:'🔄', icoClass:'mode-ico-shadow', name:'Shadow Speaking',
+     desc:'ฟังทีละประโยค แล้วพูดตาม เพิ่ม fluency', badge:'Dialogue'}] : []),
+    ...(c.translate ? [{id:'translate', ico:'🇹🇭', icoClass:'mode-ico-translate', name:'แปลไทย → อังกฤษ',
+     desc:'เห็นประโยคไทย แล้วนึกหรือพูดเป็นภาษาอังกฤษ สไตล์ชีวิตจริง', badge:c.translate.length+' situations'}] : []),
   ];
 
   document.getElementById('mode-list').innerHTML = MODES.map(m=>`
@@ -2338,11 +2418,12 @@ function startMode(catId, mode) {
   else if(mode==='shadow')      S.exList=[c.shadow];
   else if(mode==='longListen')  S.exList=c.longListen;
   else if(mode==='situation')   S.exList=c.situation;
+  else if(mode==='ielts')       S.exList=c.ielts;
   else                          S.exList=c.translate;
 
   document.getElementById('ex-mode-tag').textContent =
     mode==='listen'?'👂 Listen':mode==='speak'?'🗣️ Speak':mode==='shadow'?'🔄 Shadow':
-    mode==='situation'?'💬 Situation':'🇹🇭 Translate';
+    mode==='situation'?'💬 Situation':mode==='ielts'?'🎓 IELTS':'🇹🇭 Translate';
   document.getElementById('ex-back').onclick = ()=>showScreen('category');
 
   renderExercise();
@@ -2358,6 +2439,7 @@ function renderExercise() {
   else if(S.mode==='speak')     renderSpeak(S.exList[idx]);
   else if(S.mode==='shadow')    renderShadow(S.exList[idx]);
   else if(S.mode==='situation') renderSituation(S.exList[idx]);
+  else if(S.mode==='ielts')     renderIelts(S.exList[idx]);
   else                          renderTranslate(S.exList[idx]);
 }
 
@@ -3016,6 +3098,167 @@ function sitDone() {
   if(isLast){ finishSession(); } else { goNext(); }
 }
 
+// ── IELTS SPEAKING ───────────────────────────
+let _ieRecog=null, _ieIsRec=false, _ieStart=0, _ieFinal='', _ieScore=0, _iePrepTimer=null;
+
+function renderIelts(card){
+  if(_iePrepTimer){clearInterval(_iePrepTimer);_iePrepTimer=null;}
+  _ieFinal=''; _ieScore=0; _ieIsRec=false;
+  document.getElementById('ex-title').textContent = '🎓 IELTS Speaking — Part '+card.part;
+  const cueHtml = card.part===2 ? `
+    <div class="ielts-cue">
+      <div class="ielts-cue-ttl">You should say:</div>
+      <ul style="margin:0;padding-left:18px">${card.cue.map(b=>`<li class="ielts-cue-li">${b}</li>`).join('')}</ul>
+    </div>
+    <div class="ielts-prep" id="ie-prep">
+      <button class="btn btn-outline btn-sm" onclick="iePrep()" style="width:auto">⏱️ เตรียมตัว 60 วินาที</button>
+      <div style="margin-top:6px">มีเวลาคิด 1 นาที จากนั้นพูดต่อเนื่อง 1–2 นาที</div>
+    </div>` : '';
+  const keyHtml = card.key.map(k=>`<div style="margin-bottom:3px"><span class="ielts-key-en">${k.en}</span> — ${k.th}</div>`).join('');
+  document.getElementById('ex-body').innerHTML = `
+    <div class="ielts-hero">
+      <span class="ielts-badge">PART ${card.part}</span>
+      <div class="ielts-q">${card.question}</div>
+      <div class="ielts-q-th">${card.th}</div>
+    </div>
+    ${cueHtml}
+    <div class="ielts-actions">
+      <button class="btn btn-primary btn-full btn-lg" id="ie-rec" onclick="ieRecord()">🎤 เริ่มพูดคำตอบ</button>
+    </div>
+    <div id="ie-sc" class="ielts-sc"></div>
+    <div class="ielts-model" id="ie-model" style="display:none">
+      <div class="ielts-model-body">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px">
+          <span class="ielts-model-ttl" style="margin:0">📝 Model Answer (Band 7+)</span>
+          <button class="btn btn-outline btn-sm" onclick="ieListen()" style="width:auto">🔊 ฟัง</button>
+        </div>
+        <div class="ielts-model-en">${card.model}</div>
+        <div class="ielts-model-th">${card.modelTh}</div>
+        <div class="ielts-key-ttl">🔑 Key Phrases</div>
+        <div class="ielts-key">${keyHtml}</div>
+        <div class="ielts-tip">💡 ${card.tip}</div>
+      </div>
+    </div>
+    <div class="next-area" id="next-area">
+      <button class="btn btn-ghost btn-sm" onclick="ieReveal()" id="ie-reveal-btn">👀 ดู Model Answer</button>
+      <button class="btn btn-primary btn-full btn-lg" style="margin-top:10px" onclick="ieDone()">✓ ข้อถัดไป →</button>
+    </div>`;
+}
+
+function ieReveal(){
+  const m=document.getElementById('ie-model'); if(!m) return;
+  const show=m.style.display==='none';
+  m.style.display=show?'block':'none';
+  const b=document.getElementById('ie-reveal-btn'); if(b) b.textContent=show?'🙈 ซ่อน Model Answer':'👀 ดู Model Answer';
+}
+
+function ieListen(){ const card=S.exList[S.exIdx]; speak(card.model, 0.95); }
+
+function iePrep(){
+  const el=document.getElementById('ie-prep'); if(!el) return;
+  let t=60;
+  el.innerHTML=`<div id="ie-prep-t" style="font-size:18px;font-weight:800">⏱️ ${t}s</div><div style="margin-top:4px">คิดไอเดียในใจ พอพร้อมกด 🎤 เริ่มพูดได้เลย</div>`;
+  if(_iePrepTimer) clearInterval(_iePrepTimer);
+  _iePrepTimer=setInterval(()=>{
+    t--; const tEl=document.getElementById('ie-prep-t');
+    if(tEl) tEl.textContent='⏱️ '+t+'s';
+    if(t<=0){ clearInterval(_iePrepTimer); _iePrepTimer=null; if(tEl) tEl.textContent='⏱️ หมดเวลาเตรียม — เริ่มพูดได้เลย'; }
+  },1000);
+}
+
+function ieRecord(){
+  const card=S.exList[S.exIdx];
+  const btn=document.getElementById('ie-rec');
+  const scEl=document.getElementById('ie-sc');
+  if(_ieIsRec){
+    _ieIsRec=false;
+    if(_ieRecog){_ieRecog.onresult=null;_ieRecog.onerror=null;_ieRecog.onend=null;try{_ieRecog.abort()}catch(e){}}
+    if(btn){btn.textContent='🎤 เริ่มพูดคำตอบ';btn.classList.remove('rec');}
+    _ieShowResult(_ieFinal.trim(), card);
+    return;
+  }
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!SR){if(btn)btn.textContent='❌ ต้องใช้ Chrome';return;}
+  stopSpeech();
+  _ieIsRec=true; _ieFinal=''; _ieStart=Date.now();
+  if(btn){btn.textContent='⏹ หยุด & ดูผล';btn.classList.add('rec');}
+  if(scEl) scEl.innerHTML='<div style="color:var(--muted);font-size:13px;text-align:center;padding:8px">🎙 กำลังฟัง... พูดได้เต็มที่</div>';
+  _ieRecog=new SR();
+  _ieRecog.lang='en-US'; _ieRecog.continuous=true; _ieRecog.interimResults=true;
+  _ieRecog.onresult=e=>{
+    let interim='',final='';
+    for(let j=e.resultIndex;j<e.results.length;j++){
+      if(e.results[j].isFinal) final+=e.results[j][0].transcript+' ';
+      else interim+=e.results[j][0].transcript;
+    }
+    if(final) _ieFinal+=final;
+    if(scEl) scEl.innerHTML=`<div style="color:var(--muted);font-size:13px;padding:8px">🎙 ${(_ieFinal+interim).trim()||'...'}</div>`;
+  };
+  _ieRecog.onerror=e=>{
+    if(e.error==='not-allowed'||e.error==='service-not-allowed'){
+      _ieIsRec=false;
+      if(btn){btn.textContent='🎤 เริ่มพูดคำตอบ';btn.classList.remove('rec');}
+      if(scEl) scEl.innerHTML='<div style="color:red;font-size:13px">❌ ไม่ได้รับอนุญาตใช้ไมค์</div>';
+    }
+  };
+  _ieRecog.onend=()=>{
+    if(!_ieIsRec) return;
+    _ieIsRec=false;
+    if(btn){btn.textContent='🎤 เริ่มพูดคำตอบ';btn.classList.remove('rec');}
+    _ieShowResult(_ieFinal.trim(), card);
+  };
+  _ieRecog.start();
+}
+
+function _ieShowResult(said, card){
+  const scEl=document.getElementById('ie-sc'); if(!scEl) return;
+  const dur=Math.max(1,Math.round((Date.now()-_ieStart)/1000));
+  const words=said.toLowerCase().replace(/[^a-z\s']/g,'').split(/\s+/).filter(Boolean);
+  const wc=words.length;
+  if(!wc){ scEl.innerHTML='<div style="color:var(--muted);font-size:13px;text-align:center;padding:10px">ไม่ได้ยินเสียง ลองกด 🎤 แล้วพูดอีกครั้ง</div>'; return; }
+  const wpm=Math.round(wc/dur*60);
+  const fillers=['um','uh','er','erm','like','you know'];
+  let fillerN=0; const sj=' '+said.toLowerCase()+' ';
+  fillers.forEach(f=>{ const m=sj.match(new RegExp('\\b'+f.replace(' ','\\s')+'\\b','g')); if(m) fillerN+=m.length; });
+  const goal = card.part===2?90 : card.part===3?45 : 25;
+  _ieScore = Math.max(45, Math.min(100, Math.round(wc/goal*100)));
+  const em=_ieScore>=80?'🎉':_ieScore>=60?'👍':'💪';
+  const color=_ieScore>=80?'var(--green)':_ieScore>=60?'var(--accent)':'var(--coral)';
+  let fb=[];
+  if(wc<goal*0.6) fb.push('พูดยังสั้นไป — ขยายคำตอบให้ยาวขึ้น เพิ่มเหตุผลและตัวอย่าง');
+  else if(wc>=goal) fb.push('ความยาวกำลังดี ตอบได้เต็มที่ 👏');
+  if(wpm<90) fb.push('พูดช้าไปนิด ลองให้ลื่นต่อเนื่องขึ้น');
+  else if(wpm>170) fb.push('พูดเร็วไป ลองชะลอให้ชัดขึ้น');
+  if(fillerN>=3) fb.push(`มีคำเติม (um/uh/like) ${fillerN} ครั้ง — ลองหยุดเงียบแทนการเอ้อ`);
+  if(!fb.length) fb.push('คำตอบสมดุลดีมาก ลองเทียบกับ Model Answer ด้านล่าง');
+  scEl.innerHTML=`<div class="cmp-card fade-in" style="padding:12px;margin-top:8px">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+      <span style="font-size:22px">${em}</span>
+      <span style="font-size:17px;font-weight:800;color:${color}">Fluency ${_ieScore}%</span>
+    </div>
+    <div class="ielts-stat">
+      <div class="ielts-stat-box"><div class="ielts-stat-v">${wc}</div><div class="ielts-stat-l">คำ</div></div>
+      <div class="ielts-stat-box"><div class="ielts-stat-v">${dur}s</div><div class="ielts-stat-l">เวลา</div></div>
+      <div class="ielts-stat-box"><div class="ielts-stat-v">${wpm}</div><div class="ielts-stat-l">คำ/นาที</div></div>
+      <div class="ielts-stat-box"><div class="ielts-stat-v">${fillerN}</div><div class="ielts-stat-l">คำเติม</div></div>
+    </div>
+    <div style="font-size:13px;color:var(--text2);line-height:1.6;margin-top:4px">${fb.map(f=>`<div>• ${f}</div>`).join('')}</div>
+    <div style="font-size:12px;color:var(--muted);margin-top:8px;padding:8px;background:rgba(0,0,0,.04);border-radius:8px">คุณพูดว่า: ${said}</div>
+    <button class="btn btn-sm btn-outline" style="margin-top:8px;width:100%" onclick="ieRecord()">🔄 พูดอีกครั้ง</button>
+  </div>`;
+  const m=document.getElementById('ie-model');
+  if(m && m.style.display==='none') ieReveal();
+}
+
+function ieDone(){
+  if(_iePrepTimer){clearInterval(_iePrepTimer);_iePrepTimer=null;}
+  if(_ieRecog){_ieRecog.onresult=null;_ieRecog.onerror=null;_ieRecog.onend=null;try{_ieRecog.abort()}catch(e){}}
+  _ieIsRec=false;
+  S.scores.push(_ieScore||70); _ieScore=0;
+  const isLast=S.exIdx>=S.exList.length-1;
+  if(isLast){ finishSession(); } else { goNext(); }
+}
+
 // ── NEXT BUTTON ──────────────────────────────
 function showNextBtn(){
   const isLast=S.exIdx>=S.exList.length-1;
@@ -3109,37 +3352,39 @@ function finishSession(){
 // SPEECH APIs
 // ═══════════════════════════════════════════════
 // ── Voice selection ───────────────────────────
+// Goal: pick the MOST HUMAN-sounding voice the device exposes, never the robotic
+// "compact"/eloquence ones. Ranks by naturalness: MS Neural(Natural) > online/network
+// > Apple Enhanced/Siri > Google > standard local. Truly studio-human voices (ElevenLabs
+// etc.) need a paid cloud API + backend — not possible on free static hosting, so we make
+// the device's best neural voice the default.
 let _voiceA=null, _voiceB=null; // A=female-ish, B=male-ish for dialogue
-function _initVoices(){
-  const vv=speechSynthesis.getVoices();
-  if(!vv.length) return;
-  // iOS Enhanced female (Settings→Accessibility→Spoken Content→Voices→English→Enhanced)
-  // Desktop: Google/Microsoft Neural, macOS: Samantha/Ava
-  const femaleNames=['Nicky','Zoe','Ava','Allison','Samantha','Kate','Susan','Victoria','Joanna',
-    'Microsoft Aria Online (Natural)','Google US English Female','Google US English'];
-  const maleNames=['Aaron','Oliver','Tom','Alex','Daniel','Matthew','Arthur','Fred',
-    'Microsoft Guy Online (Natural)','Microsoft David Online (Natural)'];
-  const notCompact=v=>v.localService&&!v.name.toLowerCase().includes('compact');
-  _voiceA=femaleNames.map(n=>vv.find(v=>v.name===n)).find(Boolean)
-    ||vv.find(v=>v.lang==='en-US'&&notCompact(v))
-    ||vv.find(v=>v.lang.startsWith('en-US'));
-  _voiceB=maleNames.map(n=>vv.find(v=>v.name===n)).find(Boolean)
-    ||vv.find(v=>v.lang==='en-US'&&notCompact(v)&&v!==_voiceA)
-    ||vv.find(v=>v.lang.startsWith('en')&&v!==_voiceA);
+const _FEMALE=['aria','jenny','michelle','sonia','libby','emily','ana','clara','ava','allison',
+  'samantha','susan','victoria','zoe','nicky','joanna','kate','serena','moira','tessa','karen','catherine'];
+const _MALE=['guy','davis','tony','ryan','brian','christopher','eric','roger','steffan','william',
+  'aaron','alex','daniel','tom','fred','arthur','oliver','evan','nathan','gordon','rishi'];
+function _isEn(v){ return !!v && /^en(-|$)/i.test(v.lang); }
+function _voiceScore(v){
+  if(!_isEn(v)) return -1000;
+  const n=v.name.toLowerCase(); let s=0;
+  if(n.includes('natural'))                         s+=120; // Microsoft neural — most human
+  if(!v.localService)                               s+=70;  // network/cloud voice
+  if(n.includes('online'))                          s+=40;
+  if(n.includes('enhanced')||n.includes('premium')) s+=55;  // Apple Enhanced download
+  if(n.includes('siri'))                            s+=50;
+  if(n.includes('google'))                          s+=28;
+  if(n.includes('compact')||n.includes('eloquence'))s-=90;  // robotic low-quality
+  if(/^en-us/i.test(v.lang)) s+=20; else if(/^en-(gb|au)/i.test(v.lang)) s+=12; else s+=6;
+  return s;
 }
-function _bestVoice(){
-  const vv=speechSynthesis.getVoices();
-  // Priority: Neural online > iOS Enhanced > macOS standard > any en-US
-  return vv.find(v=>v.name==='Google US English')
-    ||vv.find(v=>v.name==='Microsoft Aria Online (Natural)')
-    ||vv.find(v=>v.name==='Nicky')    // iOS Enhanced
-    ||vv.find(v=>v.name==='Zoe')      // iOS Enhanced
-    ||vv.find(v=>v.name==='Aaron')    // iOS Enhanced male
-    ||vv.find(v=>v.name==='Samantha') // macOS standard
-    ||vv.find(v=>v.name==='Alex')     // macOS male
-    ||vv.find(v=>v.lang==='en-US'&&v.localService&&!v.name.toLowerCase().includes('compact'))
-    ||vv.find(v=>v.lang.startsWith('en-US'))
-    ||vv.find(v=>v.lang.startsWith('en'));
+function _enVoices(){
+  return speechSynthesis.getVoices().filter(_isEn).sort((a,b)=>_voiceScore(b)-_voiceScore(a));
+}
+function _bestVoice(){ return _enVoices()[0]||null; }
+function _initVoices(){
+  const sorted=_enVoices(); if(!sorted.length) return;
+  const byGender=list=>sorted.find(v=>{const n=v.name.toLowerCase();return list.some(g=>n.includes(g));});
+  _voiceA = byGender(_FEMALE) || sorted[0];                          // highest-scored female
+  _voiceB = byGender(_MALE)   || sorted.find(v=>v!==_voiceA) || _voiceA; // highest-scored male
 }
 function speak(text,rate=1,onEnd){
   if(!window.speechSynthesis)return;
