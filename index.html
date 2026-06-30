@@ -588,6 +588,15 @@ body{
 .ielts-mine-field label{display:block;font-size:12px;font-weight:700;color:var(--text2);margin-bottom:3px}
 .ielts-mine-field input{width:100%;box-sizing:border-box;border:1.5px solid var(--border);border-radius:10px;padding:8px 10px;font-family:inherit;font-size:14px;color:var(--text);background:var(--surface)}
 .ielts-mine-field input:focus{outline:none;border-color:#14B8A6}
+.ielts-mine-ta{width:100%;box-sizing:border-box;min-height:80px;border:1.5px solid var(--border);border-radius:12px;padding:10px 12px;font-family:inherit;font-size:14px;line-height:1.6;color:var(--text);background:var(--surface);resize:vertical}
+.ielts-mine-ta:focus{outline:none;border-color:#14B8A6}
+.ielts-mine-loading{color:#0d9488;font-weight:700;padding:6px 2px}
+.ie-dots::after{content:'';animation:ieDots 1.2s steps(4,end) infinite}
+@keyframes ieDots{0%{content:''}25%{content:'.'}50%{content:'..'}75%{content:'...'}100%{content:''}}
+.ielts-mine-err{color:#dc2626;font-weight:600;line-height:1.6}
+.ielts-mine-keylink{text-align:right;margin-top:6px}
+.ielts-mine-keylink a{font-size:11px;color:var(--muted);text-decoration:none}
+.ielts-key-form a{color:#0d9488;font-weight:700}
 .ielts-mine-out{margin-top:10px;background:#F0FDFA;border:1.5px solid #99f6e4;border-radius:12px;padding:12px}
 .ielts-mine-en{font-weight:700;color:#0f766e;line-height:1.6}
 
@@ -1368,7 +1377,11 @@ const CATS = [
        key:[{en:"nestled in",th:"ตั้งอยู่ท่ามกลาง"},{en:"renowned for",th:"ขึ้นชื่อเรื่อง"},{en:"a laid-back pace of life",th:"จังหวะชีวิตที่ผ่อนคลาย"},{en:"work has drawn me to",th:"งานดึงฉันมาอยู่ที่"},{en:"where my roots are",th:"ที่ที่รากฉันอยู่"}],
        tip:"Part 1 ตอบ 2–3 ประโยคพอ อย่าตอบสั้นคำเดียว — ขยายด้วยเหตุผลหรือรายละเอียดเล็กน้อยเสมอ",
        mine:{tpl:"I'm originally from {0}, which is renowned for {1}. Although I now live in {2}, there's a part of me that will always regard it as home — after all, {3}.",
-         slots:[{l:"บ้านเกิด",ph:"Khon Kaen"},{l:"ขึ้นชื่อเรื่อง",ph:"its street food and friendly people"},{l:"ตอนนี้อยู่ที่",ph:"Bangkok"},{l:"เพราะ (เหตุผล)",ph:"that's where my family is"}]}},
+         slots:[
+           {l:"บ้านเกิด (เป็นภาษาอังกฤษ)",ph:"Khon Kaen",opts:["Bangkok","Khon Kaen","a small town in the south"]},
+           {l:"ขึ้นชื่อเรื่อง",ph:"its street food",opts:["its delicious street food","its friendly people","its beautiful old temples"]},
+           {l:"ตอนนี้อยู่ที่",ph:"Bangkok",opts:["Bangkok","another city for work","abroad"]},
+           {l:"เพราะ (เหตุผล)",ph:"that's where my family is",opts:["that's where my family is","I grew up there","it holds all my childhood memories"]}]}},
       {part:1,
        question:"Do you work, or are you a student?",
        th:"คุณทำงานหรือเรียนอยู่?",
@@ -1377,7 +1390,11 @@ const CATS = [
        key:[{en:"for the best part of three years",th:"มาเกือบสามปี"},{en:"keeps me hooked",th:"ทำให้ฉันหลงใหล"},{en:"the sheer variety",th:"ความหลากหลายล้วนๆ"},{en:"invariably",th:"แทบทุกครั้ง/เสมอ"},{en:"feeling monotonous",th:"รู้สึกจำเจ"}],
        tip:"เพิ่มความเห็นส่วนตัว (What I enjoy most...) ช่วยให้คำตอบดู natural และได้คะแนน fluency",
        mine:{tpl:"I'm currently working as {0} at {1}, a role I've held for {2} now. What really keeps me hooked is {3} — it stops the job from ever feeling monotonous.",
-         slots:[{l:"ตำแหน่ง",ph:"a software developer"},{l:"ที่ไหน",ph:"a startup"},{l:"ระยะเวลา",ph:"about two years"},{l:"สิ่งที่ชอบที่สุด",ph:"solving new problems every day"}]}},
+         slots:[
+           {l:"ตำแหน่ง (ภาษาอังกฤษ)",ph:"a software developer",opts:["a software developer","an accountant","a teacher","a marketing executive"]},
+           {l:"ที่ไหน",ph:"a tech company",opts:["a tech company","a small startup","a large firm"]},
+           {l:"ระยะเวลา",ph:"about two years",opts:["about two years","just over a year","nearly five years"]},
+           {l:"สิ่งที่ชอบที่สุด",ph:"solving new problems",opts:["solving new problems every day","working with a great team","the variety of the work"]}]}},
       {part:1,
        question:"What do you like to do in your free time?",
        th:"เวลาว่างชอบทำอะไร?",
@@ -1386,7 +1403,9 @@ const CATS = [
        key:[{en:"in my downtime",th:"เวลาว่างของฉัน"},{en:"a keen hiker",th:"คนที่ชอบเดินป่ามาก"},{en:"make a point of",th:"ตั้งใจทำเป็นพิเศษ"},{en:"there's nothing quite like it",th:"ไม่มีอะไรเทียบได้"},{en:"switch off",th:"พักสมอง/ปล่อยวาง"}],
        tip:"ใช้ collocation อย่าง 'a keen hiker' / 'switch off' แทน 'I like' / 'relax' จะดูมีคลังศัพท์กว้างกว่า",
        mine:{tpl:"In my downtime, I'm a keen {0}. I make a point of {1} whenever I can. For me, there's nothing quite like it for unwinding — it really helps me switch off and clear my head after a hectic week.",
-         slots:[{l:"งานอดิเรก (คำนาม)",ph:"reader / cook / runner"},{l:"กิจกรรมที่ทำ",ph:"getting lost in a good novel"}]}},
+         slots:[
+           {l:"งานอดิเรก (คำนาม อังกฤษ)",ph:"reader",opts:["reader","runner","home cook","gardener","photographer"]},
+           {l:"กิจกรรมที่ทำ",ph:"getting lost in a good novel",opts:["getting lost in a good novel","going for a long run","trying out new recipes","exploring the countryside"]}]}},
       {part:2, prep:true,
        question:"Describe a place you enjoy visiting.",
        th:"บรรยายสถานที่ที่คุณชอบไปเยือน",
@@ -1396,7 +1415,12 @@ const CATS = [
        key:[{en:"sits roughly three hours' drive",th:"อยู่ห่างราวสามชั่วโมง"},{en:"a change of scenery",th:"เปลี่ยนบรรยากาศ"},{en:"lose myself in a book",th:"จมอยู่กับหนังสือ"},{en:"time and again",th:"ครั้งแล้วครั้งเล่า"},{en:"overrun with tourists",th:"นักท่องเที่ยวล้น"},{en:"recharge my batteries",th:"ชาร์จพลังตัวเอง"}],
        tip:"Part 2 พูด 1–2 นาที ครอบให้ครบทุก bullet ใช้ตัวเชื่อม (Once I'm there... What draws me back... Unlike...) ให้คำตอบไหลลื่นเป็นเรื่องเดียว",
        mine:{tpl:"I'd like to tell you about {0}, which is {1}. I try to get there {2}. Once I'm there, I tend to {3}. What draws me back time and again is {4} — it's the ideal spot to get away from the hustle and bustle and recharge my batteries.",
-         slots:[{l:"สถานที่",ph:"a quiet town called ..."},{l:"อยู่ที่ไหน",ph:"two hours north of my city"},{l:"ไปบ่อยแค่ไหน",ph:"a few times a year"},{l:"ทำอะไรที่นั่น",ph:"wander the old markets and eat local food"},{l:"ชอบเพราะ",ph:"the calm, friendly atmosphere"}]}},
+         slots:[
+           {l:"สถานที่ (ภาษาอังกฤษ)",ph:"a quiet beach town",opts:["a quiet beach town","my grandparents' village","a national park nearby"]},
+           {l:"อยู่ที่ไหน",ph:"a couple of hours from my city",opts:["a couple of hours from my city","up in the mountains","right by the sea"]},
+           {l:"ไปบ่อยแค่ไหน",ph:"every few months",opts:["every few months","a couple of times a year","whenever I get a long weekend"]},
+           {l:"ทำอะไรที่นั่น",ph:"relax and do very little",opts:["relax and do very little","explore the local markets","go hiking and take photos"]},
+           {l:"ชอบเพราะ",ph:"the peace and quiet",opts:["the peace and quiet","the fresh air and scenery","the warm, friendly atmosphere"]}]}},
       {part:3,
        question:"Why do you think people enjoy traveling to new places?",
        th:"ทำไมคนถึงชอบไปเที่ยวที่ใหม่ๆ?",
@@ -1405,7 +1429,10 @@ const CATS = [
        key:[{en:"a number of factors at play",th:"มีหลายปัจจัยประกอบกัน"},{en:"broadens the mind",th:"เปิดมุมมอง"},{en:"a real eye-opener",th:"เปิดหูเปิดตาจริงๆ"},{en:"the daily grind",th:"ความจำเจในแต่ละวัน"},{en:"forge memories",th:"สร้างความทรงจำ"}],
        tip:"Part 3 ต้องให้เหตุผลและขยายความ ใช้ตัวเชื่อม For one thing / On top of that / Given that เพื่อจัดโครงสร้างคำตอบ",
        mine:{tpl:"Well, I'd say there are a number of factors at play. For one thing, {0}. On top of that, {1}. Given that {2}, it makes perfect sense that people are drawn to it.",
-         slots:[{l:"เหตุผลที่ 1",ph:"travelling broadens the mind"},{l:"เหตุผลที่ 2",ph:"it's a break from the daily grind"},{l:"ข้อเท็จจริงสนับสนุน",ph:"most of us work long hours all year"}]}},
+         slots:[
+           {l:"เหตุผลที่ 1 (ภาษาอังกฤษ)",ph:"travelling broadens the mind",opts:["travelling broadens the mind","it lets you experience new cultures","you get to try amazing food"]},
+           {l:"เหตุผลที่ 2",ph:"it's a break from the daily grind",opts:["it's a break from the daily grind","it helps you relax and recharge","it creates lifelong memories"]},
+           {l:"ข้อเท็จจริงสนับสนุน",ph:"most of us work long hours all year",opts:["most of us work long hours all year","life can get repetitive","people naturally crave new experiences"]}]}},
       {part:3,
        question:"How has tourism changed in your country over the years?",
        th:"การท่องเที่ยวในประเทศคุณเปลี่ยนไปอย่างไรในช่วงหลายปีที่ผ่านมา?",
@@ -1414,7 +1441,11 @@ const CATS = [
        key:[{en:"undergone a dramatic transformation",th:"เปลี่ยนแปลงครั้งใหญ่"},{en:"well-trodden destinations",th:"จุดหมายยอดนิยม"},{en:"a real game-changer",th:"ตัวพลิกเกม"},{en:"a boon for",th:"ผลดีต่อ"},{en:"the toll it takes on",th:"ผลกระทบที่มีต่อ"}],
        tip:"Part 3 ขั้นสูง: แสดงสองมุม (While that's undoubtedly a boon... it does raise concerns...) ช่วยดันคะแนน band ให้สูงขึ้น",
        mine:{tpl:"It's undergone a fairly dramatic transformation. In the past, {0}, but nowadays {1}. {2} has been a real game-changer in this respect. While that's undoubtedly a boon, it does raise legitimate concerns about {3}.",
-         slots:[{l:"อดีตเป็นอย่างไร",ph:"few people travelled abroad"},{l:"ปัจจุบันเป็นอย่างไร",ph:"travel is far more affordable"},{l:"ปัจจัยที่ทำให้เปลี่ยน",ph:"low-cost airlines / social media"},{l:"ข้อกังวล",ph:"over-tourism and the environment"}]}}
+         slots:[
+           {l:"อดีตเป็นอย่างไร (ภาษาอังกฤษ)",ph:"few people could afford to travel",opts:["few people could afford to travel","tourism was limited to a few cities","most people holidayed at home"]},
+           {l:"ปัจจุบันเป็นอย่างไร",ph:"travel is far more affordable",opts:["travel is far more affordable","people seek off-the-beaten-track spots","international travel is the norm"]},
+           {l:"ปัจจัยที่ทำให้เปลี่ยน",ph:"Social media",opts:["Social media","Low-cost airlines","The internet"]},
+           {l:"ข้อกังวล",ph:"over-tourism and the environment",opts:["over-tourism and the environment","rising prices for locals","the loss of local culture"]}]}}
     ]
   }
 ];
@@ -3158,14 +3189,13 @@ function renderIelts(card){
         <div class="ielts-key-ttl">🔑 Key Phrases</div>
         <div class="ielts-key">${keyHtml}</div>
         <div class="ielts-tip">💡 ${card.tip}</div>
-        ${card.mine ? `
         <div class="ielts-mine">
-          <div class="ielts-mine-ttl">✍️ ปรับเป็นคำตอบของคุณ</div>
-          <div class="ielts-mine-sub">พิมพ์คำของคุณลงในช่อง (เว้นว่างได้ จะใช้ตัวอย่างให้) แล้วกดสร้าง — ได้คำตอบสไตล์ Band 8 ในแบบของคุณเอง</div>
-          ${card.mine.slots.map((s,si)=>`<div class="ielts-mine-field"><label>${s.l}</label><input id="ie-slot-${si}" placeholder="เช่น ${s.ph}"></div>`).join('')}
-          <button class="btn btn-primary btn-sm" style="width:100%;margin-top:8px" onclick="ieBuildMine()">✨ สร้างคำตอบของฉัน</button>
+          <div class="ielts-mine-ttl">✍️ สร้างคำตอบของคุณ (AI ช่วยเขียน Band 8+)</div>
+          <div class="ielts-mine-sub">พิมพ์ไอเดีย/คำตอบของคุณ <b>เป็นภาษาไทยได้เลย พิมพ์อิสระ</b> แล้วกดสร้าง — AI จะเขียนเป็นคำตอบอังกฤษระดับ Band 8+ ที่สมบูรณ์ให้</div>
+          <textarea id="ie-mine-input" class="ielts-mine-ta" placeholder="เช่น: ฉันมาจากเชียงใหม่ เป็นเมืองที่มีวัดสวยๆ อากาศดี ตอนนี้ย้ายมาทำงานกรุงเทพ แต่ยังคิดถึงบ้านเสมอ"></textarea>
+          <button class="btn btn-primary btn-sm" style="width:100%;margin-top:8px" onclick="ieGenerateMine()">✨ สร้างคำตอบ Band 8+</button>
           <div id="ie-mine-out" class="ielts-mine-out" style="display:none"></div>
-        </div>` : ''}
+        </div>
       </div>
     </div>
     <div class="next-area" id="next-area">
@@ -3183,19 +3213,93 @@ function ieReveal(){
 
 function ieListen(){ const card=S.exList[S.exIdx]; speak(card.model, 0.95); }
 
-function ieBuildMine(){
-  const card=S.exList[S.exIdx]; if(!card||!card.mine) return;
-  let txt=card.mine.tpl;
-  card.mine.slots.forEach((s,si)=>{
-    const el=document.getElementById('ie-slot-'+si);
-    const v=(el&&el.value.trim())||s.ph;
-    txt=txt.split('{'+si+'}').join(v);
-  });
-  _ieMineText=txt;
+const _GEMINI_KEY_LS='ws_gemini_key';
+// Try several models in order — each model has its OWN free-tier quota, so if one
+// returns "limit: 0" / 429 / 404 we fall through to the next that DOES have quota.
+const _GEMINI_MODELS=['gemini-2.0-flash','gemini-2.0-flash-lite','gemini-2.5-flash','gemini-1.5-flash','gemini-1.5-flash-8b'];
+const _ieEsc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const _ieErrBox=msg=>`<div class="ielts-mine-err">${msg}<br><button class="btn btn-outline btn-sm" style="margin-top:8px" onclick="ieGenerateMine()">🔁 ลองใหม่</button></div>`;
+
+function ieGenerateMine(){
+  const card=S.exList[S.exIdx]; if(!card) return;
+  const ta=document.getElementById('ie-mine-input');
+  const notes=ta?ta.value.trim():'';
   const out=document.getElementById('ie-mine-out'); if(!out) return;
   out.style.display='block';
-  out.innerHTML=`<div class="ielts-mine-en">${txt}</div>
-    <button class="btn btn-outline btn-sm" style="width:100%;margin-top:8px" onclick="ieSpeakMine()">🔊 ฟังคำตอบของฉัน</button>`;
+  if(!notes){ out.innerHTML=`<div class="ielts-mine-err">⚠️ พิมพ์ไอเดียคำตอบของคุณก่อน (ภาษาไทยได้)</div>`; return; }
+  const key=localStorage.getItem(_GEMINI_KEY_LS);
+  if(!key){ ieShowKeyForm(out); return; }
+  // length guidance per part
+  const part=card.part||1;
+  const lenG = part===2 ? 'a long-turn monologue of roughly 180–220 words (this is IELTS Part 2, the candidate speaks for ~2 minutes)'
+            : part===3 ? '3–5 well-developed sentences (~70–110 words), with reasons and examples'
+            : '2–4 natural sentences (~40–70 words)';
+  const prompt=`You are an expert IELTS Speaking coach. The candidate was asked this IELTS Speaking Part ${part} question:\n"${card.question}"\n\nThe candidate jotted down their own ideas/opinions, written in Thai (or mixed Thai-English):\n"${notes}"\n\nWrite ONE complete spoken answer in natural, native-like English at IELTS Band 8.5 level that expresses the candidate's ideas above. Requirements:\n- Idiomatic, fluent, spoken-style English (NOT a written essay) with discourse markers.\n- A wide range of less-common vocabulary and flexible complex grammar, used naturally and accurately.\n- Faithfully keep the candidate's specific ideas/details; you may enrich and reorganise them.\n- Length: ${lenG}.\n\nOutput ONLY the answer text itself — no preamble, no quotation marks, no notes, no Thai.`;
+
+  out.innerHTML=`<div class="ielts-mine-loading">✨ กำลังเขียนคำตอบ Band 8+ ให้... <span class="ie-dots"></span></div>`;
+  ieTryModels(0, prompt, key, out);
+}
+
+function ieTryModels(i, prompt, key, out){
+  if(i>=_GEMINI_MODELS.length){
+    out.innerHTML=_ieErrBox(`❌ คีย์นี้ยังไม่มีโควต้าฟรีให้ทุกโมเดลที่ลอง (gemini 2.0/2.5/1.5 flash) — มักเกิดเมื่อโปรเจกต์ของคีย์ผูกกับ billing หรืออยู่ภูมิภาคที่ยังไม่เปิด free tier<br>👉 ลองสร้างคีย์ใหม่จาก <b>โปรเจกต์ใหม่</b> ใน <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener">AI Studio</a> แล้วกด`)
+      +`<div class="ielts-mine-keylink"><a href="javascript:void(0)" onclick="ieChangeKey()">⚙️ เปลี่ยน API key</a></div>`;
+    return;
+  }
+  const model=_GEMINI_MODELS[i];
+  const url='https://generativelanguage.googleapis.com/v1beta/models/'+model+':generateContent?key='+encodeURIComponent(key);
+  fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({contents:[{parts:[{text:prompt}]}],generationConfig:{temperature:0.75,maxOutputTokens:600}})})
+  .then(r=>r.json().then(j=>({ok:r.ok,status:r.status,j})))
+  .then(({ok,status,j})=>{
+    if(!ok){
+      const msg=(j&&j.error&&j.error.message)||('HTTP '+status);
+      if(status===400||status===403){ // bad/invalid key — same for every model, stop
+        out.innerHTML=`<div class="ielts-mine-err">❌ API key ใช้ไม่ได้ (${_ieEsc(msg)})</div>`;
+        ieShowKeyForm(out,true); return;
+      }
+      if(status===429||status===404){ // no quota for this model OR model unavailable → next model
+        ieTryModels(i+1, prompt, key, out); return;
+      }
+      out.innerHTML=_ieErrBox(`❌ สร้างไม่สำเร็จ: ${_ieEsc(msg)}`); return;
+    }
+    let txt='';
+    try{ txt=j.candidates[0].content.parts.map(p=>p.text).join(' ').trim(); }catch(e){ txt=''; }
+    txt=txt.replace(/^["'\s]+|["'\s]+$/g,'');
+    if(!txt){ ieTryModels(i+1, prompt, key, out); return; } // empty → try next model
+    _ieMineText=txt;
+    out.innerHTML=`<div class="ielts-mine-en">${_ieEsc(txt)}</div>
+      <div style="display:flex;gap:6px;margin-top:8px">
+        <button class="btn btn-outline btn-sm" style="flex:1" onclick="ieSpeakMine()">🔊 ฟังคำตอบของฉัน</button>
+        <button class="btn btn-outline btn-sm" style="flex:1" onclick="ieGenerateMine()">🔁 สร้างใหม่</button>
+      </div>
+      <div class="ielts-mine-keylink">โมเดล: ${_ieEsc(model)} · <a href="javascript:void(0)" onclick="ieChangeKey()">⚙️ เปลี่ยน API key</a></div>`;
+  })
+  .catch(err=>{
+    out.innerHTML=_ieErrBox(`❌ เชื่อมต่อไม่ได้: ${_ieEsc(err.message||err)}`);
+  });
+}
+
+function ieShowKeyForm(out,isRetry){
+  out.style.display='block';
+  out.innerHTML=`<div class="ielts-key-form">
+    <div class="ielts-mine-sub">${isRetry?'🔑 ใส่ API key ใหม่:':'ครั้งแรกต้องใส่ <b>Google Gemini API key</b> (ฟรี) — เก็บไว้ในเครื่องคุณเท่านั้น'}</div>
+    <div style="font-size:12px;margin-bottom:6px">👉 <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener">กดที่นี่เพื่อขอ key ฟรีจาก Google AI Studio</a> แล้วก๊อปมาวาง</div>
+    <input id="ie-key-input" class="ielts-mine-ta" style="min-height:auto" placeholder="วาง API key ที่นี่ (ขึ้นต้นด้วย AIza...)">
+    <button class="btn btn-primary btn-sm" style="width:100%;margin-top:8px" onclick="ieSaveKey()">💾 บันทึก key แล้วสร้างคำตอบ</button>
+  </div>`;
+}
+function ieSaveKey(){
+  const inp=document.getElementById('ie-key-input');
+  const k=inp?inp.value.trim():'';
+  if(!k){ if(inp) inp.focus(); return; }
+  localStorage.setItem(_GEMINI_KEY_LS,k);
+  ieGenerateMine();
+}
+function ieChangeKey(){
+  localStorage.removeItem(_GEMINI_KEY_LS);
+  const out=document.getElementById('ie-mine-out');
+  if(out) ieShowKeyForm(out,true);
 }
 function ieSpeakMine(){ if(_ieMineText) speak(_ieMineText, 0.95); }
 
