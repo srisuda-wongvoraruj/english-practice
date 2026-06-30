@@ -581,6 +581,15 @@ body{
 .ielts-stat-box{flex:1;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:8px;text-align:center}
 .ielts-stat-v{font-weight:800;font-size:16px;color:var(--text)}
 .ielts-stat-l{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.3px}
+.ielts-mine{margin-top:12px;padding-top:12px;border-top:1.5px dashed var(--border)}
+.ielts-mine-ttl{font-weight:800;color:#0d9488;margin-bottom:3px}
+.ielts-mine-sub{font-size:12px;color:var(--muted);line-height:1.5;margin-bottom:8px}
+.ielts-mine-field{margin-bottom:7px}
+.ielts-mine-field label{display:block;font-size:12px;font-weight:700;color:var(--text2);margin-bottom:3px}
+.ielts-mine-field input{width:100%;box-sizing:border-box;border:1.5px solid var(--border);border-radius:10px;padding:8px 10px;font-family:inherit;font-size:14px;color:var(--text);background:var(--surface)}
+.ielts-mine-field input:focus{outline:none;border-color:#14B8A6}
+.ielts-mine-out{margin-top:10px;background:#F0FDFA;border:1.5px solid #99f6e4;border-radius:12px;padding:12px}
+.ielts-mine-en{font-weight:700;color:#0f766e;line-height:1.6}
 
 .divider{height:1.5px;background:var(--border);margin:14px 16px}
 
@@ -1349,51 +1358,63 @@ const CATS = [
   // ── IELTS SPEAKING ─────────────────────────────────────
   {
     id:'ielts', name:'IELTS Speaking', cls:'ielts',
-    icon:'🎓', desc:'ฝึกพูดสไตล์ข้อสอบ IELTS — Part 1/2/3 พร้อมตัวอย่างคำตอบ band 7+ และฟีดแบ็กความลื่นไหล',
+    icon:'🎓', desc:'ฝึกพูดสไตล์ข้อสอบ IELTS — Part 1/2/3 พร้อมตัวอย่างคำตอบ band 8+ และฟีดแบ็กความลื่นไหล',
     ielts:[
       {part:1,
        question:"Let's talk about your hometown. Where are you from?",
        th:"คุยเรื่องบ้านเกิดกันหน่อย คุณมาจากที่ไหน?",
-       model:"I'm originally from Chiang Mai, a city in the north of Thailand. It's well known for its temples and its laid-back atmosphere, which I really appreciate. Although I've been living in Bangkok for work, Chiang Mai will always feel like home to me.",
-       modelTh:"ฉันมาจากเชียงใหม่ เมืองทางภาคเหนือของไทย ขึ้นชื่อเรื่องวัดและบรรยากาศสบายๆ ที่ฉันชอบมาก ถึงตอนนี้จะมาทำงานที่กรุงเทพ แต่เชียงใหม่ก็ยังเป็นบ้านสำหรับฉันเสมอ",
-       key:[{en:"originally from",th:"เดิมมาจาก"},{en:"well known for",th:"ขึ้นชื่อเรื่อง"},{en:"laid-back atmosphere",th:"บรรยากาศสบายๆ"},{en:"will always feel like home",th:"จะยังเป็นบ้านเสมอ"}],
-       tip:"Part 1 ตอบ 2–3 ประโยคพอ อย่าตอบสั้นคำเดียว — ขยายด้วยเหตุผลหรือรายละเอียดเล็กน้อยเสมอ"},
+       model:"I'm originally from Chiang Mai, which is nestled in the mountainous north of Thailand. It's a city that's renowned for its centuries-old temples and a refreshingly laid-back pace of life. Although work has drawn me down to Bangkok, there's a part of me that will always regard Chiang Mai as my true home — after all, that's where my roots are.",
+       modelTh:"เดิมฉันมาจากเชียงใหม่ ซึ่งตั้งอยู่ท่ามกลางขุนเขาทางภาคเหนือของไทย เป็นเมืองที่ขึ้นชื่อเรื่องวัดเก่าแก่หลายร้อยปีและจังหวะชีวิตที่ผ่อนคลายอย่างน่าอัศจรรย์ ถึงงานจะดึงฉันลงมาอยู่กรุงเทพ แต่ลึกๆ ก็ยังถือว่าเชียงใหม่เป็นบ้านที่แท้จริงเสมอ เพราะรากของฉันอยู่ที่นั่น",
+       key:[{en:"nestled in",th:"ตั้งอยู่ท่ามกลาง"},{en:"renowned for",th:"ขึ้นชื่อเรื่อง"},{en:"a laid-back pace of life",th:"จังหวะชีวิตที่ผ่อนคลาย"},{en:"work has drawn me to",th:"งานดึงฉันมาอยู่ที่"},{en:"where my roots are",th:"ที่ที่รากฉันอยู่"}],
+       tip:"Part 1 ตอบ 2–3 ประโยคพอ อย่าตอบสั้นคำเดียว — ขยายด้วยเหตุผลหรือรายละเอียดเล็กน้อยเสมอ",
+       mine:{tpl:"I'm originally from {0}, which is renowned for {1}. Although I now live in {2}, there's a part of me that will always regard it as home — after all, {3}.",
+         slots:[{l:"บ้านเกิด",ph:"Khon Kaen"},{l:"ขึ้นชื่อเรื่อง",ph:"its street food and friendly people"},{l:"ตอนนี้อยู่ที่",ph:"Bangkok"},{l:"เพราะ (เหตุผล)",ph:"that's where my family is"}]}},
       {part:1,
        question:"Do you work, or are you a student?",
        th:"คุณทำงานหรือเรียนอยู่?",
-       model:"I'm currently working as a marketing executive at a tech company. I've been in this role for about three years now. What I enjoy most is that no two days are the same — there's always a new challenge to tackle, which keeps things interesting.",
-       modelTh:"ตอนนี้ทำงานเป็น marketing executive ที่บริษัทเทค ทำตำแหน่งนี้มาประมาณสามปีแล้ว สิ่งที่ชอบที่สุดคือไม่มีวันไหนเหมือนกันเลย มีความท้าทายใหม่ๆ ให้จัดการตลอด ทำให้ไม่เบื่อ",
-       key:[{en:"currently working as",th:"ตอนนี้ทำงานเป็น"},{en:"no two days are the same",th:"ไม่มีวันไหนเหมือนกัน"},{en:"a new challenge to tackle",th:"ความท้าทายใหม่ให้จัดการ"},{en:"keeps things interesting",th:"ทำให้น่าสนใจอยู่เสมอ"}],
-       tip:"เพิ่มความเห็นส่วนตัว (What I enjoy most...) ช่วยให้คำตอบดู natural และได้คะแนน fluency"},
+       model:"I'm currently working as a marketing executive at a tech firm, a role I've held for the best part of three years now. What really keeps me hooked is the sheer variety of it — no two days are ever alike, and there's invariably some fresh challenge waiting to be tackled, which stops the job from ever feeling monotonous.",
+       modelTh:"ตอนนี้ฉันทำงานเป็น marketing executive ที่บริษัทเทค ตำแหน่งที่ทำมาเกือบสามปีแล้ว สิ่งที่ทำให้ฉันยังหลงใหลคือความหลากหลายล้วนๆ ไม่มีวันไหนเหมือนกันเลย และมักมีความท้าทายใหม่ๆ รอให้จัดการอยู่เสมอ ซึ่งทำให้งานไม่เคยน่าเบื่อ",
+       key:[{en:"for the best part of three years",th:"มาเกือบสามปี"},{en:"keeps me hooked",th:"ทำให้ฉันหลงใหล"},{en:"the sheer variety",th:"ความหลากหลายล้วนๆ"},{en:"invariably",th:"แทบทุกครั้ง/เสมอ"},{en:"feeling monotonous",th:"รู้สึกจำเจ"}],
+       tip:"เพิ่มความเห็นส่วนตัว (What I enjoy most...) ช่วยให้คำตอบดู natural และได้คะแนน fluency",
+       mine:{tpl:"I'm currently working as {0} at {1}, a role I've held for {2} now. What really keeps me hooked is {3} — it stops the job from ever feeling monotonous.",
+         slots:[{l:"ตำแหน่ง",ph:"a software developer"},{l:"ที่ไหน",ph:"a startup"},{l:"ระยะเวลา",ph:"about two years"},{l:"สิ่งที่ชอบที่สุด",ph:"solving new problems every day"}]}},
       {part:1,
        question:"What do you like to do in your free time?",
        th:"เวลาว่างชอบทำอะไร?",
-       model:"In my free time, I'm really into hiking. I try to get out of the city at least once a month to explore national parks. I find it's a great way to unwind and clear my head after a busy week at work.",
-       modelTh:"เวลาว่างฉันชอบเดินป่ามาก พยายามออกจากเมืองอย่างน้อยเดือนละครั้งไปเที่ยวอุทยานแห่งชาติ ฉันว่ามันเป็นวิธีผ่อนคลายและเคลียร์ความคิดที่ดีมากหลังทำงานหนักมาทั้งสัปดาห์",
-       key:[{en:"I'm really into",th:"ฉันชอบ...มาก"},{en:"unwind",th:"ผ่อนคลาย"},{en:"clear my head",th:"เคลียร์ความคิด"},{en:"at least once a month",th:"อย่างน้อยเดือนละครั้ง"}],
-       tip:"ใช้ collocation อย่าง 'I'm really into...' / 'unwind' แทน 'I like' / 'relax' จะดูมีคลังศัพท์กว้างกว่า"},
+       model:"In my downtime, I'm a keen hiker. I make a point of escaping the city at least once a month to venture into the national parks. For me, there's nothing quite like it for unwinding — being surrounded by nature really helps me switch off and clear my head after a hectic week at the office.",
+       modelTh:"เวลาว่างฉันชอบเดินป่ามาก ฉันตั้งใจหนีออกจากเมืองอย่างน้อยเดือนละครั้งเพื่อไปผจญภัยในอุทยานแห่งชาติ สำหรับฉันไม่มีอะไรเทียบได้ในเรื่องการผ่อนคลาย การได้อยู่ท่ามกลางธรรมชาติช่วยให้ฉันได้พักสมองและเคลียร์ความคิดหลังสัปดาห์ที่วุ่นวายในออฟฟิศ",
+       key:[{en:"in my downtime",th:"เวลาว่างของฉัน"},{en:"a keen hiker",th:"คนที่ชอบเดินป่ามาก"},{en:"make a point of",th:"ตั้งใจทำเป็นพิเศษ"},{en:"there's nothing quite like it",th:"ไม่มีอะไรเทียบได้"},{en:"switch off",th:"พักสมอง/ปล่อยวาง"}],
+       tip:"ใช้ collocation อย่าง 'a keen hiker' / 'switch off' แทน 'I like' / 'relax' จะดูมีคลังศัพท์กว้างกว่า",
+       mine:{tpl:"In my downtime, I'm a keen {0}. I make a point of {1} whenever I can. For me, there's nothing quite like it for unwinding — it really helps me switch off and clear my head after a hectic week.",
+         slots:[{l:"งานอดิเรก (คำนาม)",ph:"reader / cook / runner"},{l:"กิจกรรมที่ทำ",ph:"getting lost in a good novel"}]}},
       {part:2, prep:true,
        question:"Describe a place you enjoy visiting.",
        th:"บรรยายสถานที่ที่คุณชอบไปเยือน",
        cue:["where it is","how often you go there","what you do there","and explain why you enjoy it"],
-       model:"I'd like to talk about a small beach town called Pranburi, which is about three hours south of Bangkok. I try to visit every couple of months, usually for a long weekend. When I'm there, I mostly relax — I'll go for early morning walks along the beach, try the fresh seafood, and read by the sea. The main reason I enjoy it so much is the peace and quiet. Unlike the more touristy beaches, it's never crowded, so it's the perfect place to escape the hustle and bustle of the city and recharge.",
-       modelTh:"ฉันอยากเล่าเรื่องเมืองชายทะเลเล็กๆ ชื่อปราณบุรี อยู่ทางใต้ของกรุงเทพประมาณสามชั่วโมง ฉันไปทุกๆ สองเดือน มักไปช่วงวันหยุดยาว เวลาอยู่ที่นั่นส่วนใหญ่ก็พักผ่อน เดินเล่นริมหาดตอนเช้า กินซีฟู้ดสดๆ อ่านหนังสือริมทะเล เหตุผลหลักที่ชอบมากคือความสงบ ต่างจากหาดที่นักท่องเที่ยวเยอะ ที่นี่ไม่เคยแออัด เป็นที่หนีความวุ่นวายของเมืองและชาร์จพลังได้ดีมาก",
-       key:[{en:"I'd like to talk about",th:"ฉันอยากเล่าเรื่อง (วิธีเปิด Part 2)"},{en:"every couple of months",th:"ทุกๆ สองเดือน"},{en:"the peace and quiet",th:"ความสงบเงียบ"},{en:"escape the hustle and bustle",th:"หนีความวุ่นวาย"},{en:"recharge",th:"ชาร์จพลัง"}],
-       tip:"Part 2 พูด 1–2 นาที ครอบให้ครบทุก bullet ใช้ตัวเชื่อม (When I'm there... The main reason... Unlike...) ให้คำตอบไหลลื่นเป็นเรื่องเดียว"},
+       model:"I'd like to tell you about a sleepy little beach town called Pranburi, which sits roughly three hours' drive south of Bangkok. I try to get down there every couple of months or so, usually for a long weekend whenever I'm in need of a change of scenery. Once I'm there, I tend to do very little — I'll take leisurely strolls along the shore first thing in the morning, indulge in the freshly caught seafood, and lose myself in a book by the water's edge. What draws me back time and again is the sheer tranquillity of the place. Unlike the more commercialised resorts further down the coast, it never gets overrun with tourists, which makes it the ideal spot to get away from the hustle and bustle of city life and properly recharge my batteries.",
+       modelTh:"ฉันอยากเล่าเรื่องเมืองชายทะเลเล็กๆ เงียบสงบชื่อปราณบุรี อยู่ห่างจากกรุงเทพไปทางใต้ราวสามชั่วโมง ฉันพยายามลงไปทุกๆ สองเดือน มักเป็นช่วงวันหยุดยาวเวลาที่อยากเปลี่ยนบรรยากาศ พออยู่ที่นั่นฉันมักไม่ค่อยทำอะไร เดินเล่นชิลล์ๆ ริมหาดตอนเช้าตรู่ ดื่มด่ำกับซีฟู้ดสดๆ และจมอยู่กับหนังสือริมน้ำ สิ่งที่ดึงฉันกลับไปครั้งแล้วครั้งเล่าคือความสงบล้วนๆ ของที่นั่น ต่างจากรีสอร์ตเชิงพาณิชย์ถัดลงไปตามชายฝั่ง ที่นี่ไม่เคยมีนักท่องเที่ยวล้น จึงเป็นที่ที่เหมาะที่สุดในการหนีความวุ่นวายของเมืองและชาร์จพลังให้เต็มที่",
+       key:[{en:"sits roughly three hours' drive",th:"อยู่ห่างราวสามชั่วโมง"},{en:"a change of scenery",th:"เปลี่ยนบรรยากาศ"},{en:"lose myself in a book",th:"จมอยู่กับหนังสือ"},{en:"time and again",th:"ครั้งแล้วครั้งเล่า"},{en:"overrun with tourists",th:"นักท่องเที่ยวล้น"},{en:"recharge my batteries",th:"ชาร์จพลังตัวเอง"}],
+       tip:"Part 2 พูด 1–2 นาที ครอบให้ครบทุก bullet ใช้ตัวเชื่อม (Once I'm there... What draws me back... Unlike...) ให้คำตอบไหลลื่นเป็นเรื่องเดียว",
+       mine:{tpl:"I'd like to tell you about {0}, which is {1}. I try to get there {2}. Once I'm there, I tend to {3}. What draws me back time and again is {4} — it's the ideal spot to get away from the hustle and bustle and recharge my batteries.",
+         slots:[{l:"สถานที่",ph:"a quiet town called ..."},{l:"อยู่ที่ไหน",ph:"two hours north of my city"},{l:"ไปบ่อยแค่ไหน",ph:"a few times a year"},{l:"ทำอะไรที่นั่น",ph:"wander the old markets and eat local food"},{l:"ชอบเพราะ",ph:"the calm, friendly atmosphere"}]}},
       {part:3,
        question:"Why do you think people enjoy traveling to new places?",
        th:"ทำไมคนถึงชอบไปเที่ยวที่ใหม่ๆ?",
-       model:"I think there are several reasons. Firstly, traveling broadens your horizons — you get exposed to different cultures, food, and ways of life, which can be really eye-opening. On top of that, it's a break from routine. People spend most of the year working, so a trip somewhere new gives them a chance to recharge and create lasting memories.",
-       modelTh:"ฉันว่ามีหลายเหตุผล อย่างแรก การเดินทางช่วยเปิดโลกทัศน์ ได้เจอวัฒนธรรม อาหาร และวิถีชีวิตที่ต่างออกไป ซึ่งเปิดหูเปิดตามาก นอกจากนั้นยังเป็นการพักจากกิจวัตร คนเราทำงานเกือบทั้งปี การได้ไปที่ใหม่จึงเป็นโอกาสชาร์จพลังและสร้างความทรงจำดีๆ",
-       key:[{en:"broadens your horizons",th:"เปิดโลกทัศน์"},{en:"eye-opening",th:"เปิดหูเปิดตา"},{en:"a break from routine",th:"พักจากกิจวัตร"},{en:"On top of that",th:"นอกจากนั้น (ตัวเชื่อม)"}],
-       tip:"Part 3 ต้องให้เหตุผลและขยายความ ใช้ตัวเชื่อม Firstly / On top of that / For instance เพื่อจัดโครงสร้างคำตอบ"},
+       model:"Well, I'd say there are a number of factors at play. For one thing, travelling genuinely broadens the mind — being immersed in unfamiliar cultures, cuisines and ways of life can be a real eye-opener and often shifts your whole perspective. On top of that, it offers a welcome escape from the daily grind. Given that most of us spend the bulk of the year tied to our desks, a trip somewhere new is a chance to recharge and, more importantly, to forge memories that stay with you for a lifetime.",
+       modelTh:"ฉันว่ามีหลายปัจจัยประกอบกัน อย่างแรก การเดินทางเปิดมุมมองของเราอย่างแท้จริง การได้ดื่มด่ำกับวัฒนธรรม อาหาร และวิถีชีวิตที่ไม่คุ้นเคยเป็นการเปิดหูเปิดตาและมักเปลี่ยนมุมมองทั้งหมดของเรา นอกจากนั้นยังเป็นการหนีจากความจำเจในแต่ละวัน ในเมื่อพวกเราส่วนใหญ่ใช้เวลาเกือบทั้งปีจมอยู่กับโต๊ะทำงาน การได้ไปที่ใหม่จึงเป็นโอกาสชาร์จพลัง และที่สำคัญกว่านั้นคือสร้างความทรงจำที่อยู่กับเราไปตลอดชีวิต",
+       key:[{en:"a number of factors at play",th:"มีหลายปัจจัยประกอบกัน"},{en:"broadens the mind",th:"เปิดมุมมอง"},{en:"a real eye-opener",th:"เปิดหูเปิดตาจริงๆ"},{en:"the daily grind",th:"ความจำเจในแต่ละวัน"},{en:"forge memories",th:"สร้างความทรงจำ"}],
+       tip:"Part 3 ต้องให้เหตุผลและขยายความ ใช้ตัวเชื่อม For one thing / On top of that / Given that เพื่อจัดโครงสร้างคำตอบ",
+       mine:{tpl:"Well, I'd say there are a number of factors at play. For one thing, {0}. On top of that, {1}. Given that {2}, it makes perfect sense that people are drawn to it.",
+         slots:[{l:"เหตุผลที่ 1",ph:"travelling broadens the mind"},{l:"เหตุผลที่ 2",ph:"it's a break from the daily grind"},{l:"ข้อเท็จจริงสนับสนุน",ph:"most of us work long hours all year"}]}},
       {part:3,
        question:"How has tourism changed in your country over the years?",
        th:"การท่องเที่ยวในประเทศคุณเปลี่ยนไปอย่างไรในช่วงหลายปีที่ผ่านมา?",
-       model:"It's changed quite dramatically. In the past, tourism was concentrated in a few major destinations, but these days travelers are looking for more off-the-beaten-track experiences. Social media has played a huge role in this — a single viral post can suddenly put a small, unknown place on the map. While that's great for the local economy, it does raise concerns about over-tourism and its impact on the environment.",
-       modelTh:"เปลี่ยนไปค่อนข้างมาก สมัยก่อนการท่องเที่ยวกระจุกอยู่ไม่กี่ที่หลักๆ แต่เดี๋ยวนี้นักท่องเที่ยวมองหาประสบการณ์นอกเส้นทางมากขึ้น โซเชียลมีเดียมีบทบาทมาก โพสต์ไวรัลเดียวทำให้ที่เล็กๆ ที่ไม่มีใครรู้จักดังขึ้นมาได้ ถึงจะดีต่อเศรษฐกิจท้องถิ่น แต่ก็ทำให้กังวลเรื่องนักท่องเที่ยวล้นและผลกระทบต่อสิ่งแวดล้อม",
-       key:[{en:"off-the-beaten-track",th:"นอกเส้นทางท่องเที่ยวหลัก"},{en:"put ... on the map",th:"ทำให้...เป็นที่รู้จัก"},{en:"over-tourism",th:"นักท่องเที่ยวล้นเกิน"},{en:"raise concerns about",th:"ทำให้เกิดข้อกังวลเรื่อง"}],
-       tip:"Part 3 ขั้นสูง: แสดงสองมุม (While that's great... it does raise concerns...) ช่วยดันคะแนน band ให้สูงขึ้น"}
+       model:"It's undergone a fairly dramatic transformation, to be honest. In the past, tourism was largely confined to a handful of well-trodden destinations, but nowadays travellers are increasingly seeking out more off-the-beaten-track experiences. Social media has been a real game-changer in this respect — a single viral post can put an obscure little village on the map almost overnight. While that's undoubtedly a boon for local economies, it does raise legitimate concerns about over-tourism and the toll it takes on the environment.",
+       modelTh:"พูดตรงๆ มันเปลี่ยนไปค่อนข้างมาก สมัยก่อนการท่องเที่ยวกระจุกอยู่แค่ไม่กี่ที่ยอดนิยม แต่เดี๋ยวนี้นักท่องเที่ยวมองหาประสบการณ์นอกเส้นทางมากขึ้นเรื่อยๆ โซเชียลมีเดียเป็นตัวพลิกเกมในเรื่องนี้จริงๆ โพสต์ไวรัลเดียวทำให้หมู่บ้านเล็กๆ ที่ไม่มีใครรู้จักดังข้ามคืนได้ ถึงจะเป็นผลดีต่อเศรษฐกิจท้องถิ่นอย่างไม่ต้องสงสัย แต่ก็ทำให้เกิดข้อกังวลที่สมเหตุสมผลเรื่องนักท่องเที่ยวล้นและผลกระทบที่มีต่อสิ่งแวดล้อม",
+       key:[{en:"undergone a dramatic transformation",th:"เปลี่ยนแปลงครั้งใหญ่"},{en:"well-trodden destinations",th:"จุดหมายยอดนิยม"},{en:"a real game-changer",th:"ตัวพลิกเกม"},{en:"a boon for",th:"ผลดีต่อ"},{en:"the toll it takes on",th:"ผลกระทบที่มีต่อ"}],
+       tip:"Part 3 ขั้นสูง: แสดงสองมุม (While that's undoubtedly a boon... it does raise concerns...) ช่วยดันคะแนน band ให้สูงขึ้น",
+       mine:{tpl:"It's undergone a fairly dramatic transformation. In the past, {0}, but nowadays {1}. {2} has been a real game-changer in this respect. While that's undoubtedly a boon, it does raise legitimate concerns about {3}.",
+         slots:[{l:"อดีตเป็นอย่างไร",ph:"few people travelled abroad"},{l:"ปัจจุบันเป็นอย่างไร",ph:"travel is far more affordable"},{l:"ปัจจัยที่ทำให้เปลี่ยน",ph:"low-cost airlines / social media"},{l:"ข้อกังวล",ph:"over-tourism and the environment"}]}}
     ]
   }
 ];
@@ -3099,7 +3120,7 @@ function sitDone() {
 }
 
 // ── IELTS SPEAKING ───────────────────────────
-let _ieRecog=null, _ieIsRec=false, _ieStart=0, _ieFinal='', _ieScore=0, _iePrepTimer=null;
+let _ieRecog=null, _ieIsRec=false, _ieStart=0, _ieFinal='', _ieScore=0, _iePrepTimer=null, _ieMineText='';
 
 function renderIelts(card){
   if(_iePrepTimer){clearInterval(_iePrepTimer);_iePrepTimer=null;}
@@ -3129,7 +3150,7 @@ function renderIelts(card){
     <div class="ielts-model" id="ie-model" style="display:none">
       <div class="ielts-model-body">
         <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px">
-          <span class="ielts-model-ttl" style="margin:0">📝 Model Answer (Band 7+)</span>
+          <span class="ielts-model-ttl" style="margin:0">📝 Model Answer (Band 8+)</span>
           <button class="btn btn-outline btn-sm" onclick="ieListen()" style="width:auto">🔊 ฟัง</button>
         </div>
         <div class="ielts-model-en">${card.model}</div>
@@ -3137,6 +3158,14 @@ function renderIelts(card){
         <div class="ielts-key-ttl">🔑 Key Phrases</div>
         <div class="ielts-key">${keyHtml}</div>
         <div class="ielts-tip">💡 ${card.tip}</div>
+        ${card.mine ? `
+        <div class="ielts-mine">
+          <div class="ielts-mine-ttl">✍️ ปรับเป็นคำตอบของคุณ</div>
+          <div class="ielts-mine-sub">พิมพ์คำของคุณลงในช่อง (เว้นว่างได้ จะใช้ตัวอย่างให้) แล้วกดสร้าง — ได้คำตอบสไตล์ Band 8 ในแบบของคุณเอง</div>
+          ${card.mine.slots.map((s,si)=>`<div class="ielts-mine-field"><label>${s.l}</label><input id="ie-slot-${si}" placeholder="เช่น ${s.ph}"></div>`).join('')}
+          <button class="btn btn-primary btn-sm" style="width:100%;margin-top:8px" onclick="ieBuildMine()">✨ สร้างคำตอบของฉัน</button>
+          <div id="ie-mine-out" class="ielts-mine-out" style="display:none"></div>
+        </div>` : ''}
       </div>
     </div>
     <div class="next-area" id="next-area">
@@ -3153,6 +3182,22 @@ function ieReveal(){
 }
 
 function ieListen(){ const card=S.exList[S.exIdx]; speak(card.model, 0.95); }
+
+function ieBuildMine(){
+  const card=S.exList[S.exIdx]; if(!card||!card.mine) return;
+  let txt=card.mine.tpl;
+  card.mine.slots.forEach((s,si)=>{
+    const el=document.getElementById('ie-slot-'+si);
+    const v=(el&&el.value.trim())||s.ph;
+    txt=txt.split('{'+si+'}').join(v);
+  });
+  _ieMineText=txt;
+  const out=document.getElementById('ie-mine-out'); if(!out) return;
+  out.style.display='block';
+  out.innerHTML=`<div class="ielts-mine-en">${txt}</div>
+    <button class="btn btn-outline btn-sm" style="width:100%;margin-top:8px" onclick="ieSpeakMine()">🔊 ฟังคำตอบของฉัน</button>`;
+}
+function ieSpeakMine(){ if(_ieMineText) speak(_ieMineText, 0.95); }
 
 function iePrep(){
   const el=document.getElementById('ie-prep'); if(!el) return;
