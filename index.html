@@ -1698,7 +1698,7 @@ function recordRepeat(){
   _repeatRecog.onerror=e=>{
     if(e.error==='not-allowed'||e.error==='service-not-allowed'){
       _repeatIsRec=false; if(btn)btn.textContent='🎤 พูดตาม';
-      if(scoreEl) scoreEl.innerHTML='<div style="color:red;font-size:12px">❌ ไม่ได้รับอนุญาตใช้ไมค์</div>';
+      if(scoreEl) scoreEl.innerHTML='<div style="color:red;font-size:12px">'+micDeniedMsg()+'</div>';
     }
   };
   _repeatRecog.onend=()=>{
@@ -2366,6 +2366,12 @@ function renderStreakNudge(){
   const el=document.getElementById('streak-nudge'); if(!el) return;
   const practicedToday = S.lastDate===new Date().toDateString();
   let html='';
+  // iOS blocks mic access entirely for home-screen "standalone" web apps (WebKit
+  // restriction) — warn proactively so users don't think the mic itself is broken.
+  let micHtml='';
+  if(_isIOS() && _isStandalone() && !localStorage.getItem('ws_mic_warn_dismissed')){
+    micHtml=`<div class="nudge nudge-warn" id="mic-warn-hint"><span>🎙️ เปิดจากไอคอนหน้าจอหลัก — โหมดพูดออกเสียง (ไมค์) อาจใช้ไม่ได้บน iPhone ถ้าไมค์ไม่ทำงาน ให้เปิดผ่าน Safari แทน</span><button class="nudge-x" onclick="dismissMicWarn(event)">✕</button></div>`;
+  }
   if(practicedToday){
     html=`<div class="nudge nudge-ok">✅ วันนี้ฝึกแล้ว! streak ${S.streak} วัน 🔥${S.freezes?` · ❄️ ฟรีซ ${S.freezes}`:''}</div>`;
   } else if(S.streak>0){
@@ -2374,12 +2380,13 @@ function renderStreakNudge(){
   } else {
     html=`<div class="nudge nudge-warn">🌱 เริ่ม streak วันนี้เลย! ทำครบ 5 ข้อรับ ❄️ ฟรีซกันขาด</div>`;
   }
-  if(!localStorage.getItem('ws_a2hs') && !(window.matchMedia&&window.matchMedia('(display-mode: standalone)').matches)){
-    html+=`<div class="nudge nudge-tip" id="a2hs-hint"><span>📲 เพิ่มลงหน้าจอหลัก เปิดฝึกได้เร็วขึ้น</span><button class="nudge-x" onclick="dismissA2HS(event)">✕</button></div>`;
+  if(!localStorage.getItem('ws_a2hs') && !_isStandalone()){
+    html+=`<div class="nudge nudge-tip" id="a2hs-hint"><span>📲 เพิ่มลงหน้าจอหลัก เปิดฝึกได้เร็วขึ้น${_isIOS()?' (หมายเหตุ: โหมดพูดออกเสียงอาจใช้ไม่ได้ ถ้าใช้ไมค์บ่อยแนะนำเปิดผ่าน Safari)':''}</span><button class="nudge-x" onclick="dismissA2HS(event)">✕</button></div>`;
   }
-  el.innerHTML=html;
+  el.innerHTML=micHtml+html;
 }
 function dismissA2HS(e){ if(e)e.stopPropagation(); localStorage.setItem('ws_a2hs','1'); const h=document.getElementById('a2hs-hint'); if(h)h.remove(); }
+function dismissMicWarn(e){ if(e)e.stopPropagation(); localStorage.setItem('ws_mic_warn_dismissed','1'); const h=document.getElementById('mic-warn-hint'); if(h)h.remove(); }
 
 // ── spaced review zone (flashcards of missed phrases) ──
 function renderReviewZone(){
@@ -2778,7 +2785,7 @@ function toggleRec(){
       if(e.error==='not-allowed'||e.error==='service-not-allowed'){
         _done=true; _isRec=false;
         if(btn){btn.classList.remove('rec');btn.innerHTML='🎤';}
-        if(lbl){lbl.classList.remove('active');lbl.textContent='❌ ไม่ได้รับอนุญาตใช้ไมค์';}
+        if(lbl){lbl.classList.remove('active');lbl.textContent=micDeniedMsg();}
       }
     };
     r.onend=()=>{
@@ -3035,7 +3042,7 @@ function shadowRecord(i){
     if(e.error==='not-allowed'||e.error==='service-not-allowed'){
       _shadowIsRec=false; _shadowSegIdx=-1;
       if(btn){btn.textContent='🎤 พูดตาม';btn.classList.remove('rec');}
-      if(scoreEl) scoreEl.innerHTML='<div style="color:red;font-size:12px">❌ ไม่ได้รับอนุญาตใช้ไมค์</div>';
+      if(scoreEl) scoreEl.innerHTML='<div style="color:red;font-size:12px">'+micDeniedMsg()+'</div>';
     }
   };
   _shadowRecog.onend=()=>{
@@ -3158,7 +3165,7 @@ function sitSpeak(phraseIdx) {
     if(e.error==='not-allowed'||e.error==='service-not-allowed'){
       _sitIsRec=false; _sitPhraseIdx=-1;
       if(btn){btn.textContent='🎤 พูด';btn.classList.remove('rec');}
-      if(scoreEl) scoreEl.innerHTML='<div style="color:red;font-size:12px">❌ ไม่ได้รับอนุญาตใช้ไมค์</div>';
+      if(scoreEl) scoreEl.innerHTML='<div style="color:red;font-size:12px">'+micDeniedMsg()+'</div>';
     }
   };
   _sitRecog.onend=()=>{
@@ -3460,7 +3467,7 @@ function ieRecord(){
     if(e.error==='not-allowed'||e.error==='service-not-allowed'){
       _ieIsRec=false;
       if(btn){btn.textContent='🎤 เริ่มพูดคำตอบ';btn.classList.remove('rec');}
-      if(scEl) scEl.innerHTML='<div style="color:red;font-size:13px">❌ ไม่ได้รับอนุญาตใช้ไมค์</div>';
+      if(scEl) scEl.innerHTML='<div style="color:red;font-size:13px">'+micDeniedMsg()+'</div>';
     }
   };
   _ieRecog.onend=()=>{
@@ -3682,6 +3689,20 @@ function speakAs(text,speaker,rate=0.95,onEnd){
   window._utter=u; speechSynthesis.speak(u);
 }
 function stopSpeech(){if(window.speechSynthesis)speechSynthesis.cancel()}
+
+// iOS Safari blocks mic access entirely for home-screen "standalone" web apps —
+// this is an OS/WebKit restriction, not something the page can fix. Detect it so
+// the "not-allowed" error can point the user at the real cause instead of confusing them.
+function _isStandalone(){
+  return (window.navigator.standalone===true) ||
+         (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches);
+}
+function _isIOS(){ return /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream; }
+function micDeniedMsg(){
+  return (_isIOS() && _isStandalone())
+    ? '❌ ไมค์ใช้ไม่ได้เพราะเปิดจากไอคอนหน้าจอหลัก (iOS จำกัดสิทธิ์ไมค์ในโหมดนี้) — เปิดผ่าน Safari ปกติแทน'
+    : '❌ ไม่ได้รับอนุญาตใช้ไมค์ — เช็คสิทธิ์ไมค์ในตั้งค่าเบราว์เซอร์';
+}
 if(window.speechSynthesis){
   const _iv=()=>{speechSynthesis.getVoices();_initVoices()};
   _iv(); speechSynthesis.onvoiceschanged=_iv;
@@ -3821,7 +3842,7 @@ function chatToggleRec() {
       if(e.error==='not-allowed'||e.error==='service-not-allowed'){
         _done=true; chat.isRec=false;
         if(btn){btn.classList.remove('rec');btn.innerHTML='🎤';}
-        if(lbl){lbl.classList.remove('active');lbl.textContent='❌ ไม่ได้รับอนุญาตใช้ไมค์';}
+        if(lbl){lbl.classList.remove('active');lbl.textContent=micDeniedMsg();}
       }
     };
     r.onend=()=>{
