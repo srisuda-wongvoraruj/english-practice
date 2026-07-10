@@ -534,6 +534,16 @@ body{
 .review-item-tip{color:var(--text2);line-height:1.5}
 
 /* retention nudges + spaced-review cards */
+.quest{margin:0 16px 12px;padding:14px 16px;border-radius:18px;display:flex;align-items:center;gap:12px;cursor:pointer;
+  background:linear-gradient(135deg,#7C3AED,#A855F7);color:#fff;box-shadow:0 6px 18px rgba(124,58,237,.35);
+  transition:transform .12s;user-select:none}
+.quest:active{transform:scale(.98)}
+.quest-ico{font-size:30px;line-height:1}
+.quest-txt{flex:1}
+.quest-ttl{font-weight:800;font-size:16.5px}
+.quest-sub{font-size:12.5px;opacity:.92;margin-top:2px}
+.quest-go{font-size:18px;background:rgba(255,255,255,.22);border-radius:999px;width:38px;height:38px;display:flex;align-items:center;justify-content:center}
+.quest-done{background:linear-gradient(135deg,#059669,#10B981);box-shadow:0 6px 18px rgba(16,185,129,.3);cursor:default}
 .nudge{margin:0 16px 10px;padding:11px 14px;border-radius:14px;font-size:13.5px;font-weight:700;line-height:1.5}
 .nudge-warn{background:linear-gradient(135deg,#FFF3CD,#FFE08A);color:#7a5a00;border:1px solid #ffd966}
 .nudge-ok{background:#E8F5E9;color:#2e7d32;border:1px solid #b6e0bb}
@@ -597,6 +607,7 @@ body{
 .ielts-mine-keylink{text-align:right;margin-top:6px}
 .ielts-mine-keylink a{font-size:11px;color:var(--muted);text-decoration:none}
 .ielts-key-form a{color:#0d9488;font-weight:700}
+.ie-fb{margin-top:8px;background:#F0FDFA;border:1.5px solid #99f6e4;border-radius:12px;padding:12px;font-size:13.5px;line-height:1.75;color:var(--text);text-align:left}
 .ielts-mine-out{margin-top:10px;background:#F0FDFA;border:1.5px solid #99f6e4;border-radius:12px;padding:12px}
 .ielts-mine-en{font-weight:700;color:#0f766e;line-height:1.6}
 
@@ -928,6 +939,7 @@ body{
     </div>
   </div>
 
+  <div id="quest-card"></div>
   <div id="streak-nudge"></div>
   <div id="review-zone"></div>
 
@@ -2276,7 +2288,7 @@ if (_stIdx > -1) CATS.push(SCENARIOS.splice(_stIdx, 1)[0]);
 const S = {
   catId:null, mode:null, exList:[], exIdx:0, scores:[],
   progress:{}, streak:0, todayDone:0, xp:0, lastDate:null,
-  freezes:2, review:[],
+  freezes:2, review:[], questDate:null,
 };
 
 const MASCOT_MSGS = [
@@ -2300,6 +2312,7 @@ function loadData() {
     S.xp        = d.xp        || 0;
     S.freezes   = d.freezes ?? 2;
     S.review    = d.review  || [];
+    S.questDate = d.questDate || null;
     if (S.lastDate !== new Date().toDateString()) S.todayDone = 0;
   } catch(e) {}
 }
@@ -2308,8 +2321,44 @@ function saveData() {
   localStorage.setItem('ws_v3', JSON.stringify({
     progress:S.progress, streak:S.streak,
     lastDate:today, todayDone:S.todayDone, xp:S.xp,
-    freezes:S.freezes, review:S.review
+    freezes:S.freezes, review:S.review, questDate:S.questDate
   }));
+}
+
+// ── daily quest: one-tap 5-item session (2 review + new phrases) ──
+function renderQuest(){
+  const el=document.getElementById('quest-card'); if(!el) return;
+  const doneToday = S.questDate===new Date().toDateString();
+  if(doneToday){
+    el.innerHTML=`<div class="quest quest-done">
+      <div class="quest-ico">🏅</div>
+      <div class="quest-txt"><div class="quest-ttl">ภารกิจวันนี้สำเร็จแล้ว!</div>
+      <div class="quest-sub">เก่งมาก แล้วเจอกันพรุ่งนี้ 🔥 ${S.streak} วัน</div></div>
+    </div>`;
+  } else {
+    el.innerHTML=`<div class="quest" onclick="startQuest()">
+      <div class="quest-ico">⚡</div>
+      <div class="quest-txt"><div class="quest-ttl">เริ่มภารกิจวันนี้</div>
+      <div class="quest-sub">5 ข้อ · ~3 นาที · จบแล้วได้ ❄️ ฟรีซ</div></div>
+      <div class="quest-go">▶</div>
+    </div>`;
+  }
+}
+function startQuest(){
+  // up to 2 phrases you missed before, topped up with fresh ones from random categories
+  const list=[]; const seen={};
+  (S.review||[]).slice(0,2).forEach(r=>{ if(r&&r.en){ list.push(r); seen[r.en]=1; } });
+  const pool=[];
+  CATS.forEach(c=>{ (c.speak||[]).forEach(x=>{ if(x&&x.en&&!seen[x.en]) pool.push(x); }); });
+  for(let i=pool.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [pool[i],pool[j]]=[pool[j],pool[i]]; }
+  while(list.length<5 && pool.length) list.push(pool.pop());
+  if(!list.length) return;
+
+  S.catId='quest'; S.mode='speak'; S.exList=list; S.exIdx=0; S.scores=[];
+  document.getElementById('ex-mode-tag').textContent='⚡ Quest';
+  document.getElementById('ex-back').onclick = ()=>showScreen('home');
+  renderExercise();
+  showScreen('exercise');
 }
 
 // ── retention: streak nudge + add-to-home hint ──
@@ -2392,6 +2441,7 @@ function renderHome() {
   document.getElementById('daily-fill').style.width = pct+'%';
   document.getElementById('daily-lbl').textContent  = S.todayDone+' / '+goal;
 
+  renderQuest();
   renderStreakNudge();
   renderReviewZone();
   renderNotesPreview();
@@ -3151,7 +3201,7 @@ function sitDone() {
 }
 
 // ── IELTS SPEAKING ───────────────────────────
-let _ieRecog=null, _ieIsRec=false, _ieStart=0, _ieFinal='', _ieScore=0, _iePrepTimer=null, _ieMineText='';
+let _ieRecog=null, _ieIsRec=false, _ieStart=0, _ieFinal='', _ieScore=0, _iePrepTimer=null, _ieMineText='', _ieSaid='', _ieKeyNext=null;
 
 function renderIelts(card){
   if(_iePrepTimer){clearInterval(_iePrepTimer);_iePrepTimer=null;}
@@ -3220,6 +3270,68 @@ const _GEMINI_MODELS=['gemini-2.0-flash','gemini-2.0-flash-lite','gemini-2.5-fla
 const _ieEsc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const _ieErrBox=msg=>`<div class="ielts-mine-err">${msg}<br><button class="btn btn-outline btn-sm" style="margin-top:8px" onclick="ieGenerateMine()">🔁 ลองใหม่</button></div>`;
 
+// generic Gemini call with the same model-fallback chain; resolves {text, model}
+function _gemGenerate(prompt){
+  const key=localStorage.getItem(_GEMINI_KEY_LS);
+  if(!key) return Promise.reject({code:'nokey'});
+  const tryAt=i=>{
+    if(i>=_GEMINI_MODELS.length) return Promise.reject({code:'quota'});
+    const model=_GEMINI_MODELS[i];
+    const url='https://generativelanguage.googleapis.com/v1beta/models/'+model+':generateContent?key='+encodeURIComponent(key);
+    return fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({contents:[{parts:[{text:prompt}]}],generationConfig:{temperature:0.7,maxOutputTokens:700}})})
+      .then(r=>r.json().then(j=>({ok:r.ok,status:r.status,j})))
+      .then(({ok,status,j})=>{
+        if(!ok){
+          const msg=(j&&j.error&&j.error.message)||('HTTP '+status);
+          if(status===400||status===403) return Promise.reject({code:'badkey',msg});
+          if(status===429||status===404) return tryAt(i+1);
+          return Promise.reject({code:'other',msg});
+        }
+        let txt=''; try{ txt=j.candidates[0].content.parts.map(p=>p.text).join(' ').trim(); }catch(e){}
+        txt=txt.replace(/^["'\s]+|["'\s]+$/g,'');
+        if(!txt) return tryAt(i+1);
+        return {text:txt, model};
+      });
+  };
+  return tryAt(0);
+}
+
+// AI examiner feedback on the user's spoken IELTS answer
+function ieAIFeedback(){
+  const card=S.exList[S.exIdx]; if(!card||!_ieSaid) return;
+  const fb=document.getElementById('ie-ai-fb'); if(!fb) return;
+  if(!localStorage.getItem(_GEMINI_KEY_LS)){ ieShowKeyForm(fb, false, ieAIFeedback); return; }
+  fb.innerHTML=`<div class="ielts-mine-loading">🤖 กำลังตรวจคำตอบของคุณ... <span class="ie-dots"></span></div>`;
+  const prompt=`You are a friendly IELTS Speaking examiner coaching a Thai learner. Question (Part ${card.part||1}): "${card.question}"
+
+The candidate's spoken answer (raw speech-recognition transcript — ignore missing punctuation):
+"${_ieSaid}"
+
+Reply in EXACTLY this plain-text format, no markdown symbols:
+
+คะแนนโดยประมาณ: <band score เช่น 6.0>
+
+จุดที่ควรแก้ (สูงสุด 3 จุด):
+1) คุณพูด: "<their words>" → ควรพูด: "<better English>" — <เหตุผลสั้นๆ ภาษาไทย>
+
+คำตอบของคุณเวอร์ชัน Band 8 (คงไอเดียเดิมของผู้พูด):
+<improved answer in English>
+
+กำลังใจ: <one short encouraging Thai sentence>
+
+Rules: Thai for all explanations, English only inside example sentences. Be concise.`;
+  _gemGenerate(prompt).then(({text,model})=>{
+    fb.innerHTML=`<div class="ie-fb">${_ieEsc(text).replace(/\n/g,'<br>')}</div>
+      <div class="ielts-mine-keylink">โมเดล: ${_ieEsc(model)}</div>`;
+  }).catch(err=>{
+    if(err&&err.code==='badkey'){ ieShowKeyForm(fb, true, ieAIFeedback); return; }
+    const msg = err&&err.code==='quota' ? 'โควต้า AI หมดชั่วคราว ลองใหม่ในอีกสักครู่'
+              : ((err&&err.msg)||(err&&err.message)||'เชื่อมต่อไม่ได้');
+    fb.innerHTML=`<div class="ielts-mine-err">❌ ${_ieEsc(msg)}<br><button class="btn btn-outline btn-sm" style="margin-top:8px" onclick="ieAIFeedback()">🔁 ลองใหม่</button></div>`;
+  });
+}
+
 function ieGenerateMine(){
   const card=S.exList[S.exIdx]; if(!card) return;
   const ta=document.getElementById('ie-mine-input');
@@ -3280,7 +3392,8 @@ function ieTryModels(i, prompt, key, out){
   });
 }
 
-function ieShowKeyForm(out,isRetry){
+function ieShowKeyForm(out,isRetry,next){
+  _ieKeyNext = next || null;
   out.style.display='block';
   out.innerHTML=`<div class="ielts-key-form">
     <div class="ielts-mine-sub">${isRetry?'🔑 ใส่ API key ใหม่:':'ครั้งแรกต้องใส่ <b>Google Gemini API key</b> (ฟรี) — เก็บไว้ในเครื่องคุณเท่านั้น'}</div>
@@ -3294,7 +3407,7 @@ function ieSaveKey(){
   const k=inp?inp.value.trim():'';
   if(!k){ if(inp) inp.focus(); return; }
   localStorage.setItem(_GEMINI_KEY_LS,k);
-  ieGenerateMine();
+  (_ieKeyNext||ieGenerateMine)();
 }
 function ieChangeKey(){
   localStorage.removeItem(_GEMINI_KEY_LS);
@@ -3393,8 +3506,11 @@ function _ieShowResult(said, card){
     </div>
     <div style="font-size:13px;color:var(--text2);line-height:1.6;margin-top:4px">${fb.map(f=>`<div>• ${f}</div>`).join('')}</div>
     <div style="font-size:12px;color:var(--muted);margin-top:8px;padding:8px;background:rgba(0,0,0,.04);border-radius:8px">คุณพูดว่า: ${said}</div>
+    <button class="btn btn-sm btn-primary" style="margin-top:8px;width:100%" onclick="ieAIFeedback()">🤖 ให้ AI ตรวจคำตอบของฉัน</button>
+    <div id="ie-ai-fb"></div>
     <button class="btn btn-sm btn-outline" style="margin-top:8px;width:100%" onclick="ieRecord()">🔄 พูดอีกครั้ง</button>
   </div>`;
+  _ieSaid=said;
   const m=document.getElementById('ie-model');
   if(m && m.style.display==='none') ieReveal();
 }
@@ -3430,10 +3546,14 @@ function finishSession(){
   const stars=avg>=95?5:avg>=80?4:avg>=65?3:avg>=50?2:1;
   const xpGained=stars*10+correct*5;
 
-  // progress
-  if(!S.progress[S.catId])S.progress[S.catId]={done:0,best:0};
-  S.progress[S.catId].done+=total;
-  S.progress[S.catId].best=Math.max(S.progress[S.catId].best||0,avg);
+  // progress (quest is a mixed session, not a category — don't pollute per-cat progress)
+  if(S.catId==='quest'){
+    S.questDate=new Date().toDateString();
+  } else {
+    if(!S.progress[S.catId])S.progress[S.catId]={done:0,best:0};
+    S.progress[S.catId].done+=total;
+    S.progress[S.catId].best=Math.max(S.progress[S.catId].best||0,avg);
+  }
   S.todayDone+=total;
   S.xp+=xpGained;
 
