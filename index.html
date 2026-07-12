@@ -2327,7 +2327,7 @@ if (_stIdx > -1) CATS.push(SCENARIOS.splice(_stIdx, 1)[0]);
 // ═══════════════════════════════════════════════
 // STATE
 // ═══════════════════════════════════════════════
-const APP_VER='12ก.ค.2026-3';
+const APP_VER='12ก.ค.2026-4';
 
 const S = {
   catId:null, mode:null, exList:[], exIdx:0, scores:[],
@@ -2824,7 +2824,7 @@ function listenPractice(){
 // Solution: auto-restart until we get a result or user manually stops.
 
 // ── SPEAK ────────────────────────────────────
-let _recog=null, _isRec=false, _finalText='';
+let _recog=null, _isRec=false, _finalText='', _interimText='';
 
 function renderSpeak(ex) {
   document.getElementById('ex-title').textContent = '🎤 พูดออกเสียงให้ถูกต้อง';
@@ -2864,10 +2864,20 @@ function toggleRec(){
   const lbl=document.getElementById('rec-lbl');
   if(_isRec){
     _isRec=false;
-    if(_recog){_recog.onresult=null;_recog.onerror=null;_recog.onend=null;try{_recog.abort()}catch(e){} _recog=null;}
     if(btn){btn.classList.remove('rec');btn.innerHTML='🎤';}
-    if(lbl){lbl.classList.remove('active');lbl.textContent='กดเพื่อพูด';}
-    _flushSpeak();
+    if(lbl){lbl.classList.remove('active');lbl.textContent='⏳ กำลังประมวลผล...';}
+    if(_recog){
+      // graceful stop: .stop() (NOT .abort()) + keep onresult alive so iOS can
+      // finalize pending interim text — abort() discards it (= "ไม่ได้ยินเสียง"
+      // even though words showed on screen). Flush on onend, with a timeout
+      // fallback in case onend never fires.
+      const r=_recog; let flushed=false;
+      const doFlush=()=>{ if(flushed)return; flushed=true;
+        r.onresult=null;r.onerror=null;r.onend=null; _recog=null; _flushSpeak(); };
+      r.onend=doFlush; r.onerror=doFlush;
+      try{r.stop()}catch(e){doFlush();}
+      setTimeout(doFlush,1200);
+    } else _flushSpeak();
     return;
   }
   const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
@@ -2876,7 +2886,7 @@ function toggleRec(){
   _isRec=true;
   if(btn){btn.classList.add('rec');btn.innerHTML='⏹';}
   if(lbl){lbl.textContent='🎙 กำลังฟัง...';lbl.classList.add('active');}
-  _finalText='';
+  _finalText=''; _interimText='';
   // continuous+interim and ACCUMULATE across restarts (same pattern as translateRecord,
   // which is far more tolerant of pauses/VAD cutoffs than a single continuous:false shot)
   function _attempt(){
@@ -2886,11 +2896,13 @@ function toggleRec(){
     r.lang='en-US'; r.continuous=true; r.interimResults=true; r.maxAlternatives=1;
     r.onresult=e=>{
       let fin='',int='';
-      for(let i=0;i<e.results.length;i++){
+      // start at resultIndex: earlier entries were already consumed in prior events
+      for(let i=(e.resultIndex||0);i<e.results.length;i++){
         if(e.results[i].isFinal) fin+=e.results[i][0].transcript+' ';
         else int+=e.results[i][0].transcript;
       }
       if(fin.trim()) _finalText+=fin.trim()+' ';
+      _interimText=int; // current unfinalized tail — used as fallback at flush time
       const display=(_finalText+int).trim();
       if(lbl&&display) lbl.textContent='🎙 "'+display+'"';
     };
@@ -2912,9 +2924,14 @@ function toggleRec(){
 }
 
 function _flushSpeak(){
-  // Called when user taps ⏹ manually — process whatever was collected
-  if(_finalText.trim()){
-    const t=_finalText.trim(); _finalText='';
+  // Called when user taps ⏹ manually — process whatever was collected.
+  // Include the interim tail: if the user stops right after speaking, iOS may
+  // not have finalized yet and the interim text is all we have.
+  const t=(_finalText+' '+_interimText).replace(/\s+/g,' ').trim();
+  _finalText=''; _interimText='';
+  if(t){
+    const lbl=document.getElementById('rec-lbl');
+    if(lbl) lbl.textContent='"'+t+'"';
     showCompare(t,window._spk.en);
   } else {
     // was silent before — user tapped stop but nothing was heard: say so + how to fix
