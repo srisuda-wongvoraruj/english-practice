@@ -544,6 +544,18 @@ body{
 .quest-sub{font-size:12.5px;opacity:.92;margin-top:2px}
 .quest-go{font-size:18px;background:rgba(255,255,255,.22);border-radius:999px;width:38px;height:38px;display:flex;align-items:center;justify-content:center}
 .quest-done{background:linear-gradient(135deg,#059669,#10B981);box-shadow:0 6px 18px rgba(16,185,129,.3);cursor:default}
+.itp-card{background:linear-gradient(135deg,#F43F5E,#FB7185);box-shadow:0 6px 18px rgba(244,63,94,.32)}
+.itp-hero{background:linear-gradient(135deg,#F43F5E,#FB7185)}
+.itp-res{background:var(--surface);border:2px solid var(--border);border-radius:16px;padding:14px;margin-top:14px}
+.itp-th-said{font-size:13px;color:var(--muted);margin-bottom:8px}
+.itp-en{font-size:19px;font-weight:800;color:var(--text);line-height:1.5}
+.itp-formal{font-size:13.5px;color:var(--text2);line-height:1.6;margin-top:8px;padding:8px 10px;background:rgba(244,63,94,.06);border-radius:10px}
+.itp-btns{display:flex;gap:6px;margin-top:12px;flex-wrap:wrap}
+.itp-btns .btn{flex:1;min-width:80px}
+.itp-hist-ttl{font-size:13px;font-weight:800;color:var(--muted);margin:18px 0 8px;text-transform:uppercase;letter-spacing:.5px}
+.itp-hist-row{background:var(--surface);border:1.5px solid var(--border);border-radius:12px;padding:10px 12px;margin-bottom:8px;display:flex;align-items:center;gap:10px}
+.itp-hist-en{font-size:14px;font-weight:700;color:var(--text);line-height:1.4}
+.itp-hist-th{font-size:12px;color:var(--muted);margin-top:2px}
 .nudge{margin:0 16px 10px;padding:11px 14px;border-radius:14px;font-size:13.5px;font-weight:700;line-height:1.5}
 .nudge-warn{background:linear-gradient(135deg,#FFF3CD,#FFE08A);color:#7a5a00;border:1px solid #ffd966}
 .nudge-ok{background:#E8F5E9;color:#2e7d32;border:1px solid #b6e0bb}
@@ -940,6 +952,12 @@ body{
   </div>
 
   <div id="quest-card"></div>
+  <div class="quest itp-card" onclick="showScreen('itp')">
+    <div class="quest-ico">🎙️</div>
+    <div class="quest-txt"><div class="quest-ttl">ล่ามทันใจ · พูดไทย ➜ English</div>
+    <div class="quest-sub">พูดไทยใส่ไมค์ → ได้ประโยคอังกฤษ + เสียงอ่านทันที</div></div>
+    <div class="quest-go">▶</div>
+  </div>
   <div id="streak-nudge"></div>
   <div id="review-zone"></div>
 
@@ -984,6 +1002,24 @@ body{
   <div style="padding:14px 16px 4px">
     <div class="sec-title" style="padding:0 0 8px">เลือกโหมดฝึก</div>
     <div class="mode-list" id="mode-list"></div>
+  </div>
+</div>
+
+<!-- ══════════════ INTERPRETER: พูดไทย → อังกฤษ ══════════════ -->
+<div id="screen-itp" class="screen">
+  <div class="cat-hero itp-hero">
+    <button class="back-btn" onclick="itpStop();showScreen('home')">← Back</button>
+    <div class="cat-hero-icon">🎙️</div>
+    <div class="cat-hero-name">ล่ามทันใจ</div>
+    <div class="cat-hero-desc">พูดภาษาไทยใส่ไมค์ → ได้ประโยคอังกฤษธรรมชาติทันที พร้อมเสียงอ่านและฝึกพูดตาม</div>
+  </div>
+  <div class="pad" style="padding-top:16px">
+    <div class="record-section">
+      <button class="rec-btn" id="itp-rec" onclick="itpToggleRec()">🎤</button>
+      <div class="rec-label" id="itp-lbl">กดไมค์ แล้วพูดภาษาไทยได้เลย</div>
+    </div>
+    <div id="itp-out"></div>
+    <div id="itp-history"></div>
   </div>
 </div>
 
@@ -1552,6 +1588,10 @@ function showTranslateScore(spoken, ex) {
     </div>`;
   const em  = overall>=85?'🌟':overall>=70?'😊':overall>=50?'🙂':'💪';
   const msg = overall>=85?'Excellent! เป็นธรรมชาติมากเลย':overall>=70?'Good job! ฟังดูดีมาก':overall>=50?'ดีนะ ฝึกต่อไปเรื่อยๆ':'ลองอีกครั้งนะ คุณทำได้!';
+  const weakest = Math.min(nat, grm, sit);
+  const advice = weakest===grm ? '📝 จุดที่ควรปรับ: <b>Grammar</b> — ขึ้นต้นด้วยประธานให้ชัด (I / We / Could you...) และอย่าลืมกริยา ลองเทียบกับคำตอบตัวอย่างด้านบน'
+    : weakest===nat ? '🎯 จุดที่ควรปรับ: <b>ความเป็นธรรมชาติ</b> — ใช้รูปย่อแบบเจ้าของภาษา (I\'ll, don\'t, that\'s) และประโยคสั้นกระชับ'
+    : '📍 จุดที่ควรปรับ: <b>คำศัพท์ตามสถานการณ์</b> — ดูคำตอบตัวอย่าง แล้วเก็บคำเฉพาะของสถานการณ์นี้ไปใช้';
   if(overall < 60) saveNote({phrase:ex.en, context:ex.context||'Translate', tip:ex.tip||'ฝึกพูดประโยคนี้ให้คล่อง'});
   const correctionHtml = overall < 60 ? `
     <div style="background:var(--yellow-lt);border:1.5px solid #D9A800;border-radius:12px;padding:10px 14px;margin-top:12px">
@@ -1572,6 +1612,7 @@ function showTranslateScore(spoken, ex) {
       <div style="margin-top:12px;padding:10px 14px;background:var(--purple-lt);border-radius:10px;font-size:13px;color:var(--text2)">
         <span style="font-weight:700">คุณพูดว่า:</span> "${spoken}"
       </div>
+      <div style="font-size:12.5px;color:var(--text2);line-height:1.6;margin-top:10px">${advice}</div>
       ${correctionHtml}
     </div>`;
   showNextBtn();
@@ -2406,13 +2447,62 @@ function renderReviewZone(){
           </div>
           <div class="rev-actions">
             <button class="rev-btn rev-listen" onclick="speakReview(${i})">🔊 ฟัง</button>
+            <button class="rev-btn rev-listen" id="rev-mic-${i}" onclick="reviewSpeak(${i})">🎤 พูด</button>
             <button class="rev-btn rev-known" onclick="graduateReview(${i})">✓ จำได้แล้ว</button>
           </div>
+          <div id="rev-sc-${i}"></div>
         </div>`).join('')}
     </div>`;
 }
 function revealReview(i){ const c=document.getElementById('rev-'+i); if(c)c.classList.add('revealed'); }
 function speakReview(i){ const r=S.review[i]; if(r) speak(r.en); }
+
+// mic practice on a review flashcard: speak from memory (Thai prompt), get scored vs the English
+let _revRecog=null, _revIdx=-1;
+function reviewSpeak(i){
+  const r=S.review[i]; if(!r) return;
+  const btn=document.getElementById('rev-mic-'+i);
+  const scEl=document.getElementById('rev-sc-'+i);
+  if(_revIdx===i){ // tap again = stop
+    _revIdx=-1;
+    if(_revRecog){_revRecog.onresult=null;_revRecog.onerror=null;_revRecog.onend=null;try{_revRecog.abort()}catch(e){} _revRecog=null;}
+    if(btn) btn.textContent='🎤 พูด';
+    return;
+  }
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!SR){ if(scEl) scEl.innerHTML='<div style="color:red;font-size:12px;margin-top:6px">❌ ไม่รองรับ ลองใช้ Chrome</div>'; return; }
+  stopSpeech();
+  if(_revRecog){_revRecog.onresult=null;_revRecog.onerror=null;_revRecog.onend=null;try{_revRecog.abort()}catch(e){}}
+  _revIdx=i;
+  if(btn) btn.textContent='⏹ กำลังฟัง';
+  const rec=new SR(); _revRecog=rec;
+  rec.lang='en-US'; rec.continuous=false; rec.interimResults=false; rec.maxAlternatives=3;
+  rec.onresult=e=>{
+    _revIdx=-1; if(btn) btn.textContent='🎤 พูด';
+    const said=(e.results&&e.results.length)?e.results[0][0].transcript:'';
+    if(!said.trim()) return;
+    const tw=r.en.toLowerCase().replace(/[^a-z\s']/g,'').split(/\s+/).filter(Boolean);
+    const sw=said.toLowerCase().replace(/[^a-z\s']/g,'').split(/\s+/).filter(Boolean);
+    const used=[...sw]; let ok=0;
+    tw.forEach(w=>{const j=used.indexOf(w);if(j!==-1){ok++;used.splice(j,1)}});
+    const score=tw.length?Math.round(ok/tw.length*100):0;
+    const missedW=tw.filter(w=>!sw.includes(w));
+    revealReview(i);
+    if(scEl) scEl.innerHTML=`<div style="margin-top:8px;padding:8px 10px;background:var(--surface);border:1.5px solid var(--border);border-radius:10px;font-size:12.5px;line-height:1.6">
+      <span style="font-weight:800;color:${score>=70?'var(--green)':'var(--coral)'}">${score>=70?'🎉':'💪'} ${score}%</span>
+      <span style="color:var(--text2)"> — คุณพูดว่า "${said}"</span>
+      ${score>=70?'<div style="color:var(--green);font-weight:700;margin-top:3px">จำได้แล้ว! กด ✓ เพื่อเอาออกจากรายการทวน</div>'
+        : missedW.length?`<div style="color:var(--text2);margin-top:3px">🔧 คำที่พลาด: <b>${missedW.join(', ')}</b> — กด 🔊 ฟังแล้วลองใหม่</div>`:''}
+    </div>`;
+  };
+  rec.onerror=e=>{
+    _revIdx=-1; if(btn) btn.textContent='🎤 พูด';
+    if((e.error==='not-allowed'||e.error==='service-not-allowed') && scEl)
+      scEl.innerHTML='<div style="color:red;font-size:12px;margin-top:6px">'+micDeniedMsg()+'</div>';
+  };
+  rec.onend=()=>{ if(_revIdx===i){_revIdx=-1; if(btn) btn.textContent='🎤 พูด';} };
+  rec.start();
+}
 function graduateReview(i){ const r=S.review[i]; if(!r) return; S.review.splice(i,1); saveData(); renderReviewZone(); }
 
 // ═══════════════════════════════════════════════
@@ -2635,11 +2725,12 @@ function llReveal() {
   ex.keyPhrases.forEach(p=>{
     saveNote({phrase:p.en, context:ex.title, tip:p.tip});
   });
-  const phrasesHtml=ex.keyPhrases.map(p=>`
+  const phrasesHtml=ex.keyPhrases.map((p,pi)=>`
     <div style="padding:10px 0;border-bottom:1px solid #eee">
       <div style="font-size:14px;font-weight:800;color:var(--purple)">"${p.en}"</div>
       <div style="font-size:13px;color:var(--text2);margin-top:2px">${p.th}</div>
       <div style="font-size:11px;color:var(--muted);margin-top:3px">💡 ${p.tip}</div>
+      <button class="btn btn-sm btn-outline" style="margin-top:6px" onclick="llPractice(${pi})">🎤 ฝึกพูดประโยคนี้</button>
     </div>`).join('');
   document.getElementById('ll-reveal-area').innerHTML=`
     <div class="cmp-card fade-in">
@@ -2650,6 +2741,13 @@ function llReveal() {
       <button onclick="speak('${ex.audio.replace(/['"]/g,' ')}',0.88)" style="margin-top:12px;background:transparent;border:1.5px solid var(--purple);border-radius:100px;padding:6px 16px;font-size:12px;font-weight:700;color:var(--purple);cursor:pointer;width:100%">🔊 ฟังอีกครั้ง</button>
     </div>`;
   showNextBtn();
+}
+
+// practice a long-listen key phrase with the repeat-mode recorder (has scoring built in)
+function llPractice(pi){
+  const p=window._llEx&&window._llEx.keyPhrases[pi]; if(!p) return;
+  window._repeatTarget=p.en;
+  startRepeatMode();
 }
 
 // ── LISTEN ──────────────────────────────────
@@ -2705,8 +2803,16 @@ function answerListen(sel) {
   const ok=sel===ex.correct;
   S.scores.push(ok?100:0);
   if(ok) fireConfetti();
-  document.getElementById('tip-area').innerHTML=`<div class="tip-card">${ex.tip}</div>`;
+  document.getElementById('tip-area').innerHTML=`<div class="tip-card">${ex.tip}</div>
+    <button class="btn btn-sm btn-outline btn-full" style="margin-top:8px" onclick="listenPractice()">🎤 ฝึกพูดตามบทพูด (รับคะแนนออกเสียง)</button>`;
   showNextBtn();
+}
+
+// speak-along practice for the listen transcript, via the repeat-mode recorder (has scoring)
+function listenPractice(){
+  if(!window._ex) return;
+  window._repeatTarget=window._ex.audio;
+  startRepeatMode();
 }
 
 // ── Speech Recognition ────────────────────────
@@ -2821,6 +2927,11 @@ function showCompare(spoken, target) {
   const sHtml=sw.map(w=>`<span class="chip ${tw.includes(w)?'chip-ok':'chip-extra'}">${w}</span>`).join('')
     ||'<span style="color:var(--muted);font-size:13px">ไม่ได้ยิน ลองพูดใหม่</span>';
 
+  const missedW=tw.filter((w,i)=>!matched.has(i));
+  const adviceHtml = score>=100
+    ? `<div style="font-size:12.5px;color:var(--text2);margin-top:8px">✨ สมบูรณ์แบบ! ลองพูดอีกรอบให้เร็วและลื่นขึ้นแบบไม่ดูตัวอย่าง</div>`
+    : missedW.length ? `<div style="font-size:12.5px;color:var(--text2);line-height:1.6;margin-top:8px">🔧 คำที่พลาด: <b>${missedW.join(', ')}</b> — กด 🔊 ฟังตัวอย่าง เน้นออกเสียงคำเหล่านี้ แล้วกด 🎤 พูดใหม่</div>` : '';
+
   // Auto-save to notes if score is low
   if(score < 60) saveNote({phrase:target, context:'Speaking Practice', tip:'ฝึกพูดประโยคนี้ให้คล่อง'});
 
@@ -2845,6 +2956,7 @@ function showCompare(spoken, target) {
       <div class="cmp-lbl" style="margin-top:10px">คุณพูดว่า</div>
       <div class="word-row">${sHtml}</div>
       <div class="chip-legend">🟢 ถูก &nbsp; 🔴 พลาด &nbsp; 🟡 เกิน</div>
+      ${adviceHtml}
       ${correctionHtml}
     </div>`;
   showNextBtn();
@@ -3078,9 +3190,10 @@ function shadowDone(i,total){
 
 // ── SITUATION CARDS ──────────────────────────
 let _sitRecog=null, _sitIsRec=false, _sitPhraseIdx=-1;
-let _sitFinal='', _sitConf=0, _sitConfN=0;
+let _sitFinal='', _sitConf=0, _sitConfN=0, _sitScores={};
 
 function renderSituation(sit) {
+  _sitScores={};
   document.getElementById('ex-title').textContent = sit.emoji+' '+sit.topic;
   document.getElementById('ex-body').innerHTML=`
     <div class="sit-hero slide-up" style="background:${sit.bg}">
@@ -3184,8 +3297,13 @@ function _sitShowResult(phraseIdx, said, target) {
   const used=[...sw]; let ok=0;
   tw.forEach(w=>{const j=used.indexOf(w);if(j!==-1){ok++;used.splice(j,1)}});
   const score=tw.length?Math.round(ok/tw.length*100):0;
+  _sitScores[phraseIdx]=Math.max(_sitScores[phraseIdx]||0, score);
   const em=score>=80?'🎉':score>=50?'👍':'💪';
   const color=score>=80?'var(--green)':score>=50?'var(--accent)':'var(--coral)';
+  const missedW=tw.filter(w=>!sw.includes(w));
+  const advice = score>=80 ? 'เยี่ยมมาก! เกือบครบทุกคำ'
+    : missedW.length ? `🔧 คำที่พลาด: <b>${missedW.join(', ')}</b> — กด 🔊 ฟังอีกครั้ง เน้นคำเหล่านี้แล้วลองใหม่`
+    : 'ลองฟังตัวอย่างก่อน แล้วพูดตามช้าๆ ทีละวรรค';
   const tHtml=tw.map(w=>`<span class="chip ${sw.includes(w)?'chip-ok':'chip-miss'}">${w}</span>`).join('');
   const sHtml=sw.map(w=>`<span class="chip ${tw.includes(w)?'chip-ok':'chip-extra'}">${w}</span>`).join('')
     ||'<span style="color:var(--muted);font-size:12px">ไม่ได้ยิน ลองพูดใหม่</span>';
@@ -3197,12 +3315,17 @@ function _sitShowResult(phraseIdx, said, target) {
     <div class="cmp-lbl">เป้าหมาย</div><div class="word-row">${tHtml}</div>
     <div class="cmp-lbl" style="margin-top:6px">คุณพูดว่า</div><div class="word-row">${sHtml}</div>
     <div class="chip-legend" style="margin-top:6px">🟢 ถูก &nbsp; 🔴 พลาด &nbsp; 🟡 เกิน</div>
+    <div style="font-size:12.5px;color:var(--text2);line-height:1.6;margin-top:6px">${advice}</div>
     <button class="btn btn-sm btn-outline" style="margin-top:6px;width:100%" onclick="sitSpeak(${phraseIdx})">🔄 ลองอีกครั้ง</button>
   </div>`;
 }
 
 function sitDone() {
-  S.scores.push(90);
+  // score = average of what the user actually spoke (was a hardcoded 90 before);
+  // 70 neutral if they tapped through without speaking, so streak still counts but no inflated score
+  const vals=Object.values(_sitScores);
+  S.scores.push(vals.length?Math.round(vals.reduce((a,b)=>a+b,0)/vals.length):70);
+  _sitScores={};
   const isLast=S.exIdx>=S.exList.length-1;
   if(isLast){ finishSession(); } else { goNext(); }
 }
@@ -3422,6 +3545,159 @@ function ieChangeKey(){
   if(out) ieShowKeyForm(out,true);
 }
 function ieSpeakMine(){ if(_ieMineText) speak(_ieMineText, 0.95); }
+
+// ── INTERPRETER: พูดไทย → อังกฤษทันที ─────────
+let _itpRecog=null, _itpRec=false, _itpEn='', _itpLastTh='', _itpHist=[], _itpPrIdx=false;
+
+function itpStop(){
+  _itpRec=false;
+  if(_itpRecog){_itpRecog.onresult=null;_itpRecog.onerror=null;_itpRecog.onend=null;try{_itpRecog.abort()}catch(e){} _itpRecog=null;}
+  const btn=document.getElementById('itp-rec'), lbl=document.getElementById('itp-lbl');
+  if(btn){btn.classList.remove('rec');btn.innerHTML='🎤';}
+  if(lbl){lbl.classList.remove('active');lbl.textContent='กดไมค์ แล้วพูดภาษาไทยได้เลย';}
+}
+
+function itpToggleRec(){
+  const btn=document.getElementById('itp-rec'), lbl=document.getElementById('itp-lbl');
+  if(_itpRec){ itpStop(); return; }
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!SR){ if(lbl)lbl.textContent='❌ ไม่รองรับ ลองใช้ Chrome/Safari'; return; }
+  stopSpeech();
+  _itpRec=true;
+  if(btn){btn.classList.add('rec');btn.innerHTML='⏹';}
+  if(lbl){lbl.textContent='🎙 กำลังฟังภาษาไทย...';lbl.classList.add('active');}
+  let _done=false;
+  function _attempt(){
+    if(!_itpRec||_done) return;
+    if(_itpRecog){_itpRecog.onresult=null;_itpRecog.onerror=null;_itpRecog.onend=null;try{_itpRecog.abort()}catch(e){}}
+    const r=new SR(); _itpRecog=r;
+    r.lang='th-TH'; r.continuous=false; r.interimResults=false; r.maxAlternatives=1;
+    r.onresult=e=>{
+      if(!e.results||!e.results.length) return;
+      const said=e.results[0][0].transcript;
+      if(!said.trim()) return;
+      _done=true; itpStop();
+      itpTranslate(said.trim());
+    };
+    r.onerror=e=>{
+      if(e.error==='not-allowed'||e.error==='service-not-allowed'){
+        _done=true; itpStop();
+        if(lbl) lbl.textContent=micDeniedMsg();
+      }
+    };
+    r.onend=()=>{ if(_itpRec&&!_done) _attempt(); };
+    try{r.start();}catch(e){ if(_itpRec&&!_done) setTimeout(_attempt,300); }
+  }
+  _attempt();
+}
+
+function itpTranslate(thai){
+  _itpLastTh=thai;
+  const out=document.getElementById('itp-out'); if(!out) return;
+  out.innerHTML=`<div class="itp-res">
+    <div class="itp-th-said">🇹🇭 คุณพูดว่า: "${_ieEsc(thai)}"</div>
+    <div class="ielts-mine-loading">✨ กำลังแปลเป็นอังกฤษ... <span class="ie-dots"></span></div>
+  </div>`;
+  const prompt=`You are a Thai-to-English interpreter for a Thai office worker. Translate this spoken Thai into natural, native-sounding spoken English (B2 level, the way a native speaker would actually say it).\nThai: "${thai}"\n\nReply in EXACTLY this plain-text format:\nMAIN: <the most natural everyday English sentence>\nFORMAL: <a more polite/professional version>\n\nNo other text, no quotation marks.`;
+  _gemGenerate(prompt).then(({text})=>{
+    let main='', formal='';
+    const m=text.match(/MAIN:\s*([^\n]+)/i), f=text.match(/FORMAL:\s*([^\n]+)/i);
+    if(m) main=m[1].trim();
+    if(f) formal=f[1].trim();
+    if(!main) main=text.split('\n')[0].trim();
+    _itpEn=main;
+    _itpHist.unshift({th:thai, en:main});
+    if(_itpHist.length>8) _itpHist.pop();
+    out.innerHTML=`<div class="itp-res fade-in">
+      <div class="itp-th-said">🇹🇭 คุณพูดว่า: "${_ieEsc(thai)}"</div>
+      <div class="itp-en">🇬🇧 ${_ieEsc(main)}</div>
+      ${formal&&formal!==main?`<div class="itp-formal">🎩 แบบสุภาพ/ทางการ: <b>${_ieEsc(formal)}</b> <button class="btn btn-sm btn-ghost" style="padding:2px 10px" onclick="speak(_itpFormal,0.95)">🔊</button></div>`:''}
+      <div class="itp-btns">
+        <button class="btn btn-outline btn-sm" onclick="speak(_itpEn,0.95)">🔊 ฟัง</button>
+        <button class="btn btn-ghost btn-sm" onclick="speak(_itpEn,0.68)">🐢 ช้าๆ</button>
+        <button class="btn btn-primary btn-sm" id="itp-pr-btn" onclick="itpPractice()">🎤 พูดตาม</button>
+        <button class="btn btn-outline btn-sm" onclick="itpSave(this)">💾 เก็บลง Notes</button>
+      </div>
+      <div id="itp-pr-sc"></div>
+    </div>`;
+    window._itpFormal=formal||main;
+    itpRenderHist();
+    speak(main, 0.95);
+  }).catch(err=>{
+    if(err&&(err.code==='nokey'||err.code==='badkey')){
+      out.innerHTML=`<div class="itp-res"><div class="itp-th-said">🇹🇭 "${_ieEsc(thai)}"</div><div id="itp-key-slot"></div></div>`;
+      ieShowKeyForm(document.getElementById('itp-key-slot'), err.code==='badkey', ()=>itpTranslate(thai));
+      return;
+    }
+    const msg = err&&err.code==='quota' ? 'โควต้า AI หมดชั่วคราว ลองใหม่อีกสักครู่'
+              : ((err&&err.msg)||(err&&err.message)||'เชื่อมต่อไม่ได้');
+    out.innerHTML=`<div class="itp-res"><div class="itp-th-said">🇹🇭 "${_ieEsc(thai)}"</div>
+      <div class="ielts-mine-err">❌ ${_ieEsc(msg)}<br><button class="btn btn-outline btn-sm" style="margin-top:8px" onclick="itpTranslate(_itpLastTh)">🔁 ลองใหม่</button></div></div>`;
+  });
+}
+
+function itpRenderHist(){
+  const el=document.getElementById('itp-history'); if(!el) return;
+  const rest=_itpHist.slice(1);
+  if(!rest.length){ el.innerHTML=''; return; }
+  el.innerHTML=`<div class="itp-hist-ttl">ประโยคก่อนหน้า</div>`+rest.map((h,i)=>`
+    <div class="itp-hist-row">
+      <div style="flex:1">
+        <div class="itp-hist-en">${_ieEsc(h.en)}</div>
+        <div class="itp-hist-th">🇹🇭 ${_ieEsc(h.th)}</div>
+      </div>
+      <button class="btn btn-sm btn-ghost" style="padding:4px 10px" onclick="speak(_itpHist[${i+1}].en,0.95)">🔊</button>
+    </div>`).join('');
+}
+
+function itpSave(btn){
+  if(!_itpEn) return;
+  saveNote({phrase:_itpEn, context:'ล่ามทันใจ', tip:'จากภาษาไทย: '+_itpLastTh});
+  if(btn){ btn.textContent='✓ เก็บแล้ว'; btn.disabled=true; }
+}
+
+// speak-back practice: say the translated English, get scored word-by-word
+function itpPractice(){
+  if(!_itpEn) return;
+  const btn=document.getElementById('itp-pr-btn'), scEl=document.getElementById('itp-pr-sc');
+  if(_itpPrIdx){ // stop
+    _itpPrIdx=false;
+    if(_itpRecog){_itpRecog.onresult=null;_itpRecog.onerror=null;_itpRecog.onend=null;try{_itpRecog.abort()}catch(e){} _itpRecog=null;}
+    if(btn) btn.textContent='🎤 พูดตาม';
+    return;
+  }
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!SR){ if(scEl) scEl.innerHTML='<div style="color:red;font-size:12px;margin-top:8px">❌ ไม่รองรับ</div>'; return; }
+  stopSpeech();
+  _itpPrIdx=true;
+  if(btn) btn.textContent='⏹ กำลังฟัง';
+  if(scEl) scEl.innerHTML='<div style="color:var(--muted);font-size:12px;margin-top:8px;text-align:center">🎙 พูดประโยคอังกฤษด้านบนเลย...</div>';
+  const rec=new SR(); _itpRecog=rec;
+  rec.lang='en-US'; rec.continuous=false; rec.interimResults=false; rec.maxAlternatives=3;
+  rec.onresult=e=>{
+    _itpPrIdx=false; if(btn) btn.textContent='🎤 พูดตาม';
+    const said=(e.results&&e.results.length)?e.results[0][0].transcript:'';
+    if(!said.trim()||!scEl) return;
+    const tw=_itpEn.toLowerCase().replace(/[^a-z\s']/g,'').split(/\s+/).filter(Boolean);
+    const sw=said.toLowerCase().replace(/[^a-z\s']/g,'').split(/\s+/).filter(Boolean);
+    const used=[...sw]; let ok=0;
+    tw.forEach(w=>{const j=used.indexOf(w);if(j!==-1){ok++;used.splice(j,1)}});
+    const score=tw.length?Math.round(ok/tw.length*100):0;
+    const missedW=tw.filter(w=>!sw.includes(w));
+    scEl.innerHTML=`<div style="margin-top:10px;padding:10px 12px;background:rgba(244,63,94,.06);border-radius:12px;font-size:13px;line-height:1.6">
+      <span style="font-weight:800;color:${score>=70?'var(--green)':'var(--coral)'}">${score>=70?'🎉':'💪'} ${score}%</span>
+      <span style="color:var(--text2)"> — คุณพูดว่า "${_ieEsc(said)}"</span>
+      ${missedW.length?`<div style="color:var(--text2);margin-top:4px">🔧 คำที่พลาด: <b>${missedW.join(', ')}</b> — กด 🔊 ฟังแล้วลองอีกครั้ง</div>`:'<div style="color:var(--green);font-weight:700;margin-top:4px">เยี่ยม! พูดครบทุกคำ ✨</div>'}
+    </div>`;
+  };
+  rec.onerror=e=>{
+    _itpPrIdx=false; if(btn) btn.textContent='🎤 พูดตาม';
+    if((e.error==='not-allowed'||e.error==='service-not-allowed')&&scEl)
+      scEl.innerHTML='<div style="color:red;font-size:12px;margin-top:8px">'+micDeniedMsg()+'</div>';
+  };
+  rec.onend=()=>{ if(_itpPrIdx){_itpPrIdx=false; if(btn) btn.textContent='🎤 พูดตาม';} };
+  rec.start();
+}
 
 function iePrep(){
   const el=document.getElementById('ie-prep'); if(!el) return;
@@ -3759,7 +4035,7 @@ function renderScenarios() {
 
 function startScenario(id) {
   const s = SCENARIOS.find(x=>x.id===id);
-  chat.scenario=s; chat.turn=0; chat.messages=[];
+  chat.scenario=s; chat.turn=0; chat.messages=[]; chat.scores=[];
   document.getElementById('chat-buddy-emoji').textContent = s.buddyEmoji;
   document.getElementById('chat-buddy-name').textContent  = s.buddy;
   document.getElementById('chat-scenario-tag').textContent= s.icon+' '+s.name;
@@ -3873,17 +4149,19 @@ function userResponded(said) {
   const used=[...sw]; let ok=0;
   tw.forEach(w=>{const j=used.indexOf(w);if(j!==-1){ok++;used.splice(j,1)}});
   const score = tw.length ? Math.round(ok/tw.length*100) : 0;
+  chat.scores.push(score);
 
   // Save to notes if score low
   if(score < 60) saveNote({phrase:t.sample, context:chat.scenario.name, tip:t.tip});
 
-  // Show correction tip if low score
-  let feedbackHtml = '';
-  if(score < 60) {
-    feedbackHtml = `<div style="background:var(--yellow-lt);border-radius:12px;padding:10px 14px;margin:0 16px 8px;font-size:12px;color:#7a5200">
-      <strong>💡 ลองพูดแบบนี้:</strong><br>"${t.sample}"<br><span style="opacity:.7;margin-top:3px;display:block">${t.tip}</span>
+  // Score bubble every turn (score was computed but never shown before) + suggestion below 80
+  const em = score>=80?'🎉':score>=50?'👍':'💪';
+  const clr = score>=80?'var(--green)':score>=50?'var(--accent)':'var(--coral)';
+  let feedbackHtml = `<div style="background:var(--surface);border:1.5px solid var(--border);border-radius:12px;padding:8px 14px;margin:0 16px 8px;font-size:12.5px;color:var(--text2)">
+      <span style="font-weight:800;color:${clr}">${em} ตรงกับตัวอย่าง ${score}%</span>
+      ${score>=80 ? ' — เป็นธรรมชาติมาก ไปต่อเลย!'
+        : `<div style="margin-top:5px"><strong>💡 ลองพูดแบบนี้:</strong> "${t.sample}"<br><span style="opacity:.75;margin-top:2px;display:block">${t.tip}</span></div>`}
     </div>`;
-  }
 
   const body = document.getElementById('chat-body');
   body.insertAdjacentHTML('beforeend', feedbackHtml);
@@ -3913,11 +4191,18 @@ function finishChat() {
   S.xp += 20;
   saveData();
   fireConfetti();
+  const sc=chat.scores||[];
+  const avg=sc.length?Math.round(sc.reduce((a,b)=>a+b,0)/sc.length):null;
+  const weak=sc.filter(s=>s<60).length;
+  const avgHtml = avg===null ? '' : `
+      <div style="font-size:15px;font-weight:800;color:var(--purple);margin-top:8px">คะแนนเฉลี่ย ${avg}% (${sc.length} เทิร์น)</div>
+      <div style="font-size:12.5px;color:var(--text2);margin-top:3px">${avg>=80?'พูดได้ใกล้เคียงเจ้าของภาษามาก 👏':weak?`มี ${weak} เทิร์นที่ต่ำกว่า 60% — ประโยคเหล่านั้นถูกบันทึกใน Notes แล้ว ลองคุยอีกรอบให้เนียนขึ้น`:'ทำได้ดี ลองคุยอีกรอบโดยไม่ดู hint ดูสิ'}</div>`;
   zone.innerHTML=`
     <div class="convo-done">
       <span class="convo-done-emoji">🎉</span>
       <div style="font-size:22px;font-weight:900;color:var(--text)">บทสนทนาจบแล้ว!</div>
       <div style="font-size:14px;color:var(--text2);margin-top:4px">+20 XP ⭐</div>
+      ${avgHtml}
       <div class="convo-phrases">
         <div style="font-size:13px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">📚 ประโยคที่ได้เรียนรู้วันนี้</div>
         ${scenario.turns.map(t=>`
