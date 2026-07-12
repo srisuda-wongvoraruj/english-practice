@@ -967,6 +967,7 @@ body{
   <div class="sec-title">📓 Short Notes</div>
   <div class="pad">
     <div id="notes-preview" onclick="showScreen('notes')" style="cursor:pointer"></div>
+    <div id="app-ver" style="text-align:center;font-size:10.5px;color:var(--muted);margin-top:10px"></div>
   </div>
   <div style="height:4px"></div>
   <div class="sec-title">💬 พูดคุยกับ Buddy</div>
@@ -2326,6 +2327,8 @@ if (_stIdx > -1) CATS.push(SCENARIOS.splice(_stIdx, 1)[0]);
 // ═══════════════════════════════════════════════
 // STATE
 // ═══════════════════════════════════════════════
+const APP_VER='12ก.ค.2026-3';
+
 const S = {
   catId:null, mode:null, exList:[], exIdx:0, scores:[],
   progress:{}, streak:0, todayDone:0, xp:0, lastDate:null,
@@ -2542,6 +2545,7 @@ function renderHome() {
   renderStreakNudge();
   renderReviewZone();
   renderNotesPreview();
+  const _av=document.getElementById('app-ver'); if(_av) _av.textContent='เวอร์ชัน '+APP_VER;
   document.getElementById('cat-grid').innerHTML = CATS.map(c => {
     const p = S.progress[c.id]||{};
     const n = (c.listen?c.listen.length:0)+(c.speak?c.speak.length:0)+(c.ielts?c.ielts.length:0);
@@ -2845,6 +2849,7 @@ function renderSpeak(ex) {
     <div class="record-section">
       <button class="rec-btn" id="rec-btn">🎤</button>
       <div class="rec-label" id="rec-lbl">กดไมค์เพื่อพูด</div>
+      <button class="btn btn-ghost btn-sm" style="margin-top:6px" onclick="micDiag()">🔬 ไมค์มีปัญหา? กดทดสอบ</button>
     </div>
     <div id="cmp-area"></div>
     <div class="next-area" id="next-area"></div>`;
@@ -2940,7 +2945,65 @@ function _speakMicHelp(){
     2. iPhone: เปิด <b>ตั้งค่า → ทั่วไป → แป้นพิมพ์ → เปิดใช้การป้อนตามคำบอก</b> (Enable Dictation) — ระบบรู้จำเสียงของ Safari ใช้ตัวนี้<br>
     3. เปิดเว็บผ่าน <b>Safari ปกติ</b> — ถ้าเปิดจากไอคอนหน้าจอหลัก iOS จะบล็อกไมค์<br>
     4. เช็คสิทธิ์: <b>ตั้งค่า → Safari → ไมโครโฟน → ถาม/อนุญาต</b><br>
-    5. ปิดแท็บแล้วเปิดใหม่ กด 🎤 แล้ว<b>พูดทันที</b>ภายใน 2-3 วินาที</div>`;
+    5. ปิดแท็บแล้วเปิดใหม่ กด 🎤 แล้ว<b>พูดทันที</b>ภายใน 2-3 วินาที
+    <button class="btn btn-primary btn-sm" style="width:100%;margin-top:10px" onclick="micDiag()">🔬 กดทดสอบไมค์แบบละเอียด</button></div>`;
+}
+
+// step-by-step mic diagnostic shown on screen — pinpoints exactly which stage fails
+async function micDiag(){
+  const el=document.getElementById('cmp-area'); if(!el) return;
+  const steps=[]; const events=[];
+  const draw=(done)=>{ el.innerHTML=`<div class="cmp-card" style="font-size:12.5px;line-height:1.9;text-align:left">
+    <div style="font-weight:800;color:var(--text)">🔬 ผลทดสอบไมค์ (เวอร์ชัน ${APP_VER})</div>
+    ${steps.join('<br>')}${events.length?'<br>'+events.join('<br>'):''}
+    ${done?'<div style="margin-top:8px"><button class="btn btn-outline btn-sm" style="width:100%" onclick="micDiag()">🔄 ทดสอบอีกครั้ง</button></div>':''}
+  </div>`; };
+
+  steps.push((_isIOS()?'📱 iPhone/iPad':'💻 คอมพิวเตอร์/อื่นๆ')+' · '+(_isStandalone()
+    ?'<b style="color:red">⚠️ เปิดจากไอคอนหน้าจอหลัก — iOS บล็อกไมค์โหมดนี้! ให้เปิดผ่าน Safari</b>'
+    :'✅ เปิดผ่านเบราว์เซอร์ปกติ'));
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  steps.push(SR?'✅ เบราว์เซอร์รองรับระบบรู้จำเสียง':'<b style="color:red">❌ เบราว์เซอร์นี้ไม่รองรับระบบรู้จำเสียง — ใช้ Safari (iPhone) หรือ Chrome (คอม/Android)</b>');
+  draw(false);
+
+  // stage 1: raw mic permission/hardware
+  try{
+    const st=await navigator.mediaDevices.getUserMedia({audio:true});
+    st.getTracks().forEach(t=>t.stop());
+    steps.push('✅ เข้าถึงไมโครโฟนได้ (สิทธิ์ผ่าน)');
+  }catch(err){
+    steps.push('<b style="color:red">❌ เข้าถึงไมค์ไม่ได้ ('+err.name+')</b> — '+(err.name==='NotAllowedError'
+      ?'สิทธิ์ถูกปฏิเสธ → ตั้งค่า → Safari → ไมโครโฟน → อนุญาต แล้วปิดเปิดแท็บใหม่'
+      :'ไมค์อาจถูกแอปอื่นใช้อยู่ หรือไม่พบไมค์'));
+    draw(true); return;
+  }
+  draw(false);
+  if(!SR){ draw(true); return; }
+
+  // stage 2: live recognition test — capture every lifecycle event
+  steps.push('🎙 <b>พูดอะไรก็ได้ตอนนี้เลย</b> (เช่น "hello hello") — ทดสอบ 6 วินาที...');
+  draw(false);
+  let got=false;
+  const r=new SR();
+  r.lang='en-US'; r.continuous=false; r.interimResults=true; r.maxAlternatives=1;
+  r.onstart      =()=>{ events.push('• เริ่มระบบรู้จำเสียง ✅'); draw(false); };
+  r.onaudiostart =()=>{ events.push('• ไมค์เริ่มรับเสียง ✅'); draw(false); };
+  r.onsoundstart =()=>{ events.push('• ตรวจพบเสียง ✅'); draw(false); };
+  r.onspeechstart=()=>{ events.push('• ตรวจพบการพูด ✅'); draw(false); };
+  r.onresult=e=>{ got=true; const t=e.results[0][0].transcript;
+    events.push('• ได้ยินว่า: <b>"'+t+'"</b> ✅'); draw(false); };
+  r.onerror=e=>{ events.push('<b style="color:red">• ❌ ERROR: '+e.error+'</b>'+(
+      e.error==='network'?' → iPhone ต้องเปิด <b>ตั้งค่า → ทั่วไป → แป้นพิมพ์ → เปิดใช้การป้อนตามคำบอก</b> (Enable Dictation)':
+      e.error==='not-allowed'||e.error==='service-not-allowed'?' → สิทธิ์ถูกบล็อก: ตั้งค่า → Safari → ไมโครโฟน':
+      e.error==='no-speech'?' → ไม่ได้ยินการพูดในช่วงทดสอบ':'')); draw(false); };
+  r.onend=()=>{
+    events.push(got
+      ?'<b style="color:green">🎉 สรุป: ทุกอย่างทำงานปกติ! กลับไปกด 🎤 ฝึกได้เลย</b>'
+      :'<b style="color:red">สรุป: ไมค์เปิดได้แต่ระบบรู้จำเสียงไม่คืนผลลัพธ์</b> — ถ้าไม่มี ERROR ด้านบน ลองพูดดังขึ้น/ใกล้ไมค์ขึ้น แล้วทดสอบซ้ำ');
+    draw(true);
+  };
+  try{ r.start(); }catch(e){ events.push('<b style="color:red">❌ เริ่มระบบไม่ได้: '+(e.message||e)+'</b>'); draw(true); return; }
+  setTimeout(()=>{ try{r.stop()}catch(e){} }, 6000);
 }
 
 function showCompare(spoken, target) {
