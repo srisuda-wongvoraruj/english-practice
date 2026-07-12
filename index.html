@@ -952,14 +952,15 @@ body{
   </div>
 
   <div id="quest-card"></div>
+  <div id="continue-card"></div>
+  <div id="streak-nudge"></div>
+  <div id="review-zone"></div>
   <div class="quest itp-card" onclick="showScreen('itp')">
     <div class="quest-ico">🎙️</div>
     <div class="quest-txt"><div class="quest-ttl">ล่ามทันใจ · พูดไทย ➜ English</div>
     <div class="quest-sub">พูดไทยใส่ไมค์ → ได้ประโยคอังกฤษ + เสียงอ่านทันที</div></div>
     <div class="quest-go">▶</div>
   </div>
-  <div id="streak-nudge"></div>
-  <div id="review-zone"></div>
 
   <div class="sec-title">เลือกหัวข้อที่อยากฝึก</div>
   <div class="cat-grid" id="cat-grid"></div>
@@ -2324,10 +2325,85 @@ const SCENARIOS = [
 const _stIdx = SCENARIOS.findIndex(s => s && s.id === 'smalltalk');
 if (_stIdx > -1) CATS.push(SCENARIOS.splice(_stIdx, 1)[0]);
 
+// ── "ฟังแล้วตอบ" (Listen & Reply) — hear a question (no text!), answer out loud ──
+const REPLYQ = {
+  meetings:[
+    {q:"Could you walk us through the main points of your update?", th:"ช่วยเล่าประเด็นหลักของอัปเดตคุณให้ฟังหน่อยได้ไหม",
+     sample:"Sure. We finished the first phase last week, and we're on track to deliver the next milestone by Friday.",
+     sampleTh:"ได้ครับ เราทำเฟสแรกเสร็จเมื่อสัปดาห์ที่แล้ว และกำลังไปตามแผน จะส่งมอบ milestone ถัดไปภายในวันศุกร์", keys:["finished","on track","deliver"]},
+    {q:"Do you have any concerns about the timeline?", th:"คุณกังวลอะไรเกี่ยวกับไทม์ไลน์ไหม",
+     sample:"Yes, I'm a bit worried about the testing phase. I think we need one more week to do it properly.",
+     sampleTh:"ครับ ผมกังวลเรื่องช่วงทดสอบนิดหน่อย คิดว่าเราต้องการเวลาเพิ่มอีกหนึ่งสัปดาห์เพื่อทำให้ดี", keys:["worried","think","need"]},
+    {q:"What do you think we should do about the budget issue?", th:"คุณคิดว่าเราควรทำยังไงกับปัญหางบประมาณ",
+     sample:"In my opinion, we should cut the marketing spend first and revisit the numbers next month.",
+     sampleTh:"ในความเห็นผม เราควรตัดงบการตลาดก่อน แล้วกลับมาดูตัวเลขอีกทีเดือนหน้า", keys:["opinion","should","revisit"]},
+    {q:"Can you summarize what we agreed on today?", th:"ช่วยสรุปสิ่งที่เราตกลงกันวันนี้หน่อย",
+     sample:"Sure. We agreed to launch in March, and I'll send the full plan to everyone by tomorrow.",
+     sampleTh:"ได้ครับ เราตกลงเปิดตัวเดือนมีนาคม และผมจะส่งแผนฉบับเต็มให้ทุกคนภายในพรุ่งนี้", keys:["agreed","send","tomorrow"]},
+  ],
+  presentations:[
+    {q:"Can you tell us briefly what your presentation is about?", th:"ช่วยเล่าสั้นๆ ว่าพรีเซนต์ของคุณเกี่ยวกับอะไร",
+     sample:"Today I'm going to talk about our new product and how it can help you save time and money.",
+     sampleTh:"วันนี้ผมจะพูดถึงสินค้าใหม่ของเรา และมันช่วยให้คุณประหยัดเวลาและเงินได้ยังไง", keys:["talk about","help","save"]},
+    {q:"What's the key takeaway from your talk?", th:"ประเด็นสำคัญที่สุดจากการพูดของคุณคืออะไร",
+     sample:"The main point is that our sales grew twenty percent, and we believe this trend will continue next year.",
+     sampleTh:"ประเด็นหลักคือยอดขายเราโต 20% และเราเชื่อว่าแนวโน้มนี้จะต่อเนื่องถึงปีหน้า", keys:["main point","grew","believe"]},
+    {q:"Could you explain that chart in more detail?", th:"ช่วยอธิบายกราฟนั้นละเอียดขึ้นหน่อย",
+     sample:"Of course. This chart shows our monthly revenue, and as you can see, it has increased steadily since January.",
+     sampleTh:"ได้ครับ กราฟนี้แสดงรายได้รายเดือน อย่างที่เห็น มันเพิ่มขึ้นต่อเนื่องตั้งแต่มกราคม", keys:["shows","as you can see","increased"]},
+    {q:"How would you handle a question you can't answer?", th:"ถ้าเจอคำถามที่ตอบไม่ได้ คุณจะรับมือยังไง",
+     sample:"That's a great question. I don't have the exact numbers right now, but I'll get back to you by email today.",
+     sampleTh:"เป็นคำถามที่ดีมาก ตอนนี้ผมไม่มีตัวเลขเป๊ะๆ แต่จะติดต่อกลับทางอีเมลภายในวันนี้", keys:["great question","get back to you","email"]},
+  ],
+  communication:[
+    {q:"Could you tell me the reason for your call?", th:"ขอทราบเหตุผลที่โทรมาได้ไหมคะ",
+     sample:"Yes, I'm calling to follow up on the invoice I sent last week. Could you check if it has been approved?",
+     sampleTh:"ครับ ผมโทรมาติดตามใบแจ้งหนี้ที่ส่งไปสัปดาห์ที่แล้ว ช่วยเช็คหน่อยได้ไหมว่าอนุมัติแล้วหรือยัง", keys:["calling to","follow up","check"]},
+    {q:"When would be a good time to schedule the call?", th:"นัดคุยโทรศัพท์ช่วงไหนดี",
+     sample:"How about Thursday at two in the afternoon? If that doesn't work, I'm also free on Friday morning.",
+     sampleTh:"วันพฤหัสบ่ายสองเป็นไงครับ ถ้าไม่สะดวก ผมว่างเช้าวันศุกร์ด้วย", keys:["how about","doesn't work","free"]},
+    {q:"Can you confirm the details of the order?", th:"ช่วยยืนยันรายละเอียดออเดอร์หน่อย",
+     sample:"Sure. You ordered fifty units, and they will be delivered to your office by the end of this month.",
+     sampleTh:"ได้ครับ คุณสั่ง 50 ชิ้น และจะจัดส่งถึงออฟฟิศคุณภายในสิ้นเดือนนี้", keys:["ordered","delivered","end of"]},
+    {q:"I didn't receive your email. Could you send it again?", th:"ฉันไม่ได้รับอีเมลของคุณ ส่งใหม่ได้ไหม",
+     sample:"Oh, I'm sorry about that. Let me check the address and resend it right away. Could you confirm your email address?",
+     sampleTh:"ขอโทษด้วยครับ เดี๋ยวผมเช็คที่อยู่แล้วส่งใหม่ทันที รบกวนยืนยันอีเมลของคุณหน่อยได้ไหม", keys:["sorry","resend","confirm"]},
+  ],
+  networking:[
+    {q:"So, what do you do for a living?", th:"คุณทำงานอะไรเหรอ",
+     sample:"I work as an accountant at a tech company in Bangkok. I mainly handle financial reports and budgeting.",
+     sampleTh:"ฉันเป็นนักบัญชีที่บริษัทเทคในกรุงเทพฯ ดูแลรายงานการเงินและงบประมาณเป็นหลัก", keys:["work as","handle","mainly"]},
+    {q:"How did you hear about this event?", th:"คุณรู้จักงานนี้ได้ยังไง",
+     sample:"A colleague of mine recommended it. She came last year and said it was really useful for meeting people.",
+     sampleTh:"เพื่อนร่วมงานแนะนำมา เธอมาปีที่แล้วแล้วบอกว่ามีประโยชน์มากสำหรับการรู้จักคนใหม่ๆ", keys:["colleague","recommended","useful"]},
+    {q:"What does your company do?", th:"บริษัทคุณทำอะไรเหรอ",
+     sample:"We're a software company. We build apps that help small businesses manage their money more easily.",
+     sampleTh:"เราเป็นบริษัทซอฟต์แวร์ สร้างแอปช่วยธุรกิจเล็กๆ จัดการเงินได้ง่ายขึ้น", keys:["company","build","help"]},
+    {q:"It was great talking to you. Shall we exchange contacts?", th:"คุยกับคุณสนุกมาก แลกช่องทางติดต่อกันไหม",
+     sample:"Absolutely! Here's my card. Feel free to add me on LinkedIn as well. I'd love to keep in touch.",
+     sampleTh:"แน่นอน! นี่นามบัตรผม แอดใน LinkedIn ได้เลยนะ อยากติดต่อกันต่อ", keys:["absolutely","feel free","keep in touch"]},
+  ],
+  smalltalk:[
+    {q:"How was your weekend?", th:"สุดสัปดาห์เป็นไงบ้าง",
+     sample:"It was great, thanks! I went to the beach with my family and just relaxed. How about yours?",
+     sampleTh:"ดีมากเลย ขอบคุณ! ไปทะเลกับครอบครัวแล้วก็พักผ่อน แล้วของคุณล่ะ", keys:["great","went to","how about"]},
+    {q:"Have you tried any good restaurants lately?", th:"ช่วงนี้ไปร้านอาหารอร่อยๆ ที่ไหนมาบ้าง",
+     sample:"Yes! I found a great Japanese place near my office. The ramen there is amazing. You should try it.",
+     sampleTh:"มี! เจอร้านญี่ปุ่นดีมากใกล้ออฟฟิศ ราเมนอร่อยสุดๆ คุณควรลองนะ", keys:["found","amazing","should try"]},
+    {q:"What do you like to do in your free time?", th:"เวลาว่างชอบทำอะไร",
+     sample:"I love watching movies and reading. Lately I've been really into detective novels.",
+     sampleTh:"ชอบดูหนังกับอ่านหนังสือ ช่วงนี้อินนิยายสืบสวนมาก", keys:["love","lately","really into"]},
+    {q:"It's so hot today, isn't it?", th:"วันนี้ร้อนมากเลยเนอะ",
+     sample:"I know, it's crazy! I heard it might rain later this week though, so hopefully it cools down.",
+     sampleTh:"ใช่ ร้อนสุดๆ! แต่ได้ยินว่าปลายสัปดาห์อาจมีฝน หวังว่าจะเย็นลงนะ", keys:["I know","heard","hopefully"]},
+  ],
+};
+CATS.forEach(c=>{ if(c && REPLYQ[c.id]) c.reply=REPLYQ[c.id]; });
+
 // ═══════════════════════════════════════════════
 // STATE
 // ═══════════════════════════════════════════════
-const APP_VER='12ก.ค.2026-4';
+const APP_VER='13ก.ค.2026-1';
 
 const S = {
   catId:null, mode:null, exList:[], exIdx:0, scores:[],
@@ -2357,6 +2433,7 @@ function loadData() {
     S.freezes   = d.freezes ?? 2;
     S.review    = d.review  || [];
     S.questDate = d.questDate || null;
+    S.modeDone  = d.modeDone || {};
     if (S.lastDate !== new Date().toDateString()) S.todayDone = 0;
   } catch(e) {}
 }
@@ -2365,7 +2442,8 @@ function saveData() {
   localStorage.setItem('ws_v3', JSON.stringify({
     progress:S.progress, streak:S.streak,
     lastDate:today, todayDone:S.todayDone, xp:S.xp,
-    freezes:S.freezes, review:S.review, questDate:S.questDate
+    freezes:S.freezes, review:S.review, questDate:S.questDate,
+    modeDone:S.modeDone||{}
   }));
 }
 
@@ -2546,9 +2624,12 @@ function renderHome() {
   renderReviewZone();
   renderNotesPreview();
   const _av=document.getElementById('app-ver'); if(_av) _av.textContent='เวอร์ชัน '+APP_VER;
-  document.getElementById('cat-grid').innerHTML = CATS.map(c => {
+  renderContinueCard();
+
+  // categories grouped by goal: talk-to-people first (easiest entry), then work, then exam
+  const catCard = c => {
     const p = S.progress[c.id]||{};
-    const n = (c.listen?c.listen.length:0)+(c.speak?c.speak.length:0)+(c.ielts?c.ielts.length:0);
+    const n = (c.listen?c.listen.length:0)+(c.speak?c.speak.length:0)+(c.reply?c.reply.length:0)+(c.ielts?c.ielts.length:0);
     const cpct = p.done ? Math.min(100,Math.round((p.done/n)*100)) : 0;
     return `
       <div class="cat-card ${c.cls}" onclick="openCat('${c.id}')">
@@ -2563,7 +2644,37 @@ function renderHome() {
         </div>
         <span class="cat-arrow">›</span>
       </div>`;
-  }).join('');
+  };
+  const ZONES=[
+    {t:'💬 คุยกับคน — เริ่มง่ายสุด', ids:['smalltalk','networking']},
+    {t:'💼 ในที่ทำงาน',            ids:['meetings','presentations','communication']},
+    {t:'🎓 เตรียมสอบ',             ids:['ielts']},
+  ];
+  document.getElementById('cat-grid').innerHTML = ZONES.map(z=>{
+    const cats=z.ids.map(cid=>CATS.find(c=>c&&c.id===cid)).filter(Boolean);
+    if(!cats.length) return '';
+    return `<div style="font-size:12.5px;font-weight:800;color:var(--text2);margin:10px 2px 8px">${z.t}</div>`
+      + cats.map(catCard).join('');
+  }).join('')
+  // any category not covered by a zone still shows (safety net for future cats)
+  + CATS.filter(c=>c&&!ZONES.some(z=>z.ids.includes(c.id))).map(catCard).join('');
+}
+
+// ── "ฝึกต่อจากเดิม" resume card ──
+function renderContinueCard(){
+  const el=document.getElementById('continue-card'); if(!el) return;
+  let last=null; try{last=JSON.parse(localStorage.getItem('ws_last')||'null')}catch(e){}
+  if(!last||!last.catId||!last.mode){ el.innerHTML=''; return; }
+  const c=CATS.find(x=>x&&x.id===last.catId);
+  if(!c||!c[last.mode]){ el.innerHTML=''; return; }
+  const MODE_TH={longListen:'ฟังบทสนทนายาว',listen:'Listen & Understand',shadow:'Shadow Speaking',
+    speak:'Speak & Practice',translate:'แปลไทย → อังกฤษ',reply:'ฟังแล้วตอบ',situation:'Situation Cards',ielts:'IELTS Speaking'};
+  el.innerHTML=`<div class="quest" style="background:linear-gradient(135deg,#0EA5E9,#6366F1);box-shadow:0 6px 18px rgba(14,165,233,.3)" onclick="startMode('${c.id}','${last.mode}')">
+    <div class="quest-ico">▶️</div>
+    <div class="quest-txt"><div class="quest-ttl">ฝึกต่อจากเดิม</div>
+    <div class="quest-sub">${c.icon} ${c.name} · ${MODE_TH[last.mode]||last.mode}</div></div>
+    <div class="quest-go">▶</div>
+  </div>`;
 }
 
 // ═══════════════════════════════════════════════
@@ -2577,27 +2688,45 @@ function openCat(id) {
   document.getElementById('cat-hero-name').textContent = c.name;
   document.getElementById('cat-hero-desc').textContent = c.desc;
 
+  // ladder: ฟัง → เลียนแบบ → พูดเอง → นึกเอง → ใช้จริง (ตัวช่วยค่อยๆ ลดลง)
+  const md = (S.modeDone&&S.modeDone[id])||{};
+  const core = ['listen','shadow','speak','translate','reply','situation'].filter(m=>c[m]);
+  const recMode = core.find(m=>!md[m]); // first unfinished step = recommended next
+  const allCoreDone = core.length>0 && !recMode;
+
   const MODES = [
     ...(c.ielts ? [{id:'ielts', ico:'🎓', icoClass:'mode-ico-speak', name:'IELTS Speaking',
      desc:'ฝึกตอบข้อสอบ IELTS Part 1-3 — พูดอิสระแล้วรับ feedback ความคล่อง พร้อมดู model answer', badge:c.ielts.length+' questions'}] : []),
-    ...(c.situation ? [{id:'situation', ico:'💬', icoClass:'mode-ico-speak', name:'Situation Cards',
-     desc:'ฝึกชวนชาวต่างชาติคุย — ประโยคเปิดบทสนทนาตามสถานการณ์จริง พร้อมฝึกพูด', badge:c.situation.length+' topics'}] : []),
-    ...(c.longListen ? [{id:'longListen', ico:'🎙️', icoClass:'mode-ico-listen', name:'ฟังบทสนทนายาว',
-     desc:'ฟังบทสนทนาจริง จับใจความ แล้วดูคำแปลและ Key Phrases', badge:c.longListen.length+' dialogues'}] : []),
-    ...(c.listen ? [{id:'listen', ico:'👂', icoClass:'mode-ico-listen', name:'Listen & Understand',
-     desc:'ฟังบทสนทนาธุรกิจจริง แล้วตอบคำถาม Comprehension', badge:c.listen.length+' exercises'}] : []),
-    ...(c.speak ? [{id:'speak',  ico:'🗣️', icoClass:'mode-ico-speak',  name:'Speak & Practice',
-     desc:'พูดออกเสียงแล้วรับ feedback คะแนนทันที', badge:c.speak.length+' phrases'}] : []),
-    ...(c.shadow ? [{id:'shadow', ico:'🔄', icoClass:'mode-ico-shadow', name:'Shadow Speaking',
-     desc:'ฟังทีละประโยค แล้วพูดตาม เพิ่ม fluency', badge:'Dialogue'}] : []),
-    ...(c.translate ? [{id:'translate', ico:'🇹🇭', icoClass:'mode-ico-translate', name:'แปลไทย → อังกฤษ',
-     desc:'เห็นประโยคไทย แล้วนึกหรือพูดเป็นภาษาอังกฤษ สไตล์ชีวิตจริง', badge:c.translate.length+' situations'}] : []),
+    ...(c.longListen ? [ allCoreDone
+     ? {id:'longListen', ico:'🏁', icoClass:'mode-ico-listen', step:'ด่านจบ', name:'กลับมาฟังอีกครั้ง!',
+        desc:'คุณผ่านครบทุกขั้นแล้ว 🎉 ฟังบทสนทนายาวอีกรอบ — คราวนี้จะฟังออกเกือบหมด ลองวัดตัวเองดู', badge:c.longListen.length+' dialogues'}
+     : {id:'longListen', ico:'🎬', icoClass:'mode-ico-listen', step:'เปิดฉาก', name:'ฟังบทสนทนายาว',
+        desc:'ฟังบทสนทนาเป้าหมายของหมวดนี้ 1 รอบ — ฟังไม่ออกไม่เป็นไร จบหมวดแล้วกลับมาฟังใหม่จะออกเอง', badge:c.longListen.length+' dialogues'} ] : []),
+    ...(c.listen ? [{id:'listen', ico:'👂', icoClass:'mode-ico-listen', step:'ขั้น 1', name:'Listen & Understand',
+     desc:'ฟังบทสนทนาสั้น แล้วตอบคำถามความเข้าใจ — เริ่มจากหูก่อน', badge:c.listen.length+' exercises'}] : []),
+    ...(c.shadow ? [{id:'shadow', ico:'🔄', icoClass:'mode-ico-shadow', step:'ขั้น 2', name:'Shadow Speaking',
+     desc:'ฟังทีละประโยคแล้วพูดตามเลย — เลียนแบบสำเนียงและจังหวะ', badge:'Dialogue'}] : []),
+    ...(c.speak ? [{id:'speak',  ico:'🗣️', icoClass:'mode-ico-speak', step:'ขั้น 3', name:'Speak & Practice',
+     desc:'พูดเองจากบท พร้อมรับคะแนนและคำแนะนำทันที', badge:c.speak.length+' phrases'}] : []),
+    ...(c.translate ? [{id:'translate', ico:'🇹🇭', icoClass:'mode-ico-translate', step:'ขั้น 4', name:'แปลไทย → อังกฤษ',
+     desc:'เห็นแค่ประโยคไทย ต้องนึกภาษาอังกฤษเอง — ไม่มีตัวช่วยแล้ว', badge:c.translate.length+' situations'}] : []),
+    ...(c.reply ? [{id:'reply', ico:'🎧', icoClass:'mode-ico-speak', step:'ขั้น 5', name:'ฟังแล้วตอบ',
+     desc:'ได้ยินคำถามอย่างเดียว ไม่มีตัวหนังสือ ต้องตอบปากเปล่าทันที — เหมือนคุยกับคนจริง!', badge:c.reply.length+' questions'}] : []),
+    ...(c.situation ? [{id:'situation', ico:'💬', icoClass:'mode-ico-speak', step:'ขั้น 6', name:'Situation Cards',
+     desc:'ใช้จริง: ประโยคเปิดบทสนทนากับชาวต่างชาติตามสถานการณ์', badge:c.situation.length+' topics'}] : []),
   ];
 
-  document.getElementById('mode-list').innerHTML = MODES.map(m=>`
-    <div class="mode-card" onclick="startMode('${id}','${m.id}')">
+  document.getElementById('mode-list').innerHTML = MODES.map(m=>{
+    const done=!!md[m.id], rec=m.id===recMode;
+    return `
+    <div class="mode-card" onclick="startMode('${id}','${m.id}')" style="${rec?'border:2px solid #7C3AED;box-shadow:0 4px 14px rgba(124,58,237,.18);':''}${done&&!rec?'opacity:.72;':''}">
       <div class="mode-ico-wrap ${m.icoClass}">${m.ico}</div>
       <div class="mode-info">
+        <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-bottom:2px">
+          ${m.step?`<span style="font-size:10px;font-weight:800;background:${rec?'#7C3AED':'rgba(124,58,237,.12)'};color:${rec?'#fff':'#7C3AED'};border-radius:100px;padding:2px 8px">${m.step}</span>`:''}
+          ${rec?`<span style="font-size:10px;font-weight:800;color:#7C3AED">▶ แนะนำต่อไป</span>`:''}
+          ${done?`<span style="font-size:10px;font-weight:800;color:var(--green)">✓ ผ่านแล้ว</span>`:''}
+        </div>
         <div class="mode-name">${m.name}</div>
         <div class="mode-desc">${m.desc}</div>
       </div>
@@ -2605,7 +2734,7 @@ function openCat(id) {
         <span class="mode-badge">${m.badge}</span>
         <span style="font-size:20px;color:var(--muted)">›</span>
       </div>
-    </div>`).join('');
+    </div>`}).join('');
 
   showScreen('category');
 }
@@ -2622,11 +2751,17 @@ function startMode(catId, mode) {
   else if(mode==='longListen')  S.exList=c.longListen;
   else if(mode==='situation')   S.exList=c.situation;
   else if(mode==='ielts')       S.exList=c.ielts;
+  else if(mode==='reply')       S.exList=c.reply;
   else                          S.exList=c.translate;
+
+  // remember last cat+mode for the home "ฝึกต่อจากเดิม" card
+  // (separate key so we never touch ws_v3's lastDate/streak semantics)
+  if(catId!=='quest') try{localStorage.setItem('ws_last',JSON.stringify({catId,mode}))}catch(e){}
 
   document.getElementById('ex-mode-tag').textContent =
     mode==='listen'?'👂 Listen':mode==='speak'?'🗣️ Speak':mode==='shadow'?'🔄 Shadow':
-    mode==='situation'?'💬 Situation':mode==='ielts'?'🎓 IELTS':'🇹🇭 Translate';
+    mode==='situation'?'💬 Situation':mode==='ielts'?'🎓 IELTS':
+    mode==='reply'?'🎧 ฟังแล้วตอบ':'🇹🇭 Translate';
   document.getElementById('ex-back').onclick = ()=>showScreen('category');
 
   renderExercise();
@@ -2643,6 +2778,7 @@ function renderExercise() {
   else if(S.mode==='shadow')    renderShadow(S.exList[idx]);
   else if(S.mode==='situation') renderSituation(S.exList[idx]);
   else if(S.mode==='ielts')     renderIelts(S.exList[idx]);
+  else if(S.mode==='reply')     renderReply(S.exList[idx]);
   else                          renderTranslate(S.exList[idx]);
 }
 
@@ -3168,6 +3304,134 @@ function rateSelf(score) {
     <div style="text-align:center;padding:8px;font-size:13px;font-weight:700;color:var(--text2)">
       ${score>=70?'🎉 บันทึกแล้ว! ไปต่อเลย':'💪 ฝึกอีกนิดก็เก่งแล้ว!'}
     </div>`;
+  showNextBtn();
+}
+
+// ── LISTEN & REPLY (ฟังแล้วตอบ) ──────────────
+// hear the question (no text shown), answer out loud — closest thing to a real conversation
+let _rpRecog=null,_rpRec=false,_rpFinal='',_rpInterim='';
+
+function renderReply(ex){
+  document.getElementById('ex-title').textContent='🎧 ฟังแล้วตอบ';
+  window._rpEx=ex;
+  _rpRec=false;_rpFinal='';_rpInterim='';
+  if(_rpRecog){_rpRecog.onresult=null;_rpRecog.onerror=null;_rpRecog.onend=null;try{_rpRecog.abort()}catch(e){} _rpRecog=null;}
+  document.getElementById('ex-body').innerHTML=`
+    <div class="shadow-guide slide-up" style="margin-bottom:12px">
+      <div class="guide-title">🎧 โหมดเหมือนคุยจริง</div>
+      <div class="guide-steps">ฟังคำถาม (ไม่มีตัวหนังสือ!) แล้วกด 🎤 ตอบปากเปล่าเลย<br>ตอบยาวๆ 2-3 ประโยค เหมือนคุยกับชาวต่างชาติจริงๆ</div>
+    </div>
+    <div class="phrase-card slide-up" style="text-align:center">
+      <div style="font-size:38px;margin-bottom:6px">🎧</div>
+      <div id="rp-q" style="display:none;margin-bottom:10px">
+        <div class="phrase-en">${ex.q}</div>
+        <div class="phrase-th">${ex.th}</div>
+      </div>
+      <div class="model-row" style="margin:0">
+        <button class="btn btn-outline btn-full" onclick="rpPlay(0.92)">🔊 ฟังคำถาม</button>
+        <button class="btn btn-full btn-ghost" onclick="rpPlay(0.65)">🐢 ช้าๆ</button>
+      </div>
+      <button class="btn btn-ghost btn-sm" style="margin-top:8px" onclick="rpShowQ()">👁 ขอดูคำถาม (ยอมแพ้การฟัง)</button>
+    </div>
+    <div class="record-section">
+      <button class="rec-btn" id="rp-rec" onclick="rpToggleRec()">🎤</button>
+      <div class="rec-label" id="rp-lbl">ฟังคำถามแล้วกดไมค์ตอบเลย</div>
+    </div>
+    <div id="rp-out"></div>
+    <div class="next-area" id="next-area"></div>`;
+  setTimeout(()=>rpPlay(0.92),450); // auto-play the question once
+}
+
+function rpPlay(r){stopSpeech();speak(window._rpEx.q,r)}
+function rpShowQ(){const el=document.getElementById('rp-q');if(el)el.style.display='block';}
+
+function rpToggleRec(){
+  const btn=document.getElementById('rp-rec'), lbl=document.getElementById('rp-lbl');
+  if(_rpRec){
+    _rpRec=false;
+    if(btn){btn.classList.remove('rec');btn.innerHTML='🎤';}
+    if(lbl){lbl.classList.remove('active');lbl.textContent='⏳ กำลังประมวลผล...';}
+    if(_rpRecog){
+      // graceful stop — same lesson as speak mode: abort() would discard interim text
+      const r=_rpRecog; let fl=false;
+      const doFlush=()=>{ if(fl)return; fl=true;
+        r.onresult=null;r.onerror=null;r.onend=null; _rpRecog=null; _rpFlush(); };
+      r.onend=doFlush; r.onerror=doFlush;
+      try{r.stop()}catch(e){doFlush();}
+      setTimeout(doFlush,1200);
+    } else _rpFlush();
+    return;
+  }
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!SR){if(lbl)lbl.textContent='❌ ไม่รองรับ ลองใช้ Chrome/Safari';return;}
+  stopSpeech();
+  _rpRec=true;_rpFinal='';_rpInterim='';
+  if(btn){btn.classList.add('rec');btn.innerHTML='⏹';}
+  if(lbl){lbl.textContent='🎙 กำลังฟังคำตอบ... พูดจบแล้วกด ⏹';lbl.classList.add('active');}
+  function _attempt(){
+    if(!_rpRec) return;
+    if(_rpRecog){_rpRecog.onresult=null;_rpRecog.onerror=null;_rpRecog.onend=null;try{_rpRecog.abort()}catch(e){}}
+    const r=new SR(); _rpRecog=r;
+    r.lang='en-US'; r.continuous=true; r.interimResults=true; r.maxAlternatives=1;
+    r.onresult=e=>{
+      let fin='',int='';
+      for(let i=(e.resultIndex||0);i<e.results.length;i++){
+        if(e.results[i].isFinal) fin+=e.results[i][0].transcript+' ';
+        else int+=e.results[i][0].transcript;
+      }
+      if(fin.trim()) _rpFinal+=fin.trim()+' ';
+      _rpInterim=int;
+      const d=(_rpFinal+int).trim();
+      if(lbl&&d) lbl.textContent='🎙 "'+d+'"';
+    };
+    r.onerror=e=>{
+      if(e.error==='not-allowed'||e.error==='service-not-allowed'){
+        _rpRec=false;
+        if(btn){btn.classList.remove('rec');btn.innerHTML='🎤';}
+        if(lbl){lbl.classList.remove('active');lbl.textContent=micDeniedMsg();}
+      }
+    };
+    r.onend=()=>{ if(_rpRec) _attempt(); };
+    try{r.start();}catch(e){ if(_rpRec) setTimeout(_attempt,300); }
+  }
+  _attempt();
+}
+
+function _rpFlush(){
+  const lbl=document.getElementById('rp-lbl'), out=document.getElementById('rp-out');
+  const said=(_rpFinal+' '+_rpInterim).replace(/\s+/g,' ').trim();
+  _rpFinal='';_rpInterim='';
+  const ex=window._rpEx;
+  if(!said){
+    if(lbl) lbl.textContent='❌ ไม่ได้ยินเสียงเลย — กด 🎤 แล้วลองใหม่';
+    return;
+  }
+  if(lbl) lbl.textContent='"'+said+'"';
+  const wc=said.split(/\s+/).filter(Boolean).length;
+  const fluency=Math.min(1,wc/15); // 15+ words ≈ a solid 2-3 sentence answer
+  const saidLow=' '+said.toLowerCase()+' ';
+  const usedKeys=(ex.keys||[]).filter(k=>saidLow.includes(k.toLowerCase()));
+  const score=Math.min(100,Math.round(fluency*70)+usedKeys.length*10);
+  S.scores[S.exIdx]=Math.max(S.scores[S.exIdx]||0,score);
+  rpShowQ(); // reveal the question text now
+  const keyChips=(ex.keys||[]).map(k=>{
+    const on=usedKeys.includes(k);
+    return `<span style="display:inline-block;margin:2px;padding:3px 10px;border-radius:100px;font-size:11.5px;font-weight:700;${on?'background:rgba(88,204,2,.15);color:var(--green)':'background:rgba(0,0,0,.06);color:var(--muted)'}">${on?'✓ ':''}${k}</span>`;
+  }).join('');
+  out.innerHTML=`<div class="cmp-card fade-in" style="margin-top:10px">
+    <div style="text-align:center;margin-bottom:8px">
+      <span style="font-size:26px;font-weight:800;color:${score>=70?'var(--green)':'var(--coral)'}">${score>=70?'🎉':'💪'} ${score}%</span>
+      <div style="font-size:11.5px;color:var(--muted)">${wc} คำ · ${score>=70?'ตอบได้ลื่นมาก!':wc<8?'ลองตอบยาวขึ้น 2-3 ประโยค':'ดีแล้ว ลองใช้สำนวนแนะนำดู'}</div>
+    </div>
+    <div style="font-size:12.5px;color:var(--text2);margin-bottom:6px">🗣 คุณตอบว่า: "<i>${_ieEsc(said)}</i>"</div>
+    <div style="font-size:12px;font-weight:800;color:var(--text);margin:8px 0 4px">💬 ตัวอย่างคำตอบแบบเนทีฟ:</div>
+    <div style="font-size:13.5px;font-weight:700;color:var(--text)">${_ieEsc(ex.sample)}
+      <button class="btn btn-ghost btn-sm" style="padding:2px 10px" onclick="stopSpeech();speak(window._rpEx.sample,0.92)">🔊</button></div>
+    <div style="font-size:12px;color:var(--muted);margin-top:2px">${_ieEsc(ex.sampleTh)}</div>
+    <div style="font-size:12px;font-weight:800;color:var(--text);margin:8px 0 2px">✨ สำนวนที่น่าใช้:</div>
+    <div>${keyChips}</div>
+    <button class="btn btn-outline btn-sm" style="width:100%;margin-top:10px" onclick="rpToggleRec()">🔄 ตอบใหม่อีกครั้ง</button>
+  </div>`;
   showNextBtn();
 }
 
@@ -3942,6 +4206,10 @@ function finishSession(){
     if(!S.progress[S.catId])S.progress[S.catId]={done:0,best:0};
     S.progress[S.catId].done+=total;
     S.progress[S.catId].best=Math.max(S.progress[S.catId].best||0,avg);
+    // ladder: remember which modes are completed → powers the "แนะนำต่อไป" badge
+    if(!S.modeDone)S.modeDone={};
+    if(!S.modeDone[S.catId])S.modeDone[S.catId]={};
+    S.modeDone[S.catId][S.mode]=true;
   }
   S.todayDone+=total;
   S.xp+=xpGained;
