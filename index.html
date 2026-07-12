@@ -2327,7 +2327,7 @@ if (_stIdx > -1) CATS.push(SCENARIOS.splice(_stIdx, 1)[0]);
 // ═══════════════════════════════════════════════
 // STATE
 // ═══════════════════════════════════════════════
-const APP_VER='12ก.ค.2026-3';
+const APP_VER='12ก.ค.2026-4';
 
 const S = {
   catId:null, mode:null, exList:[], exIdx:0, scores:[],
@@ -2914,7 +2914,10 @@ function toggleRec(){
           return;
         }
         if(lbl&&_tries>=2) lbl.textContent='🎙 ยังไม่ได้ยิน... ลองพูดดังขึ้น ใกล้ไมค์ขึ้น';
-        _attempt(); // restart if no result yet
+        // iOS Safari needs a beat to release the mic/audio session before a fresh
+        // SpeechRecognition instance can actually capture audio — starting immediately
+        // (same tick as the previous instance's onend) silently fails to hear anything.
+        setTimeout(_attempt,350);
       }
     };
     try{r.start();}catch(e){if(_isRec&&!_done) setTimeout(_attempt,300);}
