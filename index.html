@@ -2888,17 +2888,33 @@ function toggleRec(){
       showCompare(said, window._spk.en);
     };
     r.onerror=e=>{
-      if(e.error==='not-allowed'||e.error==='service-not-allowed'){
+      const fail=(msg)=>{
         _done=true; _isRec=false;
         if(btn){btn.classList.remove('rec');btn.innerHTML='🎤';}
-        if(lbl){lbl.classList.remove('active');lbl.textContent=micDeniedMsg();}
-      }
+        if(lbl){lbl.classList.remove('active');lbl.textContent=msg;}
+      };
+      if(e.error==='not-allowed'||e.error==='service-not-allowed') fail(micDeniedMsg());
+      else if(e.error==='audio-capture') fail('❌ ไม่พบไมโครโฟน — เช็คว่าไม่มีแอปอื่นใช้ไมค์อยู่');
+      else if(e.error==='network') fail('❌ ระบบรู้จำเสียงล้มเหลว — iPhone ต้องเปิด ตั้งค่า → ทั่วไป → แป้นพิมพ์ → เปิดใช้การป้อนตามคำบอก (Enable Dictation)');
+      // no-speech / aborted → let onend restart
     };
     r.onend=()=>{
-      if(_isRec&&!_done) _attempt(); // restart if no result yet
+      if(_isRec&&!_done){
+        _tries++;
+        if(_tries>=6){ // heard nothing across many attempts — stop looping silently
+          _isRec=false;
+          if(btn){btn.classList.remove('rec');btn.innerHTML='🎤';}
+          if(lbl){lbl.classList.remove('active');lbl.textContent='❌ ไม่ได้ยินเสียงเลย';}
+          _speakMicHelp();
+          return;
+        }
+        if(lbl&&_tries>=2) lbl.textContent='🎙 ยังไม่ได้ยิน... ลองพูดดังขึ้น ใกล้ไมค์ขึ้น';
+        _attempt(); // restart if no result yet
+      }
     };
     try{r.start();}catch(e){if(_isRec&&!_done) setTimeout(_attempt,300);}
   }
+  let _tries=0;
   _attempt();
 }
 
@@ -2907,7 +2923,24 @@ function _flushSpeak(){
   if(_finalText.trim()){
     const t=_finalText.trim(); _finalText='';
     showCompare(t,window._spk.en);
+  } else {
+    // was silent before — user tapped stop but nothing was heard: say so + how to fix
+    const lbl=document.getElementById('rec-lbl');
+    if(lbl) lbl.textContent='❌ ไม่ได้ยินเสียงเลย';
+    _speakMicHelp();
   }
+}
+
+function _speakMicHelp(){
+  const cmp=document.getElementById('cmp-area');
+  if(!cmp) return;
+  cmp.innerHTML=`<div class="cmp-card fade-in" style="font-size:13px;line-height:1.8;color:var(--text2)">
+    <div style="font-weight:800;color:var(--text);margin-bottom:6px">🎙 ไมค์ไม่ได้ยินเสียง — เช็คตามนี้ทีละข้อ:</div>
+    1. ตอนกดไมค์ครั้งแรก ต้องกด <b>"อนุญาต"</b> ให้เว็บใช้ไมโครโฟน<br>
+    2. iPhone: เปิด <b>ตั้งค่า → ทั่วไป → แป้นพิมพ์ → เปิดใช้การป้อนตามคำบอก</b> (Enable Dictation) — ระบบรู้จำเสียงของ Safari ใช้ตัวนี้<br>
+    3. เปิดเว็บผ่าน <b>Safari ปกติ</b> — ถ้าเปิดจากไอคอนหน้าจอหลัก iOS จะบล็อกไมค์<br>
+    4. เช็คสิทธิ์: <b>ตั้งค่า → Safari → ไมโครโฟน → ถาม/อนุญาต</b><br>
+    5. ปิดแท็บแล้วเปิดใหม่ กด 🎤 แล้ว<b>พูดทันที</b>ภายใน 2-3 วินาที</div>`;
 }
 
 function showCompare(spoken, target) {
@@ -3394,6 +3427,11 @@ function ieReveal(){
 function ieListen(){ const card=S.exList[S.exIdx]; speak(card.model, 0.95); }
 
 const _GEMINI_KEY_LS='ws_gemini_key';
+// ★ วาง Gemini API key ของคุณระหว่าง '' ด้านล่าง เพื่อให้ทุกคนใช้ได้โดยไม่ต้องใส่ key เอง
+// ใช้เฉพาะ key จากโปรเจกต์ที่ไม่ผูกบัตร (no billing) + จำกัด Website restriction เป็นโดเมนของเว็บนี้เท่านั้น
+// เพราะโค้ดนี้เป็น public — คนอื่นเปิดดูได้ ถ้า key ไม่จำกัดโดเมนจะถูกขโมยใช้จนโควต้าหมด
+const _GEMINI_EMBED_KEY='';
+function _gemKey(){ return localStorage.getItem(_GEMINI_KEY_LS) || _GEMINI_EMBED_KEY || ''; }
 // Try several models in order — each model has its OWN free-tier quota, so if one
 // returns "limit: 0" / 429 / 404 we fall through to the next that DOES have quota.
 const _GEMINI_MODELS=['gemini-2.0-flash','gemini-2.0-flash-lite','gemini-2.5-flash','gemini-1.5-flash','gemini-1.5-flash-8b'];
@@ -3402,7 +3440,7 @@ const _ieErrBox=msg=>`<div class="ielts-mine-err">${msg}<br><button class="btn b
 
 // generic Gemini call with the same model-fallback chain; resolves {text, model}
 function _gemGenerate(prompt){
-  const key=localStorage.getItem(_GEMINI_KEY_LS);
+  const key=_gemKey();
   if(!key) return Promise.reject({code:'nokey'});
   const tryAt=i=>{
     if(i>=_GEMINI_MODELS.length) return Promise.reject({code:'quota'});
@@ -3431,7 +3469,7 @@ function _gemGenerate(prompt){
 function ieAIFeedback(){
   const card=S.exList[S.exIdx]; if(!card||!_ieSaid) return;
   const fb=document.getElementById('ie-ai-fb'); if(!fb) return;
-  if(!localStorage.getItem(_GEMINI_KEY_LS)){ ieShowKeyForm(fb, false, ieAIFeedback); return; }
+  if(!_gemKey()){ ieShowKeyForm(fb, false, ieAIFeedback); return; }
   fb.innerHTML=`<div class="ielts-mine-loading">🤖 กำลังตรวจคำตอบของคุณ... <span class="ie-dots"></span></div>`;
   const prompt=`You are a friendly IELTS Speaking examiner coaching a Thai learner. Question (Part ${card.part||1}): "${card.question}"
 
@@ -3469,7 +3507,7 @@ function ieGenerateMine(){
   const out=document.getElementById('ie-mine-out'); if(!out) return;
   out.style.display='block';
   if(!notes){ out.innerHTML=`<div class="ielts-mine-err">⚠️ พิมพ์ไอเดียคำตอบของคุณก่อน (ภาษาไทยได้)</div>`; return; }
-  const key=localStorage.getItem(_GEMINI_KEY_LS);
+  const key=_gemKey();
   if(!key){ ieShowKeyForm(out); return; }
   // length guidance per part
   const part=card.part||1;
