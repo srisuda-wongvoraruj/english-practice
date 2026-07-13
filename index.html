@@ -556,6 +556,13 @@ body{
 .itp-hist-row{background:var(--surface);border:1.5px solid var(--border);border-radius:12px;padding:10px 12px;margin-bottom:8px;display:flex;align-items:center;gap:10px}
 .itp-hist-en{font-size:14px;font-weight:700;color:var(--text);line-height:1.4}
 .itp-hist-th{font-size:12px;color:var(--muted);margin-top:2px}
+.ac-hero{background:linear-gradient(135deg,#10B981,#06B6D4)}
+.ac-pick-ttl{font-size:14px;font-weight:800;color:var(--text);margin:4px 2px 12px}
+.ac-topic-btn{display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:var(--surface);border:2px solid var(--border);border-radius:16px;padding:14px 16px;margin-bottom:10px;font-size:15px;font-weight:700;color:var(--text);cursor:pointer;transition:.15s}
+.ac-topic-btn:active{transform:scale(.98);border-color:#10B981}
+.ac-topic-sub{font-size:11.5px;font-weight:600;color:var(--muted);margin-top:2px}
+.ac-fix{font-size:12px;color:#B45309;background:rgba(245,158,11,.12);border-radius:10px;padding:6px 10px;margin-top:5px;line-height:1.5;max-width:82%}
+.ac-body{display:flex;flex-direction:column;gap:10px;min-height:120px;margin-bottom:14px}
 .nudge{margin:0 16px 10px;padding:11px 14px;border-radius:14px;font-size:13.5px;font-weight:700;line-height:1.5}
 .nudge-warn{background:linear-gradient(135deg,#FFF3CD,#FFE08A);color:#7a5a00;border:1px solid #ffd966}
 .nudge-ok{background:#E8F5E9;color:#2e7d32;border:1px solid #b6e0bb}
@@ -955,6 +962,12 @@ body{
   <div id="continue-card"></div>
   <div id="streak-nudge"></div>
   <div id="review-zone"></div>
+  <div class="quest" style="background:linear-gradient(135deg,#10B981,#06B6D4);box-shadow:0 6px 18px rgba(6,182,212,.3)" onclick="showScreen('aichat')">
+    <div class="quest-ico">🗣️</div>
+    <div class="quest-txt"><div class="quest-ttl">คุยกับเพื่อนฝรั่ง (AI) · ใหม่!</div>
+    <div class="quest-sub">คุยอังกฤษสดๆ กับ AI — พูดโต้ตอบจริง พร้อมแก้ให้เบาๆ</div></div>
+    <div class="quest-go">▶</div>
+  </div>
   <div class="quest itp-card" onclick="showScreen('itp')">
     <div class="quest-ico">🎙️</div>
     <div class="quest-txt"><div class="quest-ttl">ล่ามทันใจ · พูดไทย ➜ English</div>
@@ -1022,6 +1035,29 @@ body{
     </div>
     <div id="itp-out"></div>
     <div id="itp-history"></div>
+  </div>
+</div>
+
+<!-- ══════════════ AI CONVERSATION ══════════════ -->
+<div id="screen-aichat" class="screen">
+  <div class="cat-hero ac-hero">
+    <button class="back-btn" onclick="acStop();showScreen('home')">← Back</button>
+    <div class="cat-hero-icon">🗣️</div>
+    <div class="cat-hero-name">คุยกับเพื่อนฝรั่ง (AI)</div>
+    <div class="cat-hero-desc">คุยภาษาอังกฤษสดๆ กับ AI — พูดอะไรก็ได้ AI ตอบกลับเป็นธรรมชาติ พร้อมแก้ให้เบาๆ เหมือนมีเพื่อนต่างชาติจริงๆ</div>
+  </div>
+  <div class="pad" style="padding-top:16px">
+    <div id="ac-topics"></div>
+    <div id="ac-body" class="ac-body"></div>
+    <div id="ac-err"></div>
+    <div id="ac-controls" style="display:none">
+      <div class="record-section">
+        <button class="rec-btn" id="ac-rec" onclick="acToggleRec()">🎤</button>
+        <div class="rec-label" id="ac-lbl">กดไมค์ แล้วพูดอังกฤษตอบได้เลย</div>
+      </div>
+      <div id="ac-keyslot"></div>
+      <button class="btn btn-ghost btn-sm" style="width:100%;margin-top:6px" onclick="acReset()">🔄 เปลี่ยนสถานการณ์ / เริ่มใหม่</button>
+    </div>
   </div>
 </div>
 
@@ -2403,7 +2439,7 @@ CATS.forEach(c=>{ if(c && REPLYQ[c.id]) c.reply=REPLYQ[c.id]; });
 // ═══════════════════════════════════════════════
 // STATE
 // ═══════════════════════════════════════════════
-const APP_VER='13ก.ค.2026-1';
+const APP_VER='13ก.ค.2026-2';
 
 const S = {
   catId:null, mode:null, exList:[], exIdx:0, scores:[],
@@ -2598,6 +2634,7 @@ function showScreen(id) {
   if(id==='scenarios') renderScenarios();
   if(id==='notes')     renderNotes();
   if(id==='dlg-list')  renderDlgList();
+  if(id==='aichat')    renderAiChat();
 }
 
 // ═══════════════════════════════════════════════
@@ -4175,6 +4212,183 @@ function ieDone(){
   S.scores.push(_ieScore||70); _ieScore=0;
   const isLast=S.exIdx>=S.exList.length-1;
   if(isLast){ finishSession(); } else { goNext(); }
+}
+
+// ── AI CONVERSATION (คุยกับเพื่อนฝรั่ง) ────────
+// free spoken English chat with a Gemini partner; gentle inline corrections
+let _acRecog=null,_acRec=false,_acFinal='',_acInterim='',_acHist=[],_acTopic='',_acBusy=false;
+const AC_TOPICS=[
+  {k:'casual', ico:'☕', name:'คุยเล่นทั่วไป', sub:'สุดสัปดาห์ งานอดิเรก อาหาร',
+   who:'a friendly, chatty native English speaker making casual small talk (weekends, hobbies, food, movies, weather)'},
+  {k:'travel', ico:'✈️', name:'เที่ยว / โรงแรม', sub:'เช็คอิน ถามทาง แนะนำที่เที่ยว',
+   who:'a warm hotel receptionist and local guide helping a foreign tourist (check-in, directions, recommendations)'},
+  {k:'work', ico:'💼', name:'เพื่อนร่วมงานใหม่', sub:'ทำความรู้จัก คุยเรื่องงาน',
+   who:'a friendly new coworker chatting with you by the coffee machine at the office'},
+  {k:'restaurant', ico:'🍽️', name:'ที่ร้านอาหาร', sub:'สั่งอาหาร ถามเมนู',
+   who:'a friendly waiter at a casual restaurant taking your order and making light conversation'},
+  {k:'interview', ico:'🧑‍💼', name:'สัมภาษณ์งาน', sub:'ฝึกตอบคำถามสัมภาษณ์',
+   who:'a kind hiring manager doing a relaxed English job interview, asking common interview questions one at a time'},
+];
+
+function renderAiChat(){
+  _acRec=false;_acFinal='';_acInterim='';_acBusy=false;
+  if(_acRecog){_acRecog.onresult=null;_acRecog.onerror=null;_acRecog.onend=null;try{_acRecog.abort()}catch(e){} _acRecog=null;}
+  document.getElementById('ac-err').innerHTML='';
+  const topics=document.getElementById('ac-topics');
+  const controls=document.getElementById('ac-controls');
+  if(!_acHist.length){
+    topics.style.display='block';
+    topics.innerHTML=`<div class="ac-pick-ttl">เลือกสถานการณ์ที่อยากคุย 👇</div>`+
+      AC_TOPICS.map(t=>`<button class="ac-topic-btn" onclick="acStart('${t.k}')">
+        <span style="font-size:24px">${t.ico}</span>
+        <div><div>${t.name}</div><div class="ac-topic-sub">${t.sub}</div></div>
+      </button>`).join('');
+    document.getElementById('ac-body').innerHTML='';
+    controls.style.display='none';
+  } else {
+    topics.style.display='none';
+    controls.style.display='block';
+    acRenderBody();
+  }
+}
+
+function acStart(k){
+  _acTopic=k; _acHist=[];
+  document.getElementById('ac-topics').style.display='none';
+  document.getElementById('ac-controls').style.display='block';
+  document.getElementById('ac-err').innerHTML='';
+  acAiTurn(); // AI speaks first
+}
+
+function acReset(){ acStop(); _acHist=[]; renderAiChat(); }
+
+function acStop(){
+  _acRec=false;
+  if(_acRecog){_acRecog.onresult=null;_acRecog.onerror=null;_acRecog.onend=null;try{_acRecog.abort()}catch(e){} _acRecog=null;}
+  stopSpeech();
+}
+
+function acRenderBody(){
+  const el=document.getElementById('ac-body'); if(!el) return;
+  el.innerHTML=_acHist.map((m,i)=>{
+    if(m.role==='ai'){
+      return `<div class="bubble bubble-buddy">
+        <div class="bubble-name">🧑‍🦰 Alex</div>
+        <div class="bubble-inner">${_ieEsc(m.text)}
+          <button class="btn btn-ghost btn-sm" style="padding:0 6px;margin-left:2px" onclick="acSpeak(${i})">🔊</button></div>
+        ${m.fix&&m.fix.toLowerCase()!=='none'?`<div class="ac-fix">✏️ ${_ieEsc(m.fix)}</div>`:''}
+      </div>`;
+    }
+    return `<div class="bubble bubble-user"><div class="bubble-inner">${_ieEsc(m.text)}</div></div>`;
+  }).join('') + (_acBusy?`<div class="bubble bubble-buddy"><div class="bubble-name">🧑‍🦰 Alex</div><div class="bubble-inner">💭 <span class="ie-dots"></span></div></div>`:'');
+  el.scrollTop=el.scrollHeight;
+  const b=document.getElementById('screen-aichat'); if(b) b.scrollTop=b.scrollHeight;
+}
+
+function acSpeak(i){ const m=_acHist[i]; if(m){ stopSpeech(); speak(m.text,0.92); } }
+
+function acAiTurn(){
+  if(!_gemKey()){ ieShowKeyForm(document.getElementById('ac-keyslot'), false, acAiTurn); return; }
+  document.getElementById('ac-err').innerHTML='';
+  _acBusy=true; acRenderBody();
+  const who=(AC_TOPICS.find(t=>t.k===_acTopic)||AC_TOPICS[0]).who;
+  const convo=_acHist.map(m=>(m.role==='ai'?'You':'Learner')+': '+m.text).join('\n');
+  const prompt=`You are ${who}. You are having a live spoken English conversation with a Thai person who is practicing English (about B1–B2 level).
+
+Conversation so far:
+${convo||'(the conversation has not started yet — YOU speak first to open it)'}
+
+Continue naturally. Reply in EXACTLY this plain-text format and nothing else:
+REPLY: <your spoken reply in simple, friendly, natural English — 1 to 2 short sentences — and ALWAYS finish with a question so the learner can keep talking>
+FIX: <ONLY if the learner's most recent message had a clear English mistake, write one short line: you said "<their words>" → better: "<corrected version>". If there was no clear mistake, or the learner hasn't spoken yet, write exactly: none>
+
+Rules: Keep REPLY short and easy to understand. Stay fully in character. Do not use markdown or emojis. Do not mention that you are an AI.`;
+  _gemGenerate(prompt).then(({text})=>{
+    _acBusy=false;
+    let reply=(text.match(/REPLY:\s*([\s\S]*?)(?:\n\s*FIX:|$)/i)||[])[1];
+    let fix=(text.match(/FIX:\s*([\s\S]*)$/i)||[])[1];
+    reply=(reply||text.split('\n').filter(l=>l.trim())[0]||'Sorry, could you say that again?').trim().replace(/^["']|["']$/g,'');
+    fix=(fix||'none').trim();
+    _acHist.push({role:'ai', text:reply, fix});
+    acRenderBody();
+    stopSpeech(); speak(reply,0.92);
+  }).catch(err=>{
+    _acBusy=false; acRenderBody();
+    if(err&&(err.code==='nokey'||err.code==='badkey')){
+      ieShowKeyForm(document.getElementById('ac-keyslot'), err.code==='badkey', acAiTurn); return;
+    }
+    const msg = err&&err.code==='quota' ? 'โควต้า AI หมดชั่วคราว ลองใหม่อีกครั้ง'
+              : ((err&&err.msg)||(err&&err.message)||'เชื่อมต่อไม่ได้');
+    document.getElementById('ac-err').innerHTML=`<div class="ielts-mine-err">❌ ${_ieEsc(msg)} <button class="btn btn-outline btn-sm" style="margin-top:6px" onclick="acAiTurn()">🔁 ลองใหม่</button></div>`;
+  });
+}
+
+function acUserSaid(said){
+  const lbl=document.getElementById('ac-lbl');
+  if(!said){ if(lbl) lbl.textContent='❌ ไม่ได้ยินเสียง — กด 🎤 แล้วพูดอีกครั้ง'; return; }
+  if(lbl) lbl.textContent='กดไมค์ แล้วพูดอังกฤษตอบได้เลย';
+  _acHist.push({role:'user', text:said});
+  acRenderBody();
+  acAiTurn();
+}
+
+function acToggleRec(){
+  const btn=document.getElementById('ac-rec'), lbl=document.getElementById('ac-lbl');
+  if(_acRec){
+    _acRec=false;
+    if(btn){btn.classList.remove('rec');btn.innerHTML='🎤';}
+    if(lbl){lbl.classList.remove('active');lbl.textContent='⏳ กำลังประมวลผล...';}
+    if(_acRecog){
+      const r=_acRecog; let fl=false;
+      const doFlush=()=>{ if(fl)return; fl=true;
+        r.onresult=null;r.onerror=null;r.onend=null; _acRecog=null; _acFlush(); };
+      r.onend=doFlush; r.onerror=doFlush;
+      try{r.stop()}catch(e){doFlush();}
+      setTimeout(doFlush,1200);
+    } else _acFlush();
+    return;
+  }
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!SR){if(lbl)lbl.textContent='❌ ไม่รองรับ ลองใช้ Chrome/Safari';return;}
+  stopSpeech();
+  _acRec=true;_acFinal='';_acInterim='';
+  if(btn){btn.classList.add('rec');btn.innerHTML='⏹';}
+  if(lbl){lbl.textContent='🎙 กำลังฟัง... พูดจบแล้วกด ⏹';lbl.classList.add('active');}
+  function _attempt(){
+    if(!_acRec) return;
+    if(_acRecog){_acRecog.onresult=null;_acRecog.onerror=null;_acRecog.onend=null;try{_acRecog.abort()}catch(e){}}
+    const r=new SR(); _acRecog=r;
+    r.lang='en-US'; r.continuous=true; r.interimResults=true; r.maxAlternatives=1;
+    r.onresult=e=>{
+      let fin='',int='';
+      for(let i=(e.resultIndex||0);i<e.results.length;i++){
+        if(e.results[i].isFinal) fin+=e.results[i][0].transcript+' ';
+        else int+=e.results[i][0].transcript;
+      }
+      if(fin.trim()) _acFinal+=fin.trim()+' ';
+      _acInterim=int;
+      const d=(_acFinal+int).trim();
+      if(lbl&&d) lbl.textContent='🎙 "'+d+'"';
+    };
+    r.onerror=e=>{
+      if(e.error==='not-allowed'||e.error==='service-not-allowed'){
+        _acRec=false;
+        if(btn){btn.classList.remove('rec');btn.innerHTML='🎤';}
+        if(lbl){lbl.classList.remove('active');lbl.textContent=micDeniedMsg();}
+      }
+    };
+    r.onend=()=>{ if(_acRec) _attempt(); };
+    try{r.start();}catch(e){ if(_acRec) setTimeout(_attempt,300); }
+  }
+  _attempt();
+}
+
+function _acFlush(){
+  const btn=document.getElementById('ac-rec');
+  if(btn){btn.classList.remove('rec');btn.innerHTML='🎤';}
+  const said=(_acFinal+' '+_acInterim).replace(/\s+/g,' ').trim();
+  _acFinal='';_acInterim='';
+  acUserSaid(said);
 }
 
 // ── NEXT BUTTON ──────────────────────────────
