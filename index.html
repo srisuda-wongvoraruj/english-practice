@@ -572,6 +572,8 @@ body{
 .vc-pick-ttl{font-size:13px;font-weight:800;color:var(--text2);margin:16px 2px 10px}
 .vc-voice{display:flex;align-items:center;gap:10px;border:2px solid var(--border);border-radius:14px;padding:10px 14px;margin-bottom:8px;background:var(--surface)}
 .vc-voice.vc-on{border-color:#7C3AED;background:rgba(124,58,237,.05)}
+.vc-style-chip{border:2px solid var(--border);border-radius:100px;padding:8px 14px;font-size:12.5px;font-weight:700;color:var(--text2);background:var(--surface);cursor:pointer;transition:.15s}
+.vc-style-chip.vc-on{border-color:#7C3AED;background:#7C3AED;color:#fff}
 .nudge{margin:0 16px 10px;padding:11px 14px;border-radius:14px;font-size:13.5px;font-weight:700;line-height:1.5}
 .nudge-warn{background:linear-gradient(135deg,#FFF3CD,#FFE08A);color:#7a5a00;border:1px solid #ffd966}
 .nudge-ok{background:#E8F5E9;color:#2e7d32;border:1px solid #b6e0bb}
@@ -2538,7 +2540,7 @@ CATS.forEach(c=>{ if(c && REPLYQ[c.id]) c.reply=REPLYQ[c.id]; });
 // ═══════════════════════════════════════════════
 // STATE
 // ═══════════════════════════════════════════════
-const APP_VER='13ก.ค.2026-4';
+const APP_VER='13ก.ค.2026-5';
 
 const S = {
   catId:null, mode:null, exList:[], exIdx:0, scores:[],
@@ -4639,15 +4641,26 @@ function _initVoices(){
 // the device voice instantly, so audio never goes silent.
 let _ttsMode  = localStorage.getItem('ws_tts_mode')  || 'device'; // 'device' | 'ai'
 let _ttsVoice = localStorage.getItem('ws_tts_voice') || 'Puck';
-const _ttsCache = new Map();   // "voice|text" -> object URL
+let _ttsStyle = localStorage.getItem('ws_tts_style') || 'casual';
+const _ttsCache = new Map();   // "voice|style|text" -> object URL
 let _curAudio = null;          // currently-playing AI-voice <audio>
 const AI_VOICES=[
-  {v:'Puck',   th:'สดใส เป็นกันเอง'},
-  {v:'Kore',   th:'ชัดเจน หนักแน่น'},
-  {v:'Aoede',  th:'นุ่ม สบายๆ'},
-  {v:'Charon', th:'ทางการ น่าเชื่อถือ'},
+  {v:'Puck',   th:'สดใส เป็นกันเอง (ยอดนิยม)'},
   {v:'Leda',   th:'สดใส วัยรุ่น'},
+  {v:'Aoede',  th:'นุ่ม ชิลๆ'},
   {v:'Achird', th:'อบอุ่น เป็นมิตร'},
+  {v:'Zephyr', th:'สดใส มีพลัง'},
+  {v:'Callirrhoe', th:'สบายๆ ไม่เร่งรีบ'},
+  {v:'Kore',   th:'ชัดเจน หนักแน่น (หญิง)'},
+  {v:'Charon', th:'ทุ้ม น่าเชื่อถือ (ชาย)'},
+];
+// Style = natural-language delivery directive prepended to the text. Gemini TTS
+// treats the leading "Say ... : <content>" as a tone instruction (not spoken),
+// which is how we get a casual series/YouTuber vibe instead of a flat reader.
+const TTS_STYLES=[
+  {k:'casual',   th:'🎬 คุยเล่นสบายๆ (เหมือนซีรีส์)', pre:'Say the following in a relaxed, natural, everyday conversational tone, the way a character chats casually in a TV series'},
+  {k:'youtuber', th:'🎥 ยูทูปเบอร์ สดใสมีพลัง',        pre:'Say the following in an upbeat, friendly, energetic tone, like a popular YouTuber talking to their audience'},
+  {k:'plain',    th:'🗣️ ชัดถ้อยชัดคำ (ฝึกออกเสียง)',   pre:'Say the following clearly and naturally at a steady, easy-to-follow pace'},
 ];
 function _b64ToBytes(b64){
   const bin=atob(b64), len=bin.length, out=new Uint8Array(len);
@@ -4667,10 +4680,12 @@ function _pcmToWav(bytes, rate){ // 16-bit LE mono PCM → WAV blob
 let _ttsQuotaWarned=false;
 function _gemTTS(text, voice){
   const key=_gemKey(); if(!key) return Promise.reject({code:'nokey'});
-  const ck=voice+'|'+text;
+  const ck=voice+'|'+_ttsStyle+'|'+text;
   if(_ttsCache.has(ck)) return Promise.resolve(_ttsCache.get(ck));
+  const pre=(TTS_STYLES.find(s=>s.k===_ttsStyle)||{}).pre;
+  const sendText=pre ? (pre+': '+text) : text;
   const url='https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-tts:generateContent?key='+encodeURIComponent(key);
-  const body={contents:[{parts:[{text:text}]}],
+  const body={contents:[{parts:[{text:sendText}]}],
     generationConfig:{responseModalities:['AUDIO'],
       speechConfig:{voiceConfig:{prebuiltVoiceConfig:{voiceName:voice}}}}};
   return fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})
@@ -4758,6 +4773,10 @@ function renderVoiceSettings(){
     </div>
     ${ai&&!hasKey?`<div class="ielts-mine-err" style="margin-top:10px">⚠️ ยังไม่มี Gemini key — เสียง AI จะยังไม่ทำงานจนกว่าจะใส่ key (ใส่ได้ที่หน้า “ล่ามทันใจ” หรือ IELTS “สร้างคำตอบ”)</div>`:''}
     ${ai?`
+      <div class="vc-pick-ttl">สไตล์การพูด</div>
+      <div style="display:flex;flex-wrap:wrap;gap:8px">
+        ${TTS_STYLES.map(s=>`<button class="vc-style-chip ${_ttsStyle===s.k?'vc-on':''}" onclick="setTtsStyle('${s.k}')">${s.th}</button>`).join('')}
+      </div>
       <div class="vc-pick-ttl">เลือกเสียง (กด 🔊 ฟังตัวอย่าง)</div>
       ${AI_VOICES.map(o=>`
         <div class="vc-voice ${_ttsVoice===o.v?'vc-on':''}">
@@ -4773,6 +4792,7 @@ function renderVoiceSettings(){
 function setTtsMode(m){ _ttsMode=m; localStorage.setItem('ws_tts_mode',m); _ttsQuotaWarned=false; renderVoiceSettings();
   if(m==='ai'&&_gemKey()) previewVoice(_ttsVoice); }
 function setTtsVoice(v){ _ttsVoice=v; localStorage.setItem('ws_tts_voice',v); renderVoiceSettings(); previewVoice(v); }
+function setTtsStyle(s){ _ttsStyle=s; localStorage.setItem('ws_tts_style',s); renderVoiceSettings(); previewVoice(_ttsVoice); }
 function previewVoice(v){
   const note=document.getElementById('vc-note');
   if(!_gemKey()){ if(note) note.innerHTML='⚠️ ต้องใส่ Gemini key ก่อน'; return; }
