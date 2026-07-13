@@ -1780,7 +1780,7 @@ function showTranslateScore(spoken, ex) {
   showNextBtn();
 }
 
-function renderScoreCard(accuracy, pronunciation, naturalness, target, spoken) {
+function renderScoreCard(accuracy, pronunciation, naturalness, target, spoken, intoId) {
   const overall = Math.round(accuracy*0.5 + pronunciation*0.3 + naturalness*0.2);
   const bar = (v,color) => `<div style="flex:1;background:#eee;border-radius:100px;height:7px;overflow:hidden"><div style="width:${v}%;height:100%;background:${color};border-radius:100px"></div></div>`;
   const em = overall>=85?'🌟':overall>=70?'😊':overall>=50?'🙂':'💪';
@@ -1821,7 +1821,8 @@ function renderScoreCard(accuracy, pronunciation, naturalness, target, spoken) {
     <div class="cmp-lbl" style="margin-top:8px">คุณพูดว่า</div>
     <div class="word-row" id="word-spoken-row"></div>
     <div class="chip-legend">🟢 ถูก &nbsp; 🔴 พลาด &nbsp; 🟡 เกิน</div>
-  </div>`;
+  </div>
+  ${intoId?`<div id="${intoId}" style="margin-top:10px">${intoButtonInner(intoId, target)}</div>`:''}`;
 }
 
 window._repeatTarget = '';
@@ -1867,7 +1868,7 @@ function _calcRepeatScore(target, said, conf, confN){
   // no confidence data (common on iOS) → estimate from accuracy instead of a free 75
   const pronunciation=confN?Math.round(conf/confN*100):Math.round(accuracy*0.82);
   const naturalness=calcNaturalness(said);
-  scoreEl.innerHTML=renderScoreCard(accuracy,pronunciation,naturalness,target,said)+
+  scoreEl.innerHTML=renderScoreCard(accuracy,pronunciation,naturalness,target,said,'into-repeat')+
     `<button class="btn btn-sm btn-outline" style="margin-top:8px;width:100%" onclick="recordRepeat()">🔄 ลองอีกครั้ง</button>`;
 }
 
@@ -2564,7 +2565,7 @@ CATS.forEach(c=>{ if(c && REPLYQ[c.id]) c.reply=REPLYQ[c.id]; });
 // ═══════════════════════════════════════════════
 // STATE
 // ═══════════════════════════════════════════════
-const APP_VER='14ก.ค.2026-1';
+const APP_VER='14ก.ค.2026-2';
 
 const S = {
   catId:null, mode:null, exList:[], exIdx:0, scores:[],
@@ -3362,7 +3363,8 @@ function showCompare(spoken, target) {
       <div class="chip-legend">🟢 ถูก &nbsp; 🔴 พลาด &nbsp; 🟡 เกิน</div>
       ${adviceHtml}
       ${correctionHtml}
-    </div>`;
+    </div>
+    <div id="into-speak" style="margin-top:10px">${intoButtonInner('into-speak', target)}</div>`;
   showNextBtn();
 }
 
@@ -3654,7 +3656,7 @@ function _calcShadowScore(segIdx, target, said, conf, confN){
   const avg=Math.round((accuracy+pronunciation+naturalness)/3);
   if(!S._shadowScores) S._shadowScores={};
   S._shadowScores[segIdx]=avg;
-  scoreEl.innerHTML=renderScoreCard(accuracy,pronunciation,naturalness,target,said)+
+  scoreEl.innerHTML=renderScoreCard(accuracy,pronunciation,naturalness,target,said,'into-shadow-'+segIdx)+
     `<button class="btn btn-sm btn-outline" style="margin-top:8px;width:100%" onclick="shadowRecord(${segIdx})">🔄 ลองอีกครั้ง</button>`;
 }
 
@@ -3948,10 +3950,13 @@ const _GEMINI_MODELS=['gemini-2.0-flash','gemini-2.0-flash-lite','gemini-2.5-fla
 const _ieEsc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const _ieErrBox=msg=>`<div class="ielts-mine-err">${msg}<br><button class="btn btn-outline btn-sm" style="margin-top:8px" onclick="ieGenerateMine()">🔁 ลองใหม่</button></div>`;
 
-// generic Gemini call with the same model-fallback chain; resolves {text, model}
-function _gemGenerate(prompt){
+// generic Gemini call with the same model-fallback chain; resolves {text, model}.
+// extraParts (optional) lets callers attach non-text parts, e.g. an audio clip via
+// inlineData, for multimodal analysis (used by the intonation checker below).
+function _gemGenerate(prompt, extraParts){
   const keys=_gemKeyList();
   if(!keys.length) return Promise.reject({code:'nokey'});
+  const parts=[{text:prompt}, ...(extraParts||[])];
   // iterate keys (starting at the last working one); for each, iterate models
   const tryKey=(k, lastErr)=>{
     if(k>=keys.length) return Promise.reject(lastErr||{code:'quota'});
@@ -3961,7 +3966,7 @@ function _gemGenerate(prompt){
       const model=_GEMINI_MODELS[i];
       const url='https://generativelanguage.googleapis.com/v1beta/models/'+model+':generateContent?key='+encodeURIComponent(key);
       return fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({contents:[{parts:[{text:prompt}]}],generationConfig:{temperature:0.7,maxOutputTokens:700}})})
+        body:JSON.stringify({contents:[{parts}],generationConfig:{temperature:0.7,maxOutputTokens:700}})})
         .then(r=>r.json().then(j=>({ok:r.ok,status:r.status,j})), ()=>({ok:false,status:0,j:null}))
         .then(({ok,status,j})=>{
           if(!ok){
@@ -3980,6 +3985,105 @@ function _gemGenerate(prompt){
     return tryAt(0);
   };
   return tryKey(0, null);
+}
+
+// ── AI INTONATION CHECK (opt-in, after the instant local score) ──────────
+// Real intonation (pitch rise/fall, word stress, rhythm) can't be measured from a text
+// transcript — it needs the actual audio. Rather than run a SECOND live mic stream
+// alongside SpeechRecognition (concurrent mic consumers is exactly the class of bug
+// that took many iterations to fix on iOS in this app — see mic lessons above), this
+// records a separate short clip via MediaRecorder ONLY AFTER the normal practice
+// recording has already finished and released its mic, then sends that clip to Gemini
+// (multimodal) for a qualitative intonation assessment. Purely additive/informational —
+// does not affect the instant local accuracy score.
+window._intoTargets = window._intoTargets || {};
+let _intoRecorder=null, _intoChunks=[], _intoStream=null, _intoRec=false;
+
+function _intoMimeType(){
+  const cands=['audio/webm;codecs=opus','audio/mp4','audio/webm','audio/ogg;codecs=opus'];
+  for(const m of cands){ if(window.MediaRecorder && MediaRecorder.isTypeSupported && MediaRecorder.isTypeSupported(m)) return m; }
+  return '';
+}
+// Caller embeds this INSIDE a `<div id="${id}">...</div>` it already renders — all
+// later state changes just replace that div's innerHTML, so the id is declared once.
+function intoButtonInner(id, target){
+  window._intoTargets[id]=target;
+  return `<button class="btn btn-outline btn-sm" style="width:100%" onclick="intoToggle('${id}')">🎯 ตรวจน้ำเสียง (Intonation) ด้วย AI</button>`;
+}
+function intoCleanup(){
+  _intoRec=false;
+  if(_intoRecorder){ try{ if(_intoRecorder.state!=='inactive') _intoRecorder.stop(); }catch(e){} _intoRecorder=null; }
+  if(_intoStream){ try{ _intoStream.getTracks().forEach(t=>t.stop()); }catch(e){} _intoStream=null; }
+  _intoChunks=[];
+}
+function intoToggle(id){ if(_intoRec) intoStop(id); else intoStart(id); }
+function intoStart(id){
+  const el=document.getElementById(id); if(!el) return;
+  const target=window._intoTargets[id]||'';
+  if(!_gemKey()){ ieShowKeyForm(el, false, ()=>intoStart(id)); return; }
+  if(!navigator.mediaDevices || !window.MediaRecorder){
+    el.innerHTML='<div class="ielts-mine-err">❌ เบราว์เซอร์นี้ไม่รองรับการอัดเสียงตรวจน้ำเสียง</div>'+intoButtonInner(id,target);
+    return;
+  }
+  stopSpeech();
+  navigator.mediaDevices.getUserMedia({audio:true}).then(stream=>{
+    _intoStream=stream; _intoChunks=[]; _intoRec=true;
+    const mt=_intoMimeType();
+    try{ _intoRecorder = mt ? new MediaRecorder(stream,{mimeType:mt}) : new MediaRecorder(stream); }
+    catch(e){ _intoRecorder = new MediaRecorder(stream); }
+    _intoRecorder.ondataavailable=e=>{ if(e.data&&e.data.size) _intoChunks.push(e.data); };
+    _intoRecorder.onstop=()=>{ _intoFinish(id); };
+    _intoRecorder.start();
+    el.innerHTML=`<button class="btn btn-primary btn-sm rec" style="width:100%" onclick="intoToggle('${id}')">⏹ พูดประโยคเดิมอีกครั้ง แล้วกดหยุด</button>
+      <div style="font-size:11.5px;color:var(--muted);margin-top:4px;text-align:center">🎙 กำลังอัด... พูดประโยคเป้าหมายให้เป็นธรรมชาติที่สุด</div>`;
+  }).catch(()=>{
+    el.innerHTML='<div class="ielts-mine-err">'+micDeniedMsg()+'</div>'+intoButtonInner(id,target);
+  });
+}
+function intoStop(id){
+  _intoRec=false;
+  const el=document.getElementById(id);
+  if(el) el.innerHTML='<div style="font-size:12px;color:var(--muted);text-align:center">⏳ กำลังวิเคราะห์น้ำเสียง...</div>';
+  if(_intoRecorder && _intoRecorder.state!=='inactive'){ try{_intoRecorder.stop();}catch(e){ _intoFinish(id); } }
+  else _intoFinish(id);
+  if(_intoStream){ _intoStream.getTracks().forEach(t=>t.stop()); _intoStream=null; }
+}
+function _intoFinish(id){
+  const el=document.getElementById(id); if(!el) return;
+  const target=window._intoTargets[id]||'';
+  if(!_intoChunks.length){ el.innerHTML='<div class="ielts-mine-err">❌ ไม่ได้ยินเสียง ลองใหม่</div>'+intoButtonInner(id,target); return; }
+  const blob=new Blob(_intoChunks, {type:(_intoRecorder&&_intoRecorder.mimeType)||'audio/webm'});
+  _intoChunks=[];
+  const reader=new FileReader();
+  reader.onload=()=>{
+    const b64=String(reader.result).split(',')[1]||'';
+    const prompt=`You are an English pronunciation coach for a Thai learner. They were asked to say this sentence naturally: "${target}"
+
+Listen to the attached recording of their attempt. Judge ONLY their INTONATION — pitch rises/falls, sentence stress on the right words, natural rhythm and pacing. Do NOT judge word accuracy or vocabulary (already checked separately).
+
+Reply in EXACTLY this plain-text format, no markdown:
+SCORE: <a number 0-100>
+TIP: <one short, specific, encouraging coaching tip in Thai about their intonation — mention which word to stress or how the pitch should move, in plain simple Thai>`;
+    _gemGenerate(prompt, [{inlineData:{mimeType: blob.type||'audio/webm', data:b64}}]).then(({text})=>{
+      const scoreM=text.match(/SCORE:\s*(\d+)/i), tipM=text.match(/TIP:\s*([\s\S]*)/i);
+      const score=scoreM?Math.max(0,Math.min(100,parseInt(scoreM[1],10))):null;
+      const tip=(tipM?tipM[1]:text).trim();
+      const em=score===null?'🎯':score>=80?'🌟':score>=60?'🙂':'💪';
+      el.innerHTML=`<div class="cmp-card fade-in" style="padding:10px 12px;margin-bottom:6px">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+          <span style="font-size:18px">${em}</span>
+          ${score!==null?`<span style="font-size:15px;font-weight:800;color:var(--purple)">🎵 น้ำเสียง ${score}%</span>`:'<span style="font-weight:800;color:var(--text)">ผลตรวจน้ำเสียง</span>'}
+        </div>
+        <div style="font-size:12.5px;color:var(--text2);line-height:1.6">${_ieEsc(tip)}</div>
+      </div>${intoButtonInner(id,target).replace('ตรวจน้ำเสียง (Intonation) ด้วย AI','ตรวจอีกครั้ง')}`;
+    }).catch(err=>{
+      if(err&&(err.code==='nokey'||err.code==='badkey')){ ieShowKeyForm(el, err.code==='badkey', ()=>intoStart(id)); return; }
+      const msg = err&&err.code==='quota' ? 'โควตา AI หมดชั่วคราว ลองใหม่ในอีกสักครู่'
+                : ((err&&err.msg)||(err&&err.message)||'วิเคราะห์ไม่สำเร็จ');
+      el.innerHTML=`<div class="ielts-mine-err">❌ ${_ieEsc(msg)}</div>${intoButtonInner(id,target)}`;
+    });
+  };
+  reader.readAsDataURL(blob);
 }
 
 // AI examiner feedback on the user's spoken IELTS answer
@@ -4856,6 +4960,9 @@ function stopSpeech(){
   if(window.speechSynthesis)speechSynthesis.cancel();
   if(_curAudio){ try{_curAudio.pause();_curAudio.currentTime=0;}catch(e){} _curAudio=null; }
   if(_curSource){ try{_curSource.onended=null;_curSource.stop();}catch(e){} _curSource=null; }
+  // safety net: release any dangling intonation-check mic stream on screen change
+  // (no-op if none active — intoStart calls stopSpeech BEFORE creating its recorder)
+  if(typeof intoCleanup==='function' && (_intoRec||_intoStream)) intoCleanup();
 }
 
 // ── Voice settings screen ──
