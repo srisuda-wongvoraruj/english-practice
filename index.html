@@ -2540,7 +2540,7 @@ CATS.forEach(c=>{ if(c && REPLYQ[c.id]) c.reply=REPLYQ[c.id]; });
 // ═══════════════════════════════════════════════
 // STATE
 // ═══════════════════════════════════════════════
-const APP_VER='13ก.ค.2026-5';
+const APP_VER='13ก.ค.2026-6';
 
 const S = {
   catId:null, mode:null, exList:[], exIdx:0, scores:[],
@@ -4654,14 +4654,37 @@ const AI_VOICES=[
   {v:'Kore',   th:'ชัดเจน หนักแน่น (หญิง)'},
   {v:'Charon', th:'ทุ้ม น่าเชื่อถือ (ชาย)'},
 ];
-// Style = natural-language delivery directive prepended to the text. Gemini TTS
-// treats the leading "Say ... : <content>" as a tone instruction (not spoken),
-// which is how we get a casual series/YouTuber vibe instead of a flat reader.
+// Style/accent = natural-language delivery directive prepended to the text. Gemini TTS
+// treats the leading "Say the following ... : <content>" as an instruction (not spoken),
+// so a tone clause gives a casual series/YouTuber vibe and an accent clause makes the
+// SAME voice speak English with a chosen accent (great for listening practice).
+// Both are stored as CLAUSES and combined by _ttsDirective().
 const TTS_STYLES=[
-  {k:'casual',   th:'🎬 คุยเล่นสบายๆ (เหมือนซีรีส์)', pre:'Say the following in a relaxed, natural, everyday conversational tone, the way a character chats casually in a TV series'},
-  {k:'youtuber', th:'🎥 ยูทูปเบอร์ สดใสมีพลัง',        pre:'Say the following in an upbeat, friendly, energetic tone, like a popular YouTuber talking to their audience'},
-  {k:'plain',    th:'🗣️ ชัดถ้อยชัดคำ (ฝึกออกเสียง)',   pre:'Say the following clearly and naturally at a steady, easy-to-follow pace'},
+  {k:'casual',   th:'🎬 คุยเล่นสบายๆ (เหมือนซีรีส์)', pre:'in a relaxed, natural, everyday conversational tone, like a character chatting casually in a TV series'},
+  {k:'youtuber', th:'🎥 ยูทูปเบอร์ สดใสมีพลัง',        pre:'in an upbeat, friendly, energetic tone, like a popular YouTuber talking to their audience'},
+  {k:'plain',    th:'🗣️ ชัดถ้อยชัดคำ (ฝึกออกเสียง)',   pre:'clearly and naturally at a steady, easy-to-follow pace'},
 ];
+// Accent applied to the AI voice via prompt (device voices can't do most of these).
+const TTS_ACCENTS=[
+  {k:'none',       th:'ปกติ',          clause:''},
+  {k:'american',   th:'🇺🇸 American',   clause:'with a standard American English accent'},
+  {k:'british',    th:'🇬🇧 British',    clause:'with a British English (Received Pronunciation) accent'},
+  {k:'indian',     th:'🇮🇳 Indian',     clause:'with an Indian English accent'},
+  {k:'french',     th:'🇫🇷 French',     clause:'with a French accent, as a French person speaking English'},
+  {k:'malaysian',  th:'🇲🇾 Malaysian',  clause:'with a Malaysian English accent'},
+  {k:'japanese',   th:'🇯🇵 Japanese',   clause:'with a Japanese accent, as a Japanese person speaking English'},
+  {k:'hongkong',   th:'🇭🇰 Hong Kong',  clause:'with a Hong Kong accent, as a Cantonese speaker speaking English'},
+  {k:'vietnamese', th:'🇻🇳 Vietnamese', clause:'with a Vietnamese accent, as a Vietnamese person speaking English'},
+];
+let _ttsAccent = localStorage.getItem('ws_tts_accent') || 'none';
+function _ttsDirective(){
+  const acc=(TTS_ACCENTS.find(a=>a.k===_ttsAccent)||{}).clause;
+  const sty=(TTS_STYLES.find(s=>s.k===_ttsStyle)||{}).pre;
+  let d='Say the following';
+  if(acc) d+=' '+acc;
+  if(sty) d+=(acc?', and ':' ')+sty;
+  return d;
+}
 function _b64ToBytes(b64){
   const bin=atob(b64), len=bin.length, out=new Uint8Array(len);
   for(let i=0;i<len;i++) out[i]=bin.charCodeAt(i);
@@ -4680,10 +4703,9 @@ function _pcmToWav(bytes, rate){ // 16-bit LE mono PCM → WAV blob
 let _ttsQuotaWarned=false;
 function _gemTTS(text, voice){
   const key=_gemKey(); if(!key) return Promise.reject({code:'nokey'});
-  const ck=voice+'|'+_ttsStyle+'|'+text;
+  const ck=voice+'|'+_ttsAccent+'|'+_ttsStyle+'|'+text;
   if(_ttsCache.has(ck)) return Promise.resolve(_ttsCache.get(ck));
-  const pre=(TTS_STYLES.find(s=>s.k===_ttsStyle)||{}).pre;
-  const sendText=pre ? (pre+': '+text) : text;
+  const sendText=_ttsDirective()+': '+text;
   const url='https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-tts:generateContent?key='+encodeURIComponent(key);
   const body={contents:[{parts:[{text:sendText}]}],
     generationConfig:{responseModalities:['AUDIO'],
@@ -4773,6 +4795,10 @@ function renderVoiceSettings(){
     </div>
     ${ai&&!hasKey?`<div class="ielts-mine-err" style="margin-top:10px">⚠️ ยังไม่มี Gemini key — เสียง AI จะยังไม่ทำงานจนกว่าจะใส่ key (ใส่ได้ที่หน้า “ล่ามทันใจ” หรือ IELTS “สร้างคำตอบ”)</div>`:''}
     ${ai?`
+      <div class="vc-pick-ttl">สำเนียง (accent) — ฝึกฟังได้หลายแบบ</div>
+      <div style="display:flex;flex-wrap:wrap;gap:8px">
+        ${TTS_ACCENTS.map(a=>`<button class="vc-style-chip ${_ttsAccent===a.k?'vc-on':''}" onclick="setTtsAccent('${a.k}')">${a.th}</button>`).join('')}
+      </div>
       <div class="vc-pick-ttl">สไตล์การพูด</div>
       <div style="display:flex;flex-wrap:wrap;gap:8px">
         ${TTS_STYLES.map(s=>`<button class="vc-style-chip ${_ttsStyle===s.k?'vc-on':''}" onclick="setTtsStyle('${s.k}')">${s.th}</button>`).join('')}
@@ -4793,6 +4819,7 @@ function setTtsMode(m){ _ttsMode=m; localStorage.setItem('ws_tts_mode',m); _ttsQ
   if(m==='ai'&&_gemKey()) previewVoice(_ttsVoice); }
 function setTtsVoice(v){ _ttsVoice=v; localStorage.setItem('ws_tts_voice',v); renderVoiceSettings(); previewVoice(v); }
 function setTtsStyle(s){ _ttsStyle=s; localStorage.setItem('ws_tts_style',s); renderVoiceSettings(); previewVoice(_ttsVoice); }
+function setTtsAccent(a){ _ttsAccent=a; localStorage.setItem('ws_tts_accent',a); renderVoiceSettings(); previewVoice(_ttsVoice); }
 function previewVoice(v){
   const note=document.getElementById('vc-note');
   if(!_gemKey()){ if(note) note.innerHTML='⚠️ ต้องใส่ Gemini key ก่อน'; return; }
