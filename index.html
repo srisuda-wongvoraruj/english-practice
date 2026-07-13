@@ -563,6 +563,15 @@ body{
 .ac-topic-sub{font-size:11.5px;font-weight:600;color:var(--muted);margin-top:2px}
 .ac-fix{font-size:12px;color:#B45309;background:rgba(245,158,11,.12);border-radius:10px;padding:6px 10px;margin-top:5px;line-height:1.5;max-width:82%}
 .ac-body{display:flex;flex-direction:column;gap:10px;min-height:120px;margin-bottom:14px}
+.voice-cta{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:0 16px 12px;padding:12px 16px;border-radius:14px;font-size:13px;font-weight:700;color:#4C1D95;background:linear-gradient(135deg,#EDE9FE,#DDD6FE);border:1px solid #C4B5FD;cursor:pointer}
+.voice-cta-go{font-size:20px;color:#7C3AED}
+.vc-opt{border:2px solid var(--border);border-radius:16px;padding:14px 16px;margin-bottom:10px;cursor:pointer;transition:.15s;background:var(--surface)}
+.vc-opt.vc-on{border-color:#7C3AED;box-shadow:0 4px 14px rgba(124,58,237,.18)}
+.vc-opt-ttl{font-size:15px;font-weight:800;color:var(--text)}
+.vc-opt-sub{font-size:12px;color:var(--muted);margin-top:3px;line-height:1.5}
+.vc-pick-ttl{font-size:13px;font-weight:800;color:var(--text2);margin:16px 2px 10px}
+.vc-voice{display:flex;align-items:center;gap:10px;border:2px solid var(--border);border-radius:14px;padding:10px 14px;margin-bottom:8px;background:var(--surface)}
+.vc-voice.vc-on{border-color:#7C3AED;background:rgba(124,58,237,.05)}
 .nudge{margin:0 16px 10px;padding:11px 14px;border-radius:14px;font-size:13.5px;font-weight:700;line-height:1.5}
 .nudge-warn{background:linear-gradient(135deg,#FFF3CD,#FFE08A);color:#7a5a00;border:1px solid #ffd966}
 .nudge-ok{background:#E8F5E9;color:#2e7d32;border:1px solid #b6e0bb}
@@ -976,6 +985,10 @@ body{
     <div class="quest-sub">พูดไทยใส่ไมค์ → ได้ประโยคอังกฤษ + เสียงอ่านทันที</div></div>
     <div class="quest-go">▶</div>
   </div>
+  <div class="voice-cta" onclick="showScreen('voice')">
+    <span>🔊 เสียงอ่านฟังเหมือนหุ่นยนต์? <b>เปลี่ยนเป็นเสียง AI ธรรมชาติ</b></span>
+    <span class="voice-cta-go">›</span>
+  </div>
 
   <div class="sec-title">เลือกหัวข้อที่อยากฝึก</div>
   <div class="cat-grid" id="cat-grid"></div>
@@ -1061,6 +1074,17 @@ body{
       <button class="btn btn-ghost btn-sm" style="width:100%;margin-top:6px" onclick="acReset()">🔄 เปลี่ยนสถานการณ์ / เริ่มใหม่</button>
     </div>
   </div>
+</div>
+
+<!-- ══════════════ VOICE SETTINGS ══════════════ -->
+<div id="screen-voice" class="screen">
+  <div class="cat-hero" style="background:linear-gradient(135deg,#8B5CF6,#6366F1)">
+    <button class="back-btn" onclick="stopSpeech();showScreen('home')">← Back</button>
+    <div class="cat-hero-icon">🔊</div>
+    <div class="cat-hero-name">เสียงพูด</div>
+    <div class="cat-hero-desc">เลือกเสียงอ่านออกเสียงภาษาอังกฤษ — เปลี่ยนเป็นเสียง AI ที่ฟังเหมือนคนจริงได้</div>
+  </div>
+  <div class="pad" style="padding-top:16px" id="voice-body"></div>
 </div>
 
 <!-- ══════════════ EXERCISE ══════════════ -->
@@ -2514,7 +2538,7 @@ CATS.forEach(c=>{ if(c && REPLYQ[c.id]) c.reply=REPLYQ[c.id]; });
 // ═══════════════════════════════════════════════
 // STATE
 // ═══════════════════════════════════════════════
-const APP_VER='13ก.ค.2026-3';
+const APP_VER='13ก.ค.2026-4';
 
 const S = {
   catId:null, mode:null, exList:[], exIdx:0, scores:[],
@@ -2710,6 +2734,7 @@ function showScreen(id) {
   if(id==='notes')     renderNotes();
   if(id==='dlg-list')  renderDlgList();
   if(id==='aichat')    renderAiChat();
+  if(id==='voice')     renderVoiceSettings();
 }
 
 // ═══════════════════════════════════════════════
@@ -4606,14 +4631,95 @@ function _initVoices(){
   _voiceA = byGender(_FEMALE) || sorted[0];                          // highest-scored female
   _voiceB = byGender(_MALE)   || sorted.find(v=>v!==_voiceA) || _voiceA; // highest-scored male
 }
-function speak(text,rate=1,onEnd){
-  if(!window.speechSynthesis)return;
+// ── AI natural voice (opt-in): Gemini TTS → real human-sounding speech ──
+// Device Web Speech voices sound robotic on many phones. When the user turns on
+// "AI voice", route single utterances through Gemini's TTS model (they already
+// have a key). PCM audio is wrapped in a WAV header and played; results are cached
+// by text so repeated phrases don't re-spend quota. Any error/quota → fall back to
+// the device voice instantly, so audio never goes silent.
+let _ttsMode  = localStorage.getItem('ws_tts_mode')  || 'device'; // 'device' | 'ai'
+let _ttsVoice = localStorage.getItem('ws_tts_voice') || 'Puck';
+const _ttsCache = new Map();   // "voice|text" -> object URL
+let _curAudio = null;          // currently-playing AI-voice <audio>
+const AI_VOICES=[
+  {v:'Puck',   th:'สดใส เป็นกันเอง'},
+  {v:'Kore',   th:'ชัดเจน หนักแน่น'},
+  {v:'Aoede',  th:'นุ่ม สบายๆ'},
+  {v:'Charon', th:'ทางการ น่าเชื่อถือ'},
+  {v:'Leda',   th:'สดใส วัยรุ่น'},
+  {v:'Achird', th:'อบอุ่น เป็นมิตร'},
+];
+function _b64ToBytes(b64){
+  const bin=atob(b64), len=bin.length, out=new Uint8Array(len);
+  for(let i=0;i<len;i++) out[i]=bin.charCodeAt(i);
+  return out;
+}
+function _pcmToWav(bytes, rate){ // 16-bit LE mono PCM → WAV blob
+  const buf=new ArrayBuffer(44+bytes.length), dv=new DataView(buf);
+  const ws=(o,s)=>{for(let i=0;i<s.length;i++)dv.setUint8(o+i,s.charCodeAt(i))};
+  ws(0,'RIFF'); dv.setUint32(4,36+bytes.length,true); ws(8,'WAVE');
+  ws(12,'fmt '); dv.setUint32(16,16,true); dv.setUint16(20,1,true); dv.setUint16(22,1,true);
+  dv.setUint32(24,rate,true); dv.setUint32(28,rate*2,true); dv.setUint16(32,2,true); dv.setUint16(34,16,true);
+  ws(36,'data'); dv.setUint32(40,bytes.length,true);
+  new Uint8Array(buf,44).set(bytes);
+  return new Blob([buf],{type:'audio/wav'});
+}
+let _ttsQuotaWarned=false;
+function _gemTTS(text, voice){
+  const key=_gemKey(); if(!key) return Promise.reject({code:'nokey'});
+  const ck=voice+'|'+text;
+  if(_ttsCache.has(ck)) return Promise.resolve(_ttsCache.get(ck));
+  const url='https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-tts:generateContent?key='+encodeURIComponent(key);
+  const body={contents:[{parts:[{text:text}]}],
+    generationConfig:{responseModalities:['AUDIO'],
+      speechConfig:{voiceConfig:{prebuiltVoiceConfig:{voiceName:voice}}}}};
+  return fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})
+    .then(r=>r.json().then(j=>({ok:r.ok,status:r.status,j})))
+    .then(({ok,status,j})=>{
+      if(!ok){
+        const msg=(j&&j.error&&j.error.message)||('HTTP '+status);
+        if(status===400||status===403) return Promise.reject({code:'badkey',msg});
+        if(status===429) return Promise.reject({code:'quota',msg});
+        return Promise.reject({code:'other',msg});
+      }
+      let part=null;
+      try{ part=j.candidates[0].content.parts.find(p=>p.inlineData&&p.inlineData.data); }catch(e){}
+      if(!part) return Promise.reject({code:'other',msg:'no audio'});
+      const mime=part.inlineData.mimeType||'';
+      const rate=parseInt((mime.match(/rate=(\d+)/)||[])[1],10)||24000;
+      const objUrl=URL.createObjectURL(_pcmToWav(_b64ToBytes(part.inlineData.data), rate));
+      _ttsCache.set(ck, objUrl);
+      return objUrl;
+    });
+}
+function _aiSpeak(text, voice, rate, onEnd, fallback){
+  stopSpeech();
+  _gemTTS(text, voice).then(url=>{
+    if(_ttsMode!=='ai'){ if(onEnd)onEnd(); return; } // user switched off while loading
+    const a=new Audio(url); _curAudio=a;
+    a.playbackRate = rate<0.8 ? 0.72 : 1.0; // app uses ~0.65 for "slow", ~0.9-0.95 normal
+    if(onEnd) a.onended=onEnd;
+    a.play().catch(()=>{ if(fallback) fallback(); });
+  }).catch(err=>{
+    if(err&&err.code==='quota' && !_ttsQuotaWarned){ _ttsQuotaWarned=true; }
+    if(fallback) fallback(); // silent fall-through to device voice
+  });
+}
+function _deviceSpeak(text,rate,onEnd){
+  if(!window.speechSynthesis){ if(onEnd)onEnd(); return; }
   stopSpeech();
   const u=new SpeechSynthesisUtterance(text);
   u.lang='en-US'; u.rate=rate; u.pitch=1.0;
   const v=_bestVoice(); if(v)u.voice=v;
   if(onEnd)u.onend=onEnd;
   window._utter=u; speechSynthesis.speak(u);
+}
+function speak(text,rate=1,onEnd){
+  if(_ttsMode==='ai' && _gemKey()){
+    _aiSpeak(text, _ttsVoice, rate, onEnd, ()=>_deviceSpeak(text,rate,onEnd));
+    return;
+  }
+  _deviceSpeak(text,rate,onEnd);
 }
 // Speak as dialogue speaker A or B — pitch always 1.0 (natural), only rate differs
 function speakAs(text,speaker,rate=0.95,onEnd){
@@ -4632,7 +4738,58 @@ function speakAs(text,speaker,rate=0.95,onEnd){
   if(onEnd)u.onend=onEnd;
   window._utter=u; speechSynthesis.speak(u);
 }
-function stopSpeech(){if(window.speechSynthesis)speechSynthesis.cancel()}
+function stopSpeech(){
+  if(window.speechSynthesis)speechSynthesis.cancel();
+  if(_curAudio){ try{_curAudio.pause();_curAudio.currentTime=0;}catch(e){} _curAudio=null; }
+}
+
+// ── Voice settings screen ──
+function renderVoiceSettings(){
+  const el=document.getElementById('voice-body'); if(!el) return;
+  const hasKey=!!_gemKey(), ai=_ttsMode==='ai';
+  el.innerHTML=`
+    <div class="vc-opt ${!ai?'vc-on':''}" onclick="setTtsMode('device')">
+      <div class="vc-opt-ttl">📱 เสียงในเครื่อง ${!ai?'✓':''}</div>
+      <div class="vc-opt-sub">เร็ว ใช้ฟรี ไม่ต้องต่อเน็ต — แต่ความเป็นธรรมชาติขึ้นกับอุปกรณ์ (บางเครื่องฟังเหมือนหุ่นยนต์)</div>
+    </div>
+    <div class="vc-opt ${ai?'vc-on':''}" onclick="setTtsMode('ai')">
+      <div class="vc-opt-ttl">✨ เสียง AI ธรรมชาติ ${ai?'✓':''}</div>
+      <div class="vc-opt-sub">ฟังเหมือนคนจริง (ใช้ Gemini key ของคุณ) — มีดีเลย์นิดหน่อยตอนโหลดเสียงครั้งแรก และใช้โควตา AI เล็กน้อย ถ้าโควตาหมดจะสลับกลับเป็นเสียงเครื่องให้อัตโนมัติ</div>
+    </div>
+    ${ai&&!hasKey?`<div class="ielts-mine-err" style="margin-top:10px">⚠️ ยังไม่มี Gemini key — เสียง AI จะยังไม่ทำงานจนกว่าจะใส่ key (ใส่ได้ที่หน้า “ล่ามทันใจ” หรือ IELTS “สร้างคำตอบ”)</div>`:''}
+    ${ai?`
+      <div class="vc-pick-ttl">เลือกเสียง (กด 🔊 ฟังตัวอย่าง)</div>
+      ${AI_VOICES.map(o=>`
+        <div class="vc-voice ${_ttsVoice===o.v?'vc-on':''}">
+          <div onclick="setTtsVoice('${o.v}')" style="flex:1;cursor:pointer">
+            <div style="font-weight:800;color:var(--text)">${o.v} ${_ttsVoice===o.v?'✓':''}</div>
+            <div class="ac-topic-sub">${o.th}</div>
+          </div>
+          <button class="btn btn-outline btn-sm" onclick="previewVoice('${o.v}')">🔊 ฟัง</button>
+        </div>`).join('')}
+      <div id="vc-note" style="font-size:12.5px;color:var(--muted);margin-top:10px;line-height:1.6"></div>
+    `:''}`;
+}
+function setTtsMode(m){ _ttsMode=m; localStorage.setItem('ws_tts_mode',m); _ttsQuotaWarned=false; renderVoiceSettings();
+  if(m==='ai'&&_gemKey()) previewVoice(_ttsVoice); }
+function setTtsVoice(v){ _ttsVoice=v; localStorage.setItem('ws_tts_voice',v); renderVoiceSettings(); previewVoice(v); }
+function previewVoice(v){
+  const note=document.getElementById('vc-note');
+  if(!_gemKey()){ if(note) note.innerHTML='⚠️ ต้องใส่ Gemini key ก่อน'; return; }
+  if(note) note.innerHTML='⏳ กำลังโหลดเสียงตัวอย่าง...';
+  stopSpeech();
+  _gemTTS("Hi there! This is what I sound like. It's really nice to meet you.", v).then(url=>{
+    if(note) note.innerHTML='🔊 กำลังเล่นเสียง '+v+'...';
+    const a=new Audio(url); _curAudio=a;
+    a.onended=()=>{ if(note) note.innerHTML='✅ นี่คือเสียง '+v+' — ถ้าชอบ กดเลือกเสียงนี้ได้เลย'; };
+    a.play().catch(()=>{ if(note) note.innerHTML='❌ เล่นเสียงไม่ได้ ลองกดอีกครั้ง'; });
+  }).catch(err=>{
+    if(!note) return;
+    note.innerHTML = (err&&err.code==='quota') ? '❌ โควตาเสียง AI หมดชั่วคราว ลองใหม่ในอีกสักครู่'
+      : (err&&(err.code==='badkey'||err.code==='nokey')) ? '❌ Gemini key ใช้ไม่ได้ — ตรวจสอบ key อีกครั้ง'
+      : '❌ โหลดเสียงไม่สำเร็จ (โมเดลเสียงอาจไม่รองรับกับ key นี้) — ใช้เสียงในเครื่องไปก่อนได้';
+  });
+}
 
 // iOS Safari blocks mic access entirely for home-screen "standalone" web apps —
 // this is an OS/WebKit restriction, not something the page can fix. Detect it so
