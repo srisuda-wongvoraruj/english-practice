@@ -2553,7 +2553,7 @@ CATS.forEach(c=>{ if(c && REPLYQ[c.id]) c.reply=REPLYQ[c.id]; });
 // ═══════════════════════════════════════════════
 // STATE
 // ═══════════════════════════════════════════════
-const APP_VER='13ก.ค.2026-9';
+const APP_VER='13ก.ค.2026-10';
 
 const S = {
   catId:null, mode:null, exList:[], exIdx:0, scores:[],
@@ -3920,7 +3920,16 @@ const _GEMINI_KEY_LS='ws_gemini_key';
 // ใช้เฉพาะ key จากโปรเจกต์ที่ไม่ผูกบัตร (no billing) + จำกัด Website restriction เป็นโดเมนของเว็บนี้เท่านั้น
 // เพราะโค้ดนี้เป็น public — คนอื่นเปิดดูได้ ถ้า key ไม่จำกัดโดเมนจะถูกขโมยใช้จนโควต้าหมด
 const _GEMINI_EMBED_KEY='';
-function _gemKey(){ return localStorage.getItem(_GEMINI_KEY_LS) || _GEMINI_EMBED_KEY || ''; }
+// Backup keys: each Gemini key (from a different Google account) has its OWN free quota.
+// We keep a primary (ws_gemini_key) plus extras (ws_gemini_keys_extra = JSON array) and
+// rotate to the next key when one hits its quota (429), so AI voice/chat lasts much longer.
+let _gemKeyCursor=0;
+function _gemKeyList(){
+  let extra=[]; try{ extra=JSON.parse(localStorage.getItem('ws_gemini_keys_extra')||'[]'); }catch(e){}
+  const primary = localStorage.getItem(_GEMINI_KEY_LS) || _GEMINI_EMBED_KEY || '';
+  return [...new Set([primary, ...extra].map(k=>(k||'').trim()).filter(Boolean))];
+}
+function _gemKey(){ return _gemKeyList()[0] || ''; }
 // Try several models in order — each model has its OWN free-tier quota, so if one
 // returns "limit: 0" / 429 / 404 we fall through to the next that DOES have quota.
 const _GEMINI_MODELS=['gemini-2.0-flash','gemini-2.0-flash-lite','gemini-2.5-flash','gemini-1.5-flash','gemini-1.5-flash-8b'];
@@ -3929,29 +3938,36 @@ const _ieErrBox=msg=>`<div class="ielts-mine-err">${msg}<br><button class="btn b
 
 // generic Gemini call with the same model-fallback chain; resolves {text, model}
 function _gemGenerate(prompt){
-  const key=_gemKey();
-  if(!key) return Promise.reject({code:'nokey'});
-  const tryAt=i=>{
-    if(i>=_GEMINI_MODELS.length) return Promise.reject({code:'quota'});
-    const model=_GEMINI_MODELS[i];
-    const url='https://generativelanguage.googleapis.com/v1beta/models/'+model+':generateContent?key='+encodeURIComponent(key);
-    return fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({contents:[{parts:[{text:prompt}]}],generationConfig:{temperature:0.7,maxOutputTokens:700}})})
-      .then(r=>r.json().then(j=>({ok:r.ok,status:r.status,j})))
-      .then(({ok,status,j})=>{
-        if(!ok){
-          const msg=(j&&j.error&&j.error.message)||('HTTP '+status);
-          if(status===400||status===403) return Promise.reject({code:'badkey',msg});
-          if(status===429||status===404) return tryAt(i+1);
-          return Promise.reject({code:'other',msg});
-        }
-        let txt=''; try{ txt=j.candidates[0].content.parts.map(p=>p.text).join(' ').trim(); }catch(e){}
-        txt=txt.replace(/^["'\s]+|["'\s]+$/g,'');
-        if(!txt) return tryAt(i+1);
-        return {text:txt, model};
-      });
+  const keys=_gemKeyList();
+  if(!keys.length) return Promise.reject({code:'nokey'});
+  // iterate keys (starting at the last working one); for each, iterate models
+  const tryKey=(k, lastErr)=>{
+    if(k>=keys.length) return Promise.reject(lastErr||{code:'quota'});
+    const key=keys[(_gemKeyCursor+k)%keys.length];
+    const tryAt=i=>{
+      if(i>=_GEMINI_MODELS.length) return tryKey(k+1, {code:'quota'}); // this key exhausted → next key
+      const model=_GEMINI_MODELS[i];
+      const url='https://generativelanguage.googleapis.com/v1beta/models/'+model+':generateContent?key='+encodeURIComponent(key);
+      return fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({contents:[{parts:[{text:prompt}]}],generationConfig:{temperature:0.7,maxOutputTokens:700}})})
+        .then(r=>r.json().then(j=>({ok:r.ok,status:r.status,j})), ()=>({ok:false,status:0,j:null}))
+        .then(({ok,status,j})=>{
+          if(!ok){
+            const msg=(j&&j.error&&j.error.message)||('HTTP '+status);
+            if(status===400||status===403) return tryKey(k+1, {code:'badkey',msg}); // bad key → next key
+            if(status===429||status===404||status===0) return tryAt(i+1);
+            return Promise.reject({code:'other',msg});
+          }
+          let txt=''; try{ txt=j.candidates[0].content.parts.map(p=>p.text).join(' ').trim(); }catch(e){}
+          txt=txt.replace(/^["'\s]+|["'\s]+$/g,'');
+          if(!txt) return tryAt(i+1);
+          _gemKeyCursor=(_gemKeyCursor+k)%keys.length; // remember the working key
+          return {text:txt, model};
+        });
+    };
+    return tryAt(0);
   };
-  return tryAt(0);
+  return tryKey(0, null);
 }
 
 // AI examiner feedback on the user's spoken IELTS answer
@@ -4738,33 +4754,62 @@ function _pcmToWav(bytes, rate){ // 16-bit LE mono PCM → WAV blob
   return buf; // ArrayBuffer (WAV)
 }
 let _ttsQuotaWarned=false;
+// Persistent audio cache (IndexedDB): once a phrase is generated it's stored forever,
+// so repeated content (examples, model answers, situation cards…) never re-spends quota,
+// even across app restarts. Gracefully degrades to no-op if IDB is unavailable.
+let _idbP=null;
+function _idb(){
+  if(_idbP) return _idbP;
+  _idbP=new Promise(res=>{ try{
+    const r=indexedDB.open('ws_tts',1);
+    r.onupgradeneeded=()=>{ try{ r.result.createObjectStore('wav'); }catch(e){} };
+    r.onsuccess=()=>res(r.result); r.onerror=()=>res(null);
+  }catch(e){ res(null); } });
+  return _idbP;
+}
+function _idbGet(k){ return _idb().then(db=>{ if(!db) return null;
+  return new Promise(res=>{ try{ const q=db.transaction('wav','readonly').objectStore('wav').get(k);
+    q.onsuccess=()=>res(q.result||null); q.onerror=()=>res(null); }catch(e){ res(null); } }); }); }
+function _idbPut(k,buf){ return _idb().then(db=>{ if(!db) return;
+  try{ db.transaction('wav','readwrite').objectStore('wav').put(buf,k); }catch(e){} }); }
+
 function _gemTTS(text, voice){
-  const key=_gemKey(); if(!key) return Promise.reject({code:'nokey'});
+  const keys=_gemKeyList(); if(!keys.length) return Promise.reject({code:'nokey'});
   const ck=voice+'|'+_ttsAccent+'|'+_ttsStyle+'|'+text;
   if(_ttsCache.has(ck)) return Promise.resolve(_ttsCache.get(ck));
-  const sendText=_ttsDirective()+': '+text;
-  const url='https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-tts:generateContent?key='+encodeURIComponent(key);
-  const body={contents:[{parts:[{text:sendText}]}],
-    generationConfig:{responseModalities:['AUDIO'],
-      speechConfig:{voiceConfig:{prebuiltVoiceConfig:{voiceName:voice}}}}};
-  return fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})
-    .then(r=>r.json().then(j=>({ok:r.ok,status:r.status,j})))
-    .then(({ok,status,j})=>{
-      if(!ok){
-        const msg=(j&&j.error&&j.error.message)||('HTTP '+status);
-        if(status===400||status===403) return Promise.reject({code:'badkey',msg});
-        if(status===429) return Promise.reject({code:'quota',msg});
-        return Promise.reject({code:'other',msg});
-      }
-      let part=null;
-      try{ part=j.candidates[0].content.parts.find(p=>p.inlineData&&p.inlineData.data); }catch(e){}
-      if(!part) return Promise.reject({code:'other',msg:'no audio'});
-      const mime=part.inlineData.mimeType||'';
-      const rate=parseInt((mime.match(/rate=(\d+)/)||[])[1],10)||24000;
-      const wav=_pcmToWav(_b64ToBytes(part.inlineData.data), rate);
-      _ttsCache.set(ck, wav);
-      return wav;
-    });
+  return _idbGet(ck).then(hit=>{
+    if(hit){ _ttsCache.set(ck, hit); return hit; }
+    const sendText=_ttsDirective()+': '+text;
+    const body={contents:[{parts:[{text:sendText}]}],
+      generationConfig:{responseModalities:['AUDIO'],
+        speechConfig:{voiceConfig:{prebuiltVoiceConfig:{voiceName:voice}}}}};
+    // rotate through keys: each key's own quota extends how long AI voice works
+    const tryKey=(k, lastErr)=>{
+      if(k>=keys.length) return Promise.reject(lastErr||{code:'quota'});
+      const key=keys[(_gemKeyCursor+k)%keys.length];
+      const url='https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-tts:generateContent?key='+encodeURIComponent(key);
+      return fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})
+        .then(r=>r.json().then(j=>({ok:r.ok,status:r.status,j})), ()=>({ok:false,status:0,j:null}))
+        .then(({ok,status,j})=>{
+          if(!ok){
+            const msg=(j&&j.error&&j.error.message)||('HTTP '+status);
+            if(status===400||status===403) return tryKey(k+1, {code:'badkey',msg});
+            if(status===429||status===0)   return tryKey(k+1, {code:'quota',msg});
+            return Promise.reject({code:'other',msg});
+          }
+          let part=null;
+          try{ part=j.candidates[0].content.parts.find(p=>p.inlineData&&p.inlineData.data); }catch(e){}
+          if(!part) return Promise.reject({code:'other',msg:'no audio'});
+          const mime=part.inlineData.mimeType||'';
+          const rate=parseInt((mime.match(/rate=(\d+)/)||[])[1],10)||24000;
+          const wav=_pcmToWav(_b64ToBytes(part.inlineData.data), rate);
+          _gemKeyCursor=(_gemKeyCursor+k)%keys.length; // remember the working key
+          _ttsCache.set(ck, wav); _idbPut(ck, wav);
+          return wav;
+        });
+    };
+    return tryKey(0, null);
+  });
 }
 // Play a WAV ArrayBuffer. iOS-safe via AudioContext (works after our async fetch once
 // unlocked); falls back to an <audio> element, then to the caller's fallback (device voice).
@@ -4853,7 +4898,7 @@ function renderVoiceSettings(){
       <div class="vc-opt-ttl">✨ เสียง AI ธรรมชาติ ${ai?'✓':''}</div>
       <div class="vc-opt-sub">ฟังเหมือนคนจริง (ใช้ Gemini key ของคุณ) — มีดีเลย์นิดหน่อยตอนโหลดเสียงครั้งแรก และใช้โควตา AI เล็กน้อย ถ้าโควตาหมดจะสลับกลับเป็นเสียงเครื่องให้อัตโนมัติ</div>
     </div>
-    ${ai&&!hasKey?`<div class="ielts-mine-err" style="margin-top:10px">⚠️ ยังไม่มี Gemini key — เสียง AI จะยังไม่ทำงานจนกว่าจะใส่ key (ใส่ได้ที่หน้า “ล่ามทันใจ” หรือ IELTS “สร้างคำตอบ”)</div>`:''}
+    ${ai&&!hasKey?`<div class="ielts-mine-err" style="margin-top:10px">⚠️ ยังไม่มี Gemini key — เสียง AI จะยังไม่ทำงาน ใส่ key ได้ที่หัวข้อ “🔑 API keys” ด้านล่างสุด</div>`:''}
     ${ai?`
       <div class="vc-pick-ttl">สำเนียง (accent) — แตะเพื่อเลือก</div>
       <div style="display:flex;flex-wrap:wrap;gap:8px">
@@ -4874,7 +4919,46 @@ function renderVoiceSettings(){
           </div>
           <button class="btn btn-outline btn-sm" onclick="previewVoice('${o.v}')">🔊 ฟัง</button>
         </div>`).join('')}
-    `:''}`;
+    `:''}
+    ${_renderKeySection()}`;
+}
+// API-key manager: primary + backup keys (each has its own free quota → rotate on 429).
+function _renderKeySection(){
+  const primary = localStorage.getItem(_GEMINI_KEY_LS) || '';
+  let extra=[]; try{ extra=JSON.parse(localStorage.getItem('ws_gemini_keys_extra')||'[]'); }catch(e){}
+  const mask=k=>k.length>10?(k.slice(0,6)+'••••'+k.slice(-4)):'••••••';
+  const row=(label,val,btn)=>`<div class="vc-voice"><div style="flex:1"><span style="font-weight:800;color:var(--text)">${label}</span> <span style="font-family:monospace;font-size:11.5px;color:var(--muted)">${mask(val)}</span></div>${btn}</div>`;
+  return `
+    <div class="vc-pick-ttl" style="margin-top:22px">🔑 API keys — เพิ่มโควตาเสียง AI</div>
+    <div style="font-size:12px;color:var(--muted);line-height:1.6;margin-bottom:10px">แต่ละ key มีโควตาฟรี<b>แยกกัน</b> — ใส่หลาย key (จากหลายบัญชี Google) พอ key แรกเต็ม ระบบจะสลับไปใช้ key ถัดไปให้<b>อัตโนมัติ</b> ทำให้เสียง AI ใช้ได้นานขึ้นมาก · <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener">ขอ key ฟรีเพิ่ม</a></div>
+    ${primary?row('หลัก',primary,`<button class="btn btn-outline btn-sm" onclick="clearPrimaryKey()">✕ ลบ</button>`):`<div style="font-size:12.5px;color:var(--coral);margin-bottom:8px">ยังไม่มี key หลัก</div>`}
+    ${extra.map((k,i)=>row('สำรอง '+(i+1),k,`<button class="btn btn-outline btn-sm" onclick="removeBackupKey(${i})">✕ ลบ</button>`)).join('')}
+    <div style="display:flex;gap:6px;margin-top:8px">
+      <input id="vc-newkey" class="ielts-mine-ta" style="min-height:auto;flex:1;margin:0" placeholder="วาง Gemini API key (AIza...)">
+      <button class="btn btn-primary btn-sm" onclick="addBackupKey()">➕ เพิ่ม</button>
+    </div>`;
+}
+function addBackupKey(){
+  const inp=document.getElementById('vc-newkey'); const k=inp?inp.value.trim():'';
+  if(!k){ if(inp) inp.focus(); return; }
+  if(!localStorage.getItem(_GEMINI_KEY_LS)){ localStorage.setItem(_GEMINI_KEY_LS,k); }
+  else {
+    let extra=[]; try{ extra=JSON.parse(localStorage.getItem('ws_gemini_keys_extra')||'[]'); }catch(e){}
+    if(k!==localStorage.getItem(_GEMINI_KEY_LS) && !extra.includes(k)) extra.push(k);
+    localStorage.setItem('ws_gemini_keys_extra', JSON.stringify(extra));
+  }
+  _gemKeyCursor=0; _ttsQuotaWarned=false; renderVoiceSettings();
+}
+function removeBackupKey(i){
+  let extra=[]; try{ extra=JSON.parse(localStorage.getItem('ws_gemini_keys_extra')||'[]'); }catch(e){}
+  extra.splice(i,1); localStorage.setItem('ws_gemini_keys_extra', JSON.stringify(extra));
+  _gemKeyCursor=0; renderVoiceSettings();
+}
+function clearPrimaryKey(){
+  let extra=[]; try{ extra=JSON.parse(localStorage.getItem('ws_gemini_keys_extra')||'[]'); }catch(e){}
+  if(extra.length){ localStorage.setItem(_GEMINI_KEY_LS, extra.shift()); localStorage.setItem('ws_gemini_keys_extra', JSON.stringify(extra)); }
+  else localStorage.removeItem(_GEMINI_KEY_LS);
+  _gemKeyCursor=0; renderVoiceSettings();
 }
 // Selecting only sets the value (no API call). The AI voice model has a low free-tier
 // quota, so we only fetch audio when the user explicitly taps a 🔊 preview button —
