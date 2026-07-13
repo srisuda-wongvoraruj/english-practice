@@ -2564,7 +2564,7 @@ CATS.forEach(c=>{ if(c && REPLYQ[c.id]) c.reply=REPLYQ[c.id]; });
 // ═══════════════════════════════════════════════
 // STATE
 // ═══════════════════════════════════════════════
-const APP_VER='13ก.ค.2026-11';
+const APP_VER='14ก.ค.2026-1';
 
 const S = {
   catId:null, mode:null, exList:[], exIdx:0, scores:[],
@@ -4685,9 +4685,11 @@ function _initVoices(){
 // by text so repeated phrases don't re-spend quota. Any error/quota → fall back to
 // the device voice instantly, so audio never goes silent.
 let _ttsMode  = localStorage.getItem('ws_tts_mode')  || 'device'; // 'device' | 'ai'
-let _ttsVoice = localStorage.getItem('ws_tts_voice') || 'Puck';
-let _ttsStyle = localStorage.getItem('ws_tts_style') || 'casual';
-const _ttsCache = new Map();   // "voice|accent|style|text" -> WAV ArrayBuffer
+// Fixed voice: user tried the accent/style/voice pickers and found the non-American
+// accents unconvincing — simplified to one bright, casual American voice, no picker.
+const _TTS_VOICE = 'Leda';
+const _TTS_DIRECTIVE = 'Say the following with a standard American English accent, in a relaxed, upbeat, cheerful tone, like a character chatting casually in a TV series';
+const _ttsCache = new Map();   // "text" -> WAV ArrayBuffer
 let _curAudio = null;          // currently-playing AI-voice <audio> (desktop fallback)
 // iOS Safari blocks audio that starts after an async gap (our TTS fetch) unless audio
 // was unlocked by a user gesture. We prime an AudioContext + speechSynthesis on the
@@ -4709,47 +4711,6 @@ function _unlockAudio(){
 }
 document.addEventListener('touchend', _unlockAudio, {passive:true});
 document.addEventListener('click',    _unlockAudio, {passive:true});
-const AI_VOICES=[
-  {v:'Puck',   th:'สดใส เป็นกันเอง (ยอดนิยม)'},
-  {v:'Leda',   th:'สดใส วัยรุ่น'},
-  {v:'Aoede',  th:'นุ่ม ชิลๆ'},
-  {v:'Achird', th:'อบอุ่น เป็นมิตร'},
-  {v:'Zephyr', th:'สดใส มีพลัง'},
-  {v:'Callirrhoe', th:'สบายๆ ไม่เร่งรีบ'},
-  {v:'Kore',   th:'ชัดเจน หนักแน่น (หญิง)'},
-  {v:'Charon', th:'ทุ้ม น่าเชื่อถือ (ชาย)'},
-];
-// Style/accent = natural-language delivery directive prepended to the text. Gemini TTS
-// treats the leading "Say the following ... : <content>" as an instruction (not spoken),
-// so a tone clause gives a casual series/YouTuber vibe and an accent clause makes the
-// SAME voice speak English with a chosen accent (great for listening practice).
-// Both are stored as CLAUSES and combined by _ttsDirective().
-const TTS_STYLES=[
-  {k:'casual',   th:'🎬 คุยเล่นสบายๆ (เหมือนซีรีส์)', pre:'in a relaxed, natural, everyday conversational tone, like a character chatting casually in a TV series'},
-  {k:'youtuber', th:'🎥 ยูทูปเบอร์ สดใสมีพลัง',        pre:'in an upbeat, friendly, energetic tone, like a popular YouTuber talking to their audience'},
-  {k:'plain',    th:'🗣️ ชัดถ้อยชัดคำ (ฝึกออกเสียง)',   pre:'clearly and naturally at a steady, easy-to-follow pace'},
-];
-// Accent applied to the AI voice via prompt (device voices can't do most of these).
-const TTS_ACCENTS=[
-  {k:'none',       th:'ปกติ',          clause:''},
-  {k:'american',   th:'🇺🇸 American',   clause:'with a standard American English accent'},
-  {k:'british',    th:'🇬🇧 British',    clause:'with a British English (Received Pronunciation) accent'},
-  {k:'indian',     th:'🇮🇳 Indian',     clause:'with an Indian English accent'},
-  {k:'french',     th:'🇫🇷 French',     clause:'with a French accent, as a French person speaking English'},
-  {k:'malaysian',  th:'🇲🇾 Malaysian',  clause:'with a Malaysian English accent'},
-  {k:'japanese',   th:'🇯🇵 Japanese',   clause:'with a Japanese accent, as a Japanese person speaking English'},
-  {k:'hongkong',   th:'🇭🇰 Hong Kong',  clause:'with a Hong Kong accent, as a Cantonese speaker speaking English'},
-  {k:'vietnamese', th:'🇻🇳 Vietnamese', clause:'with a Vietnamese accent, as a Vietnamese person speaking English'},
-];
-let _ttsAccent = localStorage.getItem('ws_tts_accent') || 'none';
-function _ttsDirective(){
-  const acc=(TTS_ACCENTS.find(a=>a.k===_ttsAccent)||{}).clause;
-  const sty=(TTS_STYLES.find(s=>s.k===_ttsStyle)||{}).pre;
-  let d='Say the following';
-  if(acc) d+=' '+acc;
-  if(sty) d+=(acc?', and ':' ')+sty;
-  return d;
-}
 function _b64ToBytes(b64){
   const bin=atob(b64), len=bin.length, out=new Uint8Array(len);
   for(let i=0;i<len;i++) out[i]=bin.charCodeAt(i);
@@ -4785,16 +4746,16 @@ function _idbGet(k){ return _idb().then(db=>{ if(!db) return null;
 function _idbPut(k,buf){ return _idb().then(db=>{ if(!db) return;
   try{ db.transaction('wav','readwrite').objectStore('wav').put(buf,k); }catch(e){} }); }
 
-function _gemTTS(text, voice){
+function _gemTTS(text){
   const keys=_gemKeyList(); if(!keys.length) return Promise.reject({code:'nokey'});
-  const ck=voice+'|'+_ttsAccent+'|'+_ttsStyle+'|'+text;
+  const ck=text;
   if(_ttsCache.has(ck)) return Promise.resolve(_ttsCache.get(ck));
   return _idbGet(ck).then(hit=>{
     if(hit){ _ttsCache.set(ck, hit); return hit; }
-    const sendText=_ttsDirective()+': '+text;
+    const sendText=_TTS_DIRECTIVE+': '+text;
     const body={contents:[{parts:[{text:sendText}]}],
       generationConfig:{responseModalities:['AUDIO'],
-        speechConfig:{voiceConfig:{prebuiltVoiceConfig:{voiceName:voice}}}}};
+        speechConfig:{voiceConfig:{prebuiltVoiceConfig:{voiceName:_TTS_VOICE}}}}};
     // rotate through keys: each key's own quota extends how long AI voice works
     const tryKey=(k, lastErr)=>{
       if(k>=keys.length) return Promise.reject(lastErr||{code:'quota'});
@@ -4848,9 +4809,9 @@ function _playWavEl(wav, speed, onEnd, fallback){
     a.play().catch(()=>{ if(fallback) fallback(); });
   }catch(e){ if(fallback) fallback(); }
 }
-function _aiSpeak(text, voice, rate, onEnd, fallback){
+function _aiSpeak(text, rate, onEnd, fallback){
   stopSpeech();
-  _gemTTS(text, voice).then(wav=>{
+  _gemTTS(text).then(wav=>{
     if(_ttsMode!=='ai'){ if(onEnd)onEnd(); return; } // user switched off while loading
     _playWav(wav, rate, onEnd, fallback);
   }).catch(err=>{
@@ -4869,7 +4830,7 @@ function _deviceSpeak(text,rate,onEnd){
 }
 function speak(text,rate=1,onEnd){
   if(_ttsMode==='ai' && _gemKey()){
-    _aiSpeak(text, _ttsVoice, rate, onEnd, ()=>_deviceSpeak(text,rate,onEnd));
+    _aiSpeak(text, rate, onEnd, ()=>_deviceSpeak(text,rate,onEnd));
     return;
   }
   _deviceSpeak(text,rate,onEnd);
@@ -4912,25 +4873,8 @@ function renderVoiceSettings(){
     </div>
     ${ai&&!hasKey?`<div class="ielts-mine-err" style="margin-top:10px">⚠️ ยังไม่มี Gemini key — เสียง AI จะยังไม่ทำงาน ใส่ key ได้ที่หัวข้อ “🔑 API keys” ด้านล่างสุด</div>`:''}
     ${ai?`
-      <div class="vc-pick-ttl">สำเนียง (accent) — แตะเพื่อเลือก</div>
-      <div style="display:flex;flex-wrap:wrap;gap:8px">
-        ${TTS_ACCENTS.map(a=>`<button class="vc-style-chip ${_ttsAccent===a.k?'vc-on':''}" onclick="setTtsAccent('${a.k}')">${a.th}</button>`).join('')}
-      </div>
-      <div class="vc-pick-ttl">สไตล์การพูด — แตะเพื่อเลือก</div>
-      <div style="display:flex;flex-wrap:wrap;gap:8px">
-        ${TTS_STYLES.map(s=>`<button class="vc-style-chip ${_ttsStyle===s.k?'vc-on':''}" onclick="setTtsStyle('${s.k}')">${s.th}</button>`).join('')}
-      </div>
-      <button class="btn btn-primary" style="width:100%;margin:16px 0 6px" onclick="previewVoice(_ttsVoice)">🔊 ฟังตัวอย่างที่เลือก (สำเนียง+สไตล์+เสียง)</button>
-      <div id="vc-note" style="font-size:12.5px;color:var(--muted);margin-bottom:6px;line-height:1.6">แตะเลือกสำเนียง/สไตล์/เสียงก่อน แล้วกดปุ่มด้านบนเพื่อฟัง · เสียง AI (ฟรี) มีโควตาจำกัดต่อวัน ถ้าเล่นไม่ออก=โควตาหมด ระบบจะใช้เสียงเครื่องแทนให้เอง</div>
-      <div class="vc-pick-ttl">เลือกเสียง — แตะชื่อ = เลือก · กด 🔊 = ฟังเสียงนั้น</div>
-      ${AI_VOICES.map(o=>`
-        <div class="vc-voice ${_ttsVoice===o.v?'vc-on':''}">
-          <div onclick="setTtsVoice('${o.v}')" style="flex:1;cursor:pointer">
-            <div style="font-weight:800;color:var(--text)">${o.v} ${_ttsVoice===o.v?'✓':''}</div>
-            <div class="ac-topic-sub">${o.th}</div>
-          </div>
-          <button class="btn btn-outline btn-sm" onclick="previewVoice('${o.v}')">🔊 ฟัง</button>
-        </div>`).join('')}
+      <button class="btn btn-primary" style="width:100%;margin:16px 0 6px" onclick="previewVoice()">🔊 ฟังตัวอย่างเสียง</button>
+      <div id="vc-note" style="font-size:12.5px;color:var(--muted);margin-bottom:6px;line-height:1.6">เสียง AI (ฟรี) มีโควตาจำกัดต่อวัน ถ้าเล่นไม่ออก=โควตาหมด ระบบจะใช้เสียงเครื่องแทนให้เอง · 📱 iPhone: เช็คสวิตช์ปิดเสียงข้างเครื่อง (Ring/Silent) ต้องไม่ใช่สีแดง — iOS จะเงียบเสียงเว็บทุกชนิดถ้าสวิตช์นี้เปิดอยู่ ไม่เกี่ยวกับแอป</div>
     `:''}
     ${_renderKeySection()}`;
 }
@@ -5037,28 +4981,20 @@ function addBackupKeysBulk(){
   const msg=document.getElementById('gk-bulk-msg');
   if(msg) msg.innerHTML = msgHtml;
 }
-// Selecting only sets the value (no API call). The AI voice model has a low free-tier
-// quota, so we only fetch audio when the user explicitly taps a 🔊 preview button —
-// otherwise exploring the pickers would burn the whole quota in a few taps.
 function setTtsMode(m){ _ttsMode=m; localStorage.setItem('ws_tts_mode',m); _ttsQuotaWarned=false; renderVoiceSettings(); }
-function setTtsVoice(v){ _ttsVoice=v; localStorage.setItem('ws_tts_voice',v); renderVoiceSettings(); }
-function setTtsStyle(s){ _ttsStyle=s; localStorage.setItem('ws_tts_style',s); renderVoiceSettings(); }
-function setTtsAccent(a){ _ttsAccent=a; localStorage.setItem('ws_tts_accent',a); renderVoiceSettings(); }
-function previewVoice(v){
+function previewVoice(){
   const note=document.getElementById('vc-note');
-  const accTh=(TTS_ACCENTS.find(a=>a.k===_ttsAccent)||{}).th||'ปกติ';
-  const combo=`เสียง ${v} · สำเนียง ${accTh}`;
-  if(!_gemKey()){ if(note) note.innerHTML='⚠️ ต้องใส่ Gemini key ก่อน (หน้า “ล่ามทันใจ” หรือ IELTS)'; return; }
-  if(note) note.innerHTML='⏳ กำลังโหลด '+combo+' ...';
+  if(!_gemKey()){ if(note) note.innerHTML='⚠️ ต้องใส่ Gemini key ก่อน (หัวข้อ “🔑 API keys” ด้านล่าง)'; return; }
+  if(note) note.innerHTML='⏳ กำลังโหลดเสียงตัวอย่าง...';
   stopSpeech();
-  _gemTTS("Hi there! This is what I sound like. It's really nice to meet you.", v).then(wav=>{
-    if(note) note.innerHTML='🔊 กำลังเล่น: '+combo;
+  _gemTTS("Hi there! This is what I sound like. It's really nice to meet you.").then(wav=>{
+    if(note) note.innerHTML='🔊 กำลังเล่น...';
     _playWav(wav, 0.95,
-      ()=>{ if(note) note.innerHTML='✅ '+combo+' — ถ้าชอบ นี่คือเสียงที่จะใช้ในแบบฝึกทั้งหมด'; },
+      ()=>{ if(note) note.innerHTML='✅ เล่นแล้ว — ถ้าไม่ได้ยินเสียง เช็คสวิตช์ปิดเสียง/ระดับเสียงเครื่อง (ไม่ใช่ปัญหาแอป)'; },
       ()=>{ if(note) note.innerHTML='❌ เล่นเสียงไม่ได้ — แตะจอ 1 ที แล้วลองใหม่ หรือใช้เสียงเครื่อง'; });
   }).catch(err=>{
     if(!note) return;
-    note.innerHTML = (err&&err.code==='quota') ? '❌ โควตาเสียง AI วันนี้หมดแล้ว (โมเดลฟรีมีลิมิตต่อวัน) — นี่คือสาเหตุที่ฟังได้แค่บางสำเนียง และแบบฝึกใช้เสียงเครื่องแทน · รอพรุ่งนี้ค่อยลองใหม่ หรือใช้เสียงเครื่องไปก่อน'
+    note.innerHTML = (err&&err.code==='quota') ? '❌ โควตาเสียง AI วันนี้หมดแล้ว — เพิ่ม key สำรองได้ที่ด้านล่าง หรือรอพรุ่งนี้ค่อยลองใหม่'
       : (err&&(err.code==='badkey'||err.code==='nokey')) ? '❌ Gemini key ใช้ไม่ได้ — ตรวจสอบ key อีกครั้ง'
       : '❌ โหลดเสียงไม่สำเร็จ (โมเดลเสียงอาจไม่รองรับกับ key/ภูมิภาคนี้) — ใช้เสียงในเครื่องไปก่อนได้';
   });
