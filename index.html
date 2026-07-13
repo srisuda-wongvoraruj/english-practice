@@ -802,6 +802,60 @@ body{
 }
 .phrase-item-en{font-weight:700;color:var(--text);margin-bottom:3px}
 .phrase-item-tip{color:var(--text2);font-size:12px}
+/* ── AI FREE TALK ── */
+.at-level-row{display:flex;gap:8px;padding:0 16px 14px}
+.at-level-chip{
+  flex:1;border:2px solid var(--border);background:var(--surface);
+  border-radius:14px;padding:9px 6px;text-align:center;cursor:pointer;
+  font-size:12px;font-weight:800;color:var(--text2);transition:all .15s;
+}
+.at-level-chip.sel{border-color:#7C5CFC;background:#F0EBFF;color:#5E3FD6}
+.at-level-chip .at-level-sub{display:block;font-size:10px;font-weight:600;opacity:.7;margin-top:2px}
+.at-input-zone{
+  position:sticky;bottom:0;background:var(--bg);
+  padding:10px 16px 14px;border-top:2px solid var(--border);
+}
+.at-input-row{display:flex;align-items:center;gap:10px;justify-content:center}
+.at-rec-btn{
+  width:60px;height:60px;border-radius:50%;border:none;flex-shrink:0;
+  background:linear-gradient(180deg,#7C5CFC,#5E3FD6);
+  color:#fff;font-size:26px;cursor:pointer;
+  box-shadow:0 4px 0 #3d2499;
+  display:flex;align-items:center;justify-content:center;
+  transition:transform .1s,box-shadow .1s;
+}
+.at-rec-btn:active{transform:translateY(3px);box-shadow:0 1px 0 #3d2499}
+.at-rec-btn.rec{
+  background:linear-gradient(180deg,#FF4B4B,#cc0000);
+  box-shadow:0 4px 0 #8B0000;
+  animation:recPulse 1.2s ease-in-out infinite;
+}
+.at-side-btn{
+  width:44px;height:44px;border-radius:50%;border:2px solid var(--border);
+  background:var(--surface);font-size:18px;cursor:pointer;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;color:var(--text2);
+}
+.at-rec-lbl{font-size:12px;font-weight:700;color:var(--text2);text-align:center;margin-top:8px;min-height:16px;line-height:1.5}
+.at-rec-lbl.active{color:var(--red)}
+.at-type-row{display:flex;gap:8px;margin-top:4px}
+.at-type-input{
+  flex:1;border:2px solid var(--border);border-radius:14px;
+  padding:11px 14px;font-size:14px;font-family:inherit;background:var(--surface);color:var(--text);
+}
+.at-type-input:focus{outline:none;border-color:#7C5CFC}
+.at-fix-chip{
+  align-self:flex-end;max-width:82%;
+  background:var(--yellow-lt);border:1.5px solid #F5D06A;border-radius:12px;
+  padding:8px 12px;font-size:12px;line-height:1.55;color:#5a3c00;
+  animation:slideUp .3s ease;
+}
+.at-bubble-tools{display:flex;gap:10px;margin-top:5px;padding-left:4px}
+.at-tool{background:transparent;border:none;font-size:11px;font-weight:700;color:var(--muted);cursor:pointer;padding:0;text-decoration:underline}
+.at-th{display:none;font-size:12.5px;color:var(--text2);background:var(--surface);border:1.5px solid var(--border);border-radius:10px;padding:7px 12px;margin-top:6px;line-height:1.5}
+.at-end-btn{
+  background:transparent;border:2px solid #7C5CFC;color:#5E3FD6;
+  border-radius:100px;padding:8px 16px;font-size:12px;font-weight:800;cursor:pointer;flex-shrink:0;
+}
 /* ── DIALOGUE LISTENING ── */
 .listen-teaser{background:linear-gradient(135deg,#89B4F7,#9B7FE8);border-radius:18px;padding:14px 16px;margin:0 16px;display:flex;align-items:center;gap:12px;cursor:pointer;color:#fff;box-shadow:var(--shadow-md)}
 .listen-teaser-icon{font-size:30px}
@@ -908,6 +962,58 @@ body{
   <div id="chat-turn-zone"></div>
 </div>
 
+<!-- ══════════════ AI FREE TALK: SETUP ══════════════ -->
+<div id="screen-aitalk-setup" class="screen">
+  <div class="hero">
+    <div class="hero-row">
+      <button class="back-btn" onclick="showScreen('home')">← Back</button>
+    </div>
+    <div style="margin-top:12px">
+      <div style="font-size:36px">🤖</div>
+      <div class="app-title" style="margin-top:6px">คุยสดกับ AI</div>
+      <div class="app-sub">สนทนาอิสระ ไม่มีบท — AI สวมบทบาทคุยกับคุณจริงๆ แล้วสรุปจุดที่ควรแก้ตอนจบ</div>
+    </div>
+  </div>
+  <div style="padding:14px 0 4px">
+    <div class="sec-title" style="padding-top:0">ระดับความยาก</div>
+    <div class="at-level-row" id="at-level-row"></div>
+    <div class="sec-title" style="padding-top:2px">เลือกสถานการณ์ แล้วเริ่มคุยเลย</div>
+    <div class="scenario-grid" id="at-role-grid"></div>
+  </div>
+  <div style="height:20px"></div>
+</div>
+
+<!-- ══════════════ AI FREE TALK: CHAT ══════════════ -->
+<div id="screen-aitalk" class="screen">
+  <div class="chat-hdr">
+    <div class="chat-hdr-row">
+      <button class="back-btn" id="at-back">← Back</button>
+      <div class="buddy-ava"><span id="at-buddy-emoji">🤖</span><div class="online-dot"></div></div>
+      <div class="buddy-hdr-info">
+        <div class="buddy-hdr-name" id="at-buddy-name"></div>
+        <div class="buddy-hdr-status">🤖 AI — คุยได้อิสระ ไม่มีบท</div>
+      </div>
+      <div class="turn-badge" id="at-turn-badge">0 เทิร์น</div>
+    </div>
+    <div class="scenario-tag" id="at-scenario-tag"></div>
+  </div>
+  <div class="chat-body" id="at-body"></div>
+  <div id="at-final"></div>
+  <div class="at-input-zone" id="at-input-zone">
+    <div class="at-input-row">
+      <button class="at-side-btn" id="at-type-btn" title="พิมพ์แทนพูด">⌨️</button>
+      <button class="at-rec-btn" id="at-rec-btn">🎤</button>
+      <button class="at-end-btn" id="at-end-btn" style="visibility:hidden">🏁 จบ + ดูผล</button>
+    </div>
+    <div class="at-type-row" id="at-type-row" style="display:none">
+      <input class="at-type-input" id="at-type-input" placeholder="พิมพ์ภาษาอังกฤษที่นี่..." autocomplete="off">
+      <button class="btn btn-primary btn-sm" id="at-type-send" style="border-radius:14px">ส่ง</button>
+    </div>
+    <div class="at-rec-lbl" id="at-rec-lbl">กดไมค์แล้วพูดภาษาอังกฤษ · กด ⏹ เมื่อพูดจบ</div>
+    <div id="at-key-zone"></div>
+  </div>
+</div>
+
 <!-- ══════════════ HOME ══════════════ -->
 <div id="screen-home" class="screen active">
   <div class="hero">
@@ -960,6 +1066,12 @@ body{
     <div class="quest-txt"><div class="quest-ttl">ล่ามทันใจ · พูดไทย ➜ English</div>
     <div class="quest-sub">พูดไทยใส่ไมค์ → ได้ประโยคอังกฤษ + เสียงอ่านทันที</div></div>
     <div class="quest-go">▶</div>
+  </div>
+  <div class="quest itp-card" style="background:linear-gradient(135deg,#2D1B69,#7C5CFC)" onclick="showScreen('aitalk-setup')">
+    <div class="quest-ico">🤖</div>
+    <div class="quest-txt"><div class="quest-ttl" style="color:#fff">คุยสดกับ AI · ไม่มีบท</div>
+    <div class="quest-sub" style="color:rgba(255,255,255,.85)">AI สวมบทบาทคุยโต้ตอบจริง + สรุปจุดที่ควรแก้ตอนจบ</div></div>
+    <div class="quest-go" style="color:#fff">▶</div>
   </div>
 
   <div class="sec-title">เลือกหัวข้อที่อยากฝึก</div>
@@ -2403,7 +2515,7 @@ CATS.forEach(c=>{ if(c && REPLYQ[c.id]) c.reply=REPLYQ[c.id]; });
 // ═══════════════════════════════════════════════
 // STATE
 // ═══════════════════════════════════════════════
-const APP_VER='13ก.ค.2026-1';
+const APP_VER='13ก.ค.2026-2 · เพิ่มคุยสดกับ AI';
 
 const S = {
   catId:null, mode:null, exList:[], exIdx:0, scores:[],
@@ -2598,6 +2710,7 @@ function showScreen(id) {
   if(id==='scenarios') renderScenarios();
   if(id==='notes')     renderNotes();
   if(id==='dlg-list')  renderDlgList();
+  if(id==='aitalk-setup') renderAiTalkSetup();
 }
 
 // ═══════════════════════════════════════════════
@@ -3771,7 +3884,8 @@ const _ieEsc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt
 const _ieErrBox=msg=>`<div class="ielts-mine-err">${msg}<br><button class="btn btn-outline btn-sm" style="margin-top:8px" onclick="ieGenerateMine()">🔁 ลองใหม่</button></div>`;
 
 // generic Gemini call with the same model-fallback chain; resolves {text, model}
-function _gemGenerate(prompt){
+function _gemGenerate(prompt,opts){
+  opts=opts||{};
   const key=_gemKey();
   if(!key) return Promise.reject({code:'nokey'});
   const tryAt=i=>{
@@ -3779,7 +3893,7 @@ function _gemGenerate(prompt){
     const model=_GEMINI_MODELS[i];
     const url='https://generativelanguage.googleapis.com/v1beta/models/'+model+':generateContent?key='+encodeURIComponent(key);
     return fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({contents:[{parts:[{text:prompt}]}],generationConfig:{temperature:0.7,maxOutputTokens:700}})})
+      body:JSON.stringify({contents:[{parts:[{text:prompt}]}],generationConfig:{temperature:opts.temperature!=null?opts.temperature:0.7,maxOutputTokens:opts.maxTokens||700}})})
       .then(r=>r.json().then(j=>({ok:r.ok,status:r.status,j})))
       .then(({ok,status,j})=>{
         if(!ok){
@@ -4590,6 +4704,371 @@ function finishChat() {
       <button class="btn btn-ghost btn-full" onclick="showScreen('scenarios')">← เลือกสถานการณ์ใหม่</button>
     </div>`;
   zone.scrollIntoView({behavior:'smooth'});
+}
+
+// ═══════════════════════════════════════════════
+// AI FREE TALK — คุยสดกับ AI (Gemini) ไม่มีบท
+// ═══════════════════════════════════════════════
+const AT_LEVELS=[
+  {id:'easy', name:'🌱 ง่าย', sub:'ประโยคสั้น พูดช้า', rate:0.85,
+   prompt:'Use short, simple sentences (max ~12 words each) and only very common everyday words. One question at a time.'},
+  {id:'mid', name:'🌿 กลาง', sub:'บทสนทนาทั่วไป', rate:0.95,
+   prompt:'Use natural everyday conversational English, 1-2 sentences per reply.'},
+  {id:'hard', name:'🌳 ยาก', sub:'เหมือนเจ้าของภาษา', rate:1.0,
+   prompt:'Speak like a fast casual native speaker: idioms, phrasal verbs, 2-3 sentences per reply.'},
+];
+const AT_ROLES=[
+  {id:'coffee', icon:'☕', name:'Small talk ออฟฟิศ', desc:'คุยเล่นกับเพื่อนร่วมงานต่างชาติ',
+   buddy:'Emma', emoji:'👩‍💼', bg:'linear-gradient(135deg,#7B5FD0,#9B7FE8)',
+   persona:'Emma, a friendly foreign coworker chatting casually at the office coffee corner',
+   opener:"Hey! Perfect timing — I was just making some coffee. How's your day going so far?"},
+  {id:'meeting', icon:'💼', name:'ประชุมกับลูกค้า', desc:'อัปเดตงานกับลูกค้าต่างชาติ',
+   buddy:'James', emoji:'🧑‍💼', bg:'linear-gradient(135deg,#4D96FF,#6BB5FF)',
+   persona:'James, a polite but businesslike foreign client on a video call, asking about project progress',
+   opener:"Hi, thanks for jumping on the call. So, could you give me a quick update on how the project is going?"},
+  {id:'interview', icon:'🎯', name:'สัมภาษณ์งาน', desc:'ตอบคำถามสัมภาษณ์เป็นอังกฤษ',
+   buddy:'David', emoji:'👨‍💻', bg:'linear-gradient(135deg,#FF6B9D,#FF9500)',
+   persona:'David, a warm but professional hiring manager interviewing the learner for a job they want',
+   opener:"Thanks for coming in today! Before we dive into the details — could you tell me a little about yourself?"},
+  {id:'hotel', icon:'🏨', name:'เช็คอินโรงแรม', desc:'คุยกับพนักงานโรงแรมตอนเที่ยว',
+   buddy:'Sarah', emoji:'💁‍♀️', bg:'linear-gradient(135deg,#58CC02,#7DDC2E)',
+   persona:'Sarah, a helpful hotel front-desk receptionist checking the learner in as a guest',
+   opener:"Good evening, welcome to the Riverside Hotel! Do you have a reservation with us tonight?"},
+  {id:'restaurant', icon:'🍽️', name:'สั่งอาหาร', desc:'สั่งอาหาร ถามเมนู ในร้านอาหาร',
+   buddy:'Marco', emoji:'🧑‍🍳', bg:'linear-gradient(135deg,#FF9500,#FFD93D)',
+   persona:'Marco, a cheerful waiter at a casual western restaurant taking the learner\'s order',
+   opener:"Hi there, welcome! Here's the menu. Can I get you something to drink while you decide?"},
+  {id:'airport', icon:'🛂', name:'ตม. สนามบิน', desc:'ตอบคำถามตรวจคนเข้าเมือง',
+   buddy:'Officer Chen', emoji:'👮', bg:'linear-gradient(135deg,#2D1B69,#5E3FD6)',
+   persona:'Officer Chen, a firm but fair immigration officer at an international airport interviewing the learner as an arriving traveler',
+   opener:"Good morning. Passport, please. What's the purpose of your visit?"},
+  {id:'shopping', icon:'🛍️', name:'ช้อปปิ้ง', desc:'ถามของ ลองของ ต่อรองราคา',
+   buddy:'Lily', emoji:'🙋‍♀️', bg:'linear-gradient(135deg,#FF6B9D,#C86BFF)',
+   persona:'Lily, a friendly shop assistant in a clothing store helping the learner find what they need',
+   opener:"Hi! Welcome to the store. Are you looking for anything in particular today?"},
+  {id:'free', icon:'💭', name:'คุยอิสระ', desc:'เพื่อนคุยได้ทุกเรื่อง คุณเลือกหัวข้อเอง',
+   buddy:'Alex', emoji:'😄', bg:'linear-gradient(135deg,#0d9488,#2dd4bf)',
+   persona:'Alex, the learner\'s easygoing foreign friend, happy to chat about absolutely anything the learner brings up',
+   opener:"Hey, good to see you! I feel like we haven't caught up in a while. What's new with you?"},
+];
+const _AT_LEVEL_LS='ws_atlevel';
+const AT={role:null,level:null,hist:[],turns:0,busy:false,ended:false,recog:null,isRec:false,final:'',interim:''};
+
+function renderAiTalkSetup(){
+  const sel=localStorage.getItem(_AT_LEVEL_LS)||'mid';
+  document.getElementById('at-level-row').innerHTML=AT_LEVELS.map(l=>`
+    <div class="at-level-chip ${l.id===sel?'sel':''}" onclick="atSetLevel('${l.id}')">${l.name}<span class="at-level-sub">${l.sub}</span></div>`).join('');
+  document.getElementById('at-role-grid').innerHTML=AT_ROLES.map(r=>`
+    <div class="scenario-card" style="background:${r.bg};box-shadow:0 6px 18px rgba(45,27,105,.25)" onclick="atStart('${r.id}')">
+      <span class="scenario-ico">${r.icon}</span>
+      <div class="scenario-name">${r.name}</div>
+      <div class="scenario-desc">${r.desc}</div>
+    </div>`).join('');
+}
+function atSetLevel(id){ localStorage.setItem(_AT_LEVEL_LS,id); renderAiTalkSetup(); }
+
+function atStart(roleId){
+  const role=AT_ROLES.find(r=>r.id===roleId); if(!role) return;
+  AT.role=role;
+  AT.level=AT_LEVELS.find(l=>l.id===(localStorage.getItem(_AT_LEVEL_LS)||'mid'))||AT_LEVELS[1];
+  AT.hist=[]; AT.turns=0; AT.busy=false; AT.ended=false; atStopRec(true);
+  document.getElementById('at-buddy-emoji').textContent=role.emoji;
+  document.getElementById('at-buddy-name').textContent=role.buddy;
+  document.getElementById('at-scenario-tag').textContent=role.icon+' '+role.name+' · '+AT.level.name;
+  document.getElementById('at-turn-badge').textContent='0 เทิร์น';
+  document.getElementById('at-body').innerHTML='';
+  document.getElementById('at-final').innerHTML='';
+  document.getElementById('at-key-zone').innerHTML='';
+  document.getElementById('at-input-zone').style.display='block';
+  document.getElementById('at-end-btn').style.visibility='hidden';
+  document.getElementById('at-type-row').style.display='none';
+  document.getElementById('at-back').onclick=()=>{atStopRec(true);stopSpeech();showScreen('aitalk-setup')};
+  document.getElementById('at-rec-btn').onclick=atToggleRec;
+  document.getElementById('at-end-btn').onclick=atEnd;
+  document.getElementById('at-type-btn').onclick=()=>{
+    const row=document.getElementById('at-type-row');
+    row.style.display=row.style.display==='none'?'flex':'none';
+    if(row.style.display==='flex') document.getElementById('at-type-input').focus();
+  };
+  document.getElementById('at-type-send').onclick=atSendTyped;
+  document.getElementById('at-type-input').onkeydown=e=>{if(e.key==='Enter')atSendTyped();};
+  const lbl=document.getElementById('at-rec-lbl');
+  lbl.classList.remove('active'); lbl.textContent='กดไมค์แล้วพูดภาษาอังกฤษ · กด ⏹ เมื่อพูดจบ';
+  showScreen('aitalk');
+  AT.hist.push({who:'ai',text:role.opener,th:'',hint:''});
+  atAddAiBubble(role.opener,'','',AT.hist.length-1);
+  setTimeout(()=>speak(role.opener,AT.level.rate),300);
+}
+
+function atSendTyped(){
+  const inp=document.getElementById('at-type-input');
+  const t=inp.value.trim(); if(!t) return;
+  inp.value='';
+  atUserSaid(t);
+}
+
+// ── bubbles ──
+function atAddAiBubble(reply,replyTh,hint,idx){
+  const body=document.getElementById('at-body');
+  const div=document.createElement('div');
+  div.className='bubble bubble-buddy';
+  div.innerHTML=`
+    <div class="bubble-name">${_ieEsc(AT.role.buddy)}</div>
+    <div class="bubble-inner">${_ieEsc(reply)}</div>
+    <div class="at-bubble-tools">
+      <button class="at-tool" onclick="atReplay(${idx})">🔊 ฟังอีกครั้ง</button>
+      ${replyTh?`<button class="at-tool" onclick="atToggle(this,'th')">🇹🇭 คำแปล</button>`:''}
+      ${hint?`<button class="at-tool" onclick="atToggle(this,'hint')">💡 ช่วยตอบ</button>`:''}
+    </div>
+    ${replyTh?`<div class="at-th" data-k="th">${_ieEsc(replyTh)}</div>`:''}
+    ${hint?`<div class="at-th" data-k="hint">💡 ลองตอบว่า: "${_ieEsc(hint)}"<button class="at-tool" style="margin-left:6px" onclick="atSpeakHint(this)">🔊</button></div>`:''}`;
+  body.appendChild(div);
+  div.scrollIntoView({behavior:'smooth',block:'end'});
+}
+function atToggle(btn,k){
+  const box=btn.closest('.bubble').querySelector(`.at-th[data-k="${k}"]`);
+  if(box) box.style.display=box.style.display==='block'?'none':'block';
+}
+function atSpeakHint(btn){
+  const t=btn.parentElement.textContent.match(/"([^"]+)"/);
+  if(t) speak(t[1],0.9);
+}
+function atReplay(i){ const m=AT.hist[i]; if(m&&m.who==='ai') speak(m.text,AT.level.rate); }
+function atAddUserBubble(text){
+  const body=document.getElementById('at-body');
+  const div=document.createElement('div');
+  div.className='bubble bubble-user';
+  div.innerHTML=`<div class="bubble-inner">${_ieEsc(text)}</div>`;
+  body.appendChild(div);
+  div.scrollIntoView({behavior:'smooth',block:'end'});
+}
+function atAddFixChip(fix,fixTh){
+  const body=document.getElementById('at-body');
+  const div=document.createElement('div');
+  div.className='at-fix-chip';
+  div.innerHTML=`✏️ <b>พูดแบบนี้เป๊ะกว่า:</b> "${_ieEsc(fix)}" <button class="at-tool" onclick="speak(${JSON.stringify(fix).replace(/"/g,'&quot;')},0.9)">🔊</button>${fixTh?`<br><span style="opacity:.8">${_ieEsc(fixTh)}</span>`:''}`;
+  body.appendChild(div);
+  div.scrollIntoView({behavior:'smooth',block:'end'});
+}
+function atTyping(on,msg){
+  let el=document.getElementById('at-typing');
+  if(el) el.remove();
+  if(!on) return;
+  const body=document.getElementById('at-body');
+  el=document.createElement('div');
+  el.id='at-typing'; el.className='bubble bubble-buddy';
+  el.innerHTML=`<div class="bubble-inner" style="color:var(--muted)">${msg||'กำลังพิมพ์'}<span class="ie-dots"></span></div>`;
+  body.appendChild(el);
+  el.scrollIntoView({behavior:'smooth',block:'end'});
+}
+
+// ── conversation flow ──
+function atUserSaid(text){
+  if(AT.busy||AT.ended||!AT.role) return;
+  atAddUserBubble(text);
+  AT.hist.push({who:'me',text});
+  AT.turns++;
+  document.getElementById('at-turn-badge').textContent=AT.turns+' เทิร์น';
+  if(AT.turns>=2) document.getElementById('at-end-btn').style.visibility='visible';
+  _atCallAI();
+}
+
+function _atPrompt(){
+  const role=AT.role,lvl=AT.level;
+  const hist=AT.hist.slice(-20).map(m=>(m.who==='ai'?role.buddy:'Learner')+': '+m.text).join('\n');
+  const wrap=AT.turns>=8?'\nThe conversation is getting long — start wrapping it up naturally within your next 1-2 replies.':'';
+  return `You are role-playing inside a spoken-English practice app for a Thai learner.
+Your character: ${role.persona}. Stay fully in character — never mention being an AI, never lecture, never switch to Thai in "reply".
+Language level for your replies: ${lvl.prompt}${wrap}
+Your reply must be natural SPOKEN English and end with a question or prompt that invites the learner to keep talking.
+
+Conversation so far:
+${hist}
+
+The learner's last line is a raw speech-recognition transcript — ignore missing punctuation/casing; judge only real grammar or word-choice errors.
+
+Return ONLY strict JSON (no markdown, no code fences) with exactly these keys:
+{"reply":"your next line in English",
+"replyTh":"คำแปลภาษาไทยของ reply",
+"hint":"one short example English sentence the learner could answer with",
+"fix":"if the learner's last line had a clear grammar or word-choice error: the corrected natural English version of their whole line, otherwise null",
+"fixTh":"ถ้ามี fix: อธิบายจุดที่แก้สั้นๆ เป็นภาษาไทย, otherwise null"}`;
+}
+
+function _atParse(t){
+  try{
+    let s=String(t).trim().replace(/^```(?:json)?/i,'').replace(/```$/,'').trim();
+    const a=s.indexOf('{'),b=s.lastIndexOf('}');
+    if(a===-1||b<=a) return null;
+    const j=JSON.parse(s.slice(a,b+1));
+    return j&&j.reply?j:null;
+  }catch(e){return null;}
+}
+
+function _atCallAI(){
+  if(AT.ended) return;
+  AT.busy=true;
+  document.getElementById('at-key-zone').innerHTML='';
+  atTyping(true);
+  _gemGenerate(_atPrompt(),{temperature:0.8,maxTokens:600}).then(({text})=>{
+    if(AT.ended) return;
+    AT.busy=false;
+    atTyping(false);
+    const j=_atParse(text)||{reply:String(text).replace(/^```(?:json)?/i,'').replace(/```$/,'').trim(),replyTh:'',hint:'',fix:null};
+    if(j.fix&&typeof j.fix==='string'&&j.fix.toLowerCase()!=='null'){
+      atAddFixChip(j.fix,j.fixTh&&j.fixTh!=='null'?j.fixTh:'');
+      saveNote({phrase:j.fix,context:'🤖 '+AT.role.name,tip:j.fixTh&&j.fixTh!=='null'?j.fixTh:'ประโยคที่แก้จากบทสนทนากับ AI'});
+    }
+    AT.hist.push({who:'ai',text:j.reply,th:j.replyTh||'',hint:j.hint||''});
+    atAddAiBubble(j.reply,j.replyTh&&j.replyTh!=='null'?j.replyTh:'',j.hint&&j.hint!=='null'?j.hint:'',AT.hist.length-1);
+    speak(j.reply,AT.level.rate);
+  }).catch(err=>{
+    AT.busy=false;
+    atTyping(false);
+    const zone=document.getElementById('at-key-zone');
+    if(err&&(err.code==='nokey'||err.code==='badkey')){
+      ieShowKeyForm(zone,err.code==='badkey',()=>{zone.innerHTML='';_atCallAI();});
+      return;
+    }
+    const msg=err&&err.code==='quota'?'โควต้า AI หมดชั่วคราว รอสักครู่แล้วลองใหม่':((err&&err.msg)||(err&&err.message)||'เชื่อมต่อไม่ได้');
+    zone.innerHTML=`<div class="ielts-mine-err" style="text-align:center;padding:6px 0">❌ ${_ieEsc(msg)}<br>
+      <button class="btn btn-outline btn-sm" style="margin-top:6px" onclick="_atCallAI()">🔁 ลองใหม่</button></div>`;
+  });
+}
+
+// ── end of conversation: AI coach feedback ──
+function atEnd(){
+  if(AT.ended||AT.busy||AT.turns<1) return;
+  AT.ended=true;
+  atStopRec(true); stopSpeech();
+  document.getElementById('at-input-zone').style.display='none';
+  atTyping(true,'🧑‍🏫 โค้ชกำลังสรุปผลการคุยของคุณ');
+  const transcript=AT.hist.map(m=>(m.who==='ai'?AT.role.buddy:'Learner')+': '+m.text).join('\n');
+  const prompt=`You are a friendly, encouraging English speaking coach for a Thai learner.
+The learner just finished this role-play conversation ("${AT.role.name}" — ${AT.role.persona}):
+
+${transcript}
+
+Evaluate ONLY the Learner's lines (raw speech-recognition transcripts — ignore punctuation/casing).
+Reply in EXACTLY this plain-text format, no markdown symbols:
+
+คะแนนรวม: <0-100> / 100
+
+จุดเด่น: <one short Thai sentence about what the learner did well>
+
+จุดที่ควรแก้ (สูงสุด 3 จุด):
+1) คุณพูด: "<their words>" → ควรพูด: "<better English>" — <เหตุผลสั้นๆ ภาษาไทย>
+
+ประโยคเด็ดน่าจำไปใช้:
+- "<useful natural English phrase fitting this situation>" — <คำแปลไทย>
+- "<another useful phrase>" — <คำแปลไทย>
+
+กำลังใจ: <one short encouraging Thai sentence>
+
+Rules: Thai for all explanations, English only inside quotes. If the learner made no real errors, say so in จุดที่ควรแก้. Be concise.`;
+  _gemGenerate(prompt,{temperature:0.5,maxTokens:800}).then(({text,model})=>{
+    atTyping(false);
+    S.xp+=30; saveData(); fireConfetti();
+    document.getElementById('at-final').innerHTML=`
+      <div class="convo-done">
+        <span class="convo-done-emoji">🎉</span>
+        <div style="font-size:22px;font-weight:900;color:var(--text)">จบบทสนทนา ${AT.turns} เทิร์น!</div>
+        <div style="font-size:14px;color:var(--text2);margin-top:4px">+30 XP ⭐</div>
+        <div class="ie-fb" style="margin-top:12px">${_ieEsc(text).replace(/\n/g,'<br>')}</div>
+        <div class="ielts-mine-keylink" style="margin-top:6px">โมเดล: ${_ieEsc(model)} · ประโยคที่แก้ระหว่างคุยถูกเก็บใน 📓 Notes แล้ว</div>
+        <div style="height:12px"></div>
+        <button class="btn btn-primary btn-full btn-lg" onclick="atStart('${AT.role.id}')">🔄 คุยอีกรอบ</button>
+        <div style="height:10px"></div>
+        <button class="btn btn-ghost btn-full" onclick="showScreen('aitalk-setup')">← เลือกสถานการณ์ใหม่</button>
+      </div>`;
+    document.getElementById('at-final').scrollIntoView({behavior:'smooth'});
+  }).catch(err=>{
+    atTyping(false);
+    AT.ended=false;
+    document.getElementById('at-input-zone').style.display='block';
+    const zone=document.getElementById('at-key-zone');
+    if(err&&(err.code==='nokey'||err.code==='badkey')){
+      ieShowKeyForm(zone,err.code==='badkey',()=>{zone.innerHTML='';atEnd();});
+      return;
+    }
+    const msg=err&&err.code==='quota'?'โควต้า AI หมดชั่วคราว รอสักครู่แล้วลองใหม่':((err&&err.msg)||(err&&err.message)||'เชื่อมต่อไม่ได้');
+    zone.innerHTML=`<div class="ielts-mine-err" style="text-align:center;padding:6px 0">❌ สรุปผลไม่สำเร็จ: ${_ieEsc(msg)}<br>
+      <button class="btn btn-outline btn-sm" style="margin-top:6px" onclick="atEnd()">🔁 ลองใหม่</button></div>`;
+  });
+}
+
+// ── mic (same graceful accumulate-until-stop pattern as speak mode) ──
+function atStopRec(silent){
+  AT.isRec=false; AT.final=''; AT.interim='';
+  if(AT.recog){AT.recog.onresult=null;AT.recog.onerror=null;AT.recog.onend=null;try{AT.recog.abort()}catch(e){} AT.recog=null;}
+  const btn=document.getElementById('at-rec-btn'),lbl=document.getElementById('at-rec-lbl');
+  if(btn){btn.classList.remove('rec');btn.innerHTML='🎤';}
+  if(lbl&&!silent){lbl.classList.remove('active');lbl.textContent='กดไมค์แล้วพูดภาษาอังกฤษ · กด ⏹ เมื่อพูดจบ';}
+}
+function atToggleRec(){
+  const btn=document.getElementById('at-rec-btn'),lbl=document.getElementById('at-rec-lbl');
+  if(AT.busy){if(lbl)lbl.textContent='⏳ รอ '+AT.role.buddy+' ตอบก่อนนะ';return;}
+  if(AT.isRec){
+    AT.isRec=false;
+    if(btn){btn.classList.remove('rec');btn.innerHTML='🎤';}
+    if(lbl){lbl.classList.remove('active');lbl.textContent='⏳ กำลังประมวลผล...';}
+    if(AT.recog){
+      // graceful stop: .stop() + keep handlers alive so iOS can finalize pending
+      // interim text; flush on onend with a timeout fallback (same fix as speak mode)
+      const r=AT.recog; let flushed=false;
+      const doFlush=()=>{if(flushed)return;flushed=true;
+        r.onresult=null;r.onerror=null;r.onend=null;AT.recog=null;_atFlush();};
+      r.onend=doFlush; r.onerror=doFlush;
+      try{r.stop()}catch(e){doFlush();}
+      setTimeout(doFlush,1200);
+    } else _atFlush();
+    return;
+  }
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!SR){if(lbl)lbl.textContent='❌ เบราว์เซอร์นี้ไม่รองรับไมค์ — กด ⌨️ พิมพ์แทนได้';return;}
+  stopSpeech();
+  AT.isRec=true; AT.final=''; AT.interim='';
+  if(btn){btn.classList.add('rec');btn.innerHTML='⏹';}
+  if(lbl){lbl.textContent='🎙 กำลังฟัง... พูดได้เลย';lbl.classList.add('active');}
+  function _attempt(){
+    if(!AT.isRec) return;
+    if(AT.recog){AT.recog.onresult=null;AT.recog.onerror=null;AT.recog.onend=null;try{AT.recog.abort()}catch(e){}}
+    const r=new SR(); AT.recog=r;
+    r.lang='en-US'; r.continuous=true; r.interimResults=true; r.maxAlternatives=1;
+    r.onresult=e=>{
+      let fin='',int='';
+      for(let i=(e.resultIndex||0);i<e.results.length;i++){
+        if(e.results[i].isFinal) fin+=e.results[i][0].transcript+' ';
+        else int+=e.results[i][0].transcript;
+      }
+      if(fin.trim()) AT.final+=fin.trim()+' ';
+      AT.interim=int;
+      const display=(AT.final+int).trim();
+      if(lbl&&display) lbl.textContent='🎙 "'+display+'"';
+    };
+    r.onerror=e=>{
+      const fail=msg=>{AT.isRec=false;
+        if(btn){btn.classList.remove('rec');btn.innerHTML='🎤';}
+        if(lbl){lbl.classList.remove('active');lbl.textContent=msg;}};
+      if(e.error==='not-allowed'||e.error==='service-not-allowed') fail(micDeniedMsg());
+      else if(e.error==='audio-capture') fail('❌ ไม่พบไมโครโฟน — เช็คว่าไม่มีแอปอื่นใช้ไมค์อยู่');
+      else if(e.error==='network') fail('❌ ระบบรู้จำเสียงล้มเหลว — ลองใหม่ หรือกด ⌨️ พิมพ์แทน');
+    };
+    r.onend=()=>{if(AT.isRec)_attempt();};
+    try{r.start();}catch(e){if(AT.isRec)setTimeout(_attempt,300);}
+  }
+  _attempt();
+}
+function _atFlush(){
+  const t=(AT.final+' '+AT.interim).replace(/\s+/g,' ').trim();
+  AT.final=''; AT.interim='';
+  const lbl=document.getElementById('at-rec-lbl');
+  if(t){
+    if(lbl){lbl.classList.remove('active');lbl.textContent='กดไมค์เพื่อพูดต่อ';}
+    atUserSaid(t);
+  } else {
+    if(lbl){lbl.classList.remove('active');lbl.textContent='❌ ไม่ได้ยินเสียง — ลองพูดใหม่ หรือกด ⌨️ พิมพ์แทน';}
+  }
 }
 
 // ── DIALOGUE LISTENING ─────────────────────────
