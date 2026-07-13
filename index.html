@@ -2554,7 +2554,7 @@ CATS.forEach(c=>{ if(c && REPLYQ[c.id]) c.reply=REPLYQ[c.id]; });
 // ═══════════════════════════════════════════════
 // STATE
 // ═══════════════════════════════════════════════
-const APP_VER='14ก.ค.2026-3';
+const APP_VER='14ก.ค.2026-4';
 
 const S = {
   catId:null, mode:null, exList:[], exIdx:0, scores:[],
@@ -2929,7 +2929,9 @@ function startMode(catId, mode) {
 
 function renderExercise() {
   const total=S.exList.length, idx=S.exIdx;
-  document.getElementById('ex-prog').style.width  = (idx/total*100)+'%';
+  // bar must match the "current / total" label (1-based) — idx alone (0-based) left
+  // it a step behind, so item 5/5 showed only 80% instead of a full bar
+  document.getElementById('ex-prog').style.width  = ((idx+1)/total*100)+'%';
   document.getElementById('ex-count').textContent = (idx+1)+' / '+total;
   if(S.mode==='longListen')     renderLongListen(S.exList[idx]);
   else if(S.mode==='listen')    renderListen(S.exList[idx]);
