@@ -586,6 +586,8 @@ body{
 /* IELTS Speaking */
 .cat-card.ielts{background:linear-gradient(135deg,#0EA5E9,#14B8A6);box-shadow:0 6px 18px rgba(14,165,233,.35)}
 .cat-hero.ielts{background:linear-gradient(135deg,#0EA5E9,#14B8A6)}
+.cat-card.survival{background:linear-gradient(135deg,#F59E0B,#F97316);box-shadow:0 6px 18px rgba(249,115,22,.35)}
+.cat-hero.survival{background:linear-gradient(135deg,#F59E0B,#F97316)}
 .ielts-hero{background:linear-gradient(135deg,#0EA5E9,#14B8A6);color:#fff;border-radius:20px;padding:20px 18px;margin:0 16px 14px;box-shadow:0 6px 18px rgba(14,165,233,.3)}
 .ielts-badge{display:inline-block;background:rgba(255,255,255,.25);color:#fff;font-weight:800;font-size:11px;letter-spacing:.6px;padding:3px 10px;border-radius:10px;margin-bottom:8px}
 .ielts-q{font-size:18px;font-weight:800;line-height:1.4}
@@ -1533,6 +1535,79 @@ const CATS = [
            {l:"ปัจจัยที่ทำให้เปลี่ยน",ph:"Social media",opts:["Social media","Low-cost airlines","The internet"]},
            {l:"ข้อกังวล",ph:"over-tourism and the environment",opts:["over-tourism and the environment","rising prices for locals","the loss of local culture"]}]}}
     ]
+  },
+  // ── SURVIVAL ENGLISH (ชีวิตจริง/ท่องเที่ยว) ─────────────
+  {
+    id:'survival', name:'เอาตัวรอด (ชีวิตจริง)', cls:'survival',
+    icon:'🧳', desc:'สนามบิน ร้านอาหาร ถามทาง ช้อปปิ้ง ขอความช่วยเหลือ',
+    speak:[
+      {en:"Excuse me, could you help me? I think I'm lost.", th:"ขอโทษครับ ช่วยหน่อยได้ไหม ผมคิดว่าหลงทาง"},
+      {en:"Could you say that again more slowly, please?", th:"พูดอีกครั้งช้าๆ ได้ไหมครับ"},
+      {en:"How much is this? Do you take credit cards?", th:"อันนี้ราคาเท่าไหร่ครับ รับบัตรเครดิตไหม"},
+      {en:"I'd like a table for two, please.", th:"ขอโต๊ะสำหรับสองคนครับ"},
+      {en:"Can I have the bill, please?", th:"ขอเช็คบิลหน่อยครับ"},
+      {en:"Sorry, my English isn't very good — could you write it down?", th:"ขอโทษ ภาษาอังกฤษผมไม่ค่อยดี ช่วยเขียนให้หน่อยได้ไหม"}
+    ],
+    translate:[
+      {th:"ห้องน้ำอยู่ที่ไหนครับ?", en:"Where is the restroom?", tip:"'Restroom' (US) / 'toilet' (UK) — ใช้ได้ทั้งคู่ พูดสุภาพขึ้นด้วย 'Excuse me, where is...?'"},
+      {th:"รถไฟไปสนามบินออกกี่โมงครับ?", en:"What time does the train to the airport leave?", tip:"'What time does ... leave?' = ถามเวลาออกของยานพาหนะ"},
+      {th:"ผมแพ้ถั่ว เมนูนี้มีถั่วไหมครับ?", en:"I'm allergic to nuts. Does this dish have any nuts in it?", tip:"'I'm allergic to ...' = สำคัญมากเวลาสั่งอาหาร บอกได้เลยเพื่อความปลอดภัย"},
+      {th:"ช่วยเรียกแท็กซี่ให้หน่อยได้ไหมครับ?", en:"Could you call a taxi for me, please?", tip:"'Could you ... for me, please?' = ขอความช่วยเหลืออย่างสุภาพ"},
+      {th:"ผมทำกระเป๋าเงินหาย ควรทำยังไงดีครับ?", en:"I've lost my wallet. What should I do?", tip:"'What should I do?' = ประโยคขอคำแนะนำยามฉุกเฉิน จำไว้ใช้ได้เยอะ"},
+      {th:"อันนี้ลดราคาได้ไหมครับ?", en:"Can you give me a discount on this?", tip:"'Give me a discount' = ขอลดราคา | ตลาดนัดใช้ได้ ห้างไม่ค่อยได้"}
+    ],
+    reply:[
+      {q:"Hi, welcome! How many people in your party?", th:"สวัสดีครับ กี่ท่านครับ (ที่ร้านอาหาร)",
+       sample:"Just two of us, please. Could we sit by the window if possible?",
+       sampleTh:"แค่สองคนครับ ขอที่นั่งริมหน้าต่างได้ไหมครับถ้าว่าง", keys:["two","please","if possible"]},
+      {q:"That'll be 350 baht. How would you like to pay?", th:"ทั้งหมด 350 บาทครับ จ่ายแบบไหนดีครับ",
+       sample:"I'll pay by card, please. Here you go. Thank you!",
+       sampleTh:"จ่ายบัตรครับ นี่ครับ ขอบคุณครับ", keys:["by card","please","thank you"]},
+      {q:"Sorry, we're fully booked tonight. Would tomorrow work?", th:"ขอโทษครับ คืนนี้เต็มแล้ว พรุ่งนี้สะดวกไหมครับ",
+       sample:"Oh, that's a shame. Yes, tomorrow at seven would be great, thank you.",
+       sampleTh:"น่าเสียดายจัง ได้ครับ พรุ่งนี้ทุ่มนึงเยี่ยมเลย ขอบคุณครับ", keys:["that's a shame","would be great","thank you"]},
+      {q:"The museum? Sure — go straight and turn left at the corner.", th:"พิพิธภัณฑ์เหรอครับ ตรงไปแล้วเลี้ยวซ้ายตรงหัวมุม",
+       sample:"Got it, go straight and turn left. Is it far from here?",
+       sampleTh:"เข้าใจแล้วครับ ตรงไปแล้วเลี้ยวซ้าย ไกลจากนี่ไหมครับ", keys:["got it","turn left","far"]}
+    ],
+    situation:[
+      {topic:"ที่ร้านอาหาร", emoji:"🍽️", context:"สั่งอาหาร ถามเมนู จ่ายเงิน",
+       bg:"linear-gradient(135deg,#F59E0B,#EF4444)",
+       starters:[
+         {en:"Could I see the menu, please?", th:"ขอดูเมนูหน่อยครับ", tip:"เริ่มด้วย 'Could I ...?' สุภาพและปลอดภัยเสมอ"},
+         {en:"What would you recommend?", th:"มีอะไรแนะนำไหมครับ", tip:"ให้พนักงานช่วยเลือก — ได้คุยต่อและมักได้ของอร่อย"},
+         {en:"Is this dish spicy?", th:"เมนูนี้เผ็ดไหมครับ", tip:"'spicy' สำคัญมากในไทย ถามก่อนสั่งได้เลย"},
+         {en:"Could we get the bill, please?", th:"ขอเช็คบิลหน่อยครับ", tip:"'get the bill' (US) / 'the cheque' (UK)"}
+       ],
+       followups:[
+         {en:"Can I have some water, please?", th:"ขอน้ำเปล่าหน่อยได้ไหมครับ"},
+         {en:"Is service included?", th:"รวมค่าบริการแล้วหรือยังครับ"}
+       ]},
+      {topic:"ถามทาง", emoji:"🗺️", context:"หลงทาง หาสถานที่ ถามระยะทาง",
+       bg:"linear-gradient(135deg,#3B82F6,#8B5CF6)",
+       starters:[
+         {en:"Excuse me, how do I get to the station?", th:"ขอโทษครับ ไปสถานีรถไฟยังไงครับ", tip:"'How do I get to ...?' = ประโยคถามทางที่ใช้บ่อยที่สุด"},
+         {en:"Is it within walking distance?", th:"เดินไปถึงไหมครับ", tip:"'walking distance' = ระยะที่เดินไหว ถามก่อนตัดสินใจเดินหรือนั่งรถ"},
+         {en:"Could you show me on the map?", th:"ชี้บนแผนที่ให้หน่อยได้ไหมครับ", tip:"เปิดแผนที่ในมือถือแล้วให้เขาชี้ — เข้าใจง่ายกว่าฟังอย่างเดียว"},
+         {en:"Which way is the nearest ATM?", th:"ตู้เอทีเอ็มใกล้สุดไปทางไหนครับ", tip:"'Which way is ...?' = ถามทิศทางแบบสั้นๆ"}
+       ],
+       followups:[
+         {en:"How long does it take?", th:"ใช้เวลานานแค่ไหนครับ"},
+         {en:"Thank you so much for your help!", th:"ขอบคุณมากที่ช่วยนะครับ"}
+       ]},
+      {topic:"เช็คอิน / โรงแรม", emoji:"🏨", context:"เช็คอิน ขอของ แจ้งปัญหาห้อง",
+       bg:"linear-gradient(135deg,#0EA5E9,#14B8A6)",
+       starters:[
+         {en:"Hi, I have a reservation under the name...", th:"สวัสดีครับ ผมจองไว้ในชื่อ...", tip:"'a reservation under the name ...' = ประโยคเช็คอินมาตรฐาน"},
+         {en:"What time is check-out?", th:"เช็คเอาต์กี่โมงครับ", tip:"ถามไว้กันลืม มักเป็น 11 หรือ 12 โมง"},
+         {en:"Could I have an extra towel, please?", th:"ขอผ้าเช็ดตัวเพิ่มได้ไหมครับ", tip:"'Could I have an extra ...?' = ขอของเพิ่มอย่างสุภาพ"},
+         {en:"The air conditioning isn't working.", th:"แอร์ในห้องเสียครับ", tip:"'isn't working' = ใช้แจ้งของเสียได้ทุกอย่าง (wifi/TV/shower)"}
+       ],
+       followups:[
+         {en:"Is breakfast included?", th:"รวมอาหารเช้าไหมครับ"},
+         {en:"Could you store my luggage until the afternoon?", th:"ฝากกระเป๋าไว้ถึงบ่ายได้ไหมครับ"}
+       ]}
+    ]
   }
 ];
 
@@ -2439,7 +2514,7 @@ CATS.forEach(c=>{ if(c && REPLYQ[c.id]) c.reply=REPLYQ[c.id]; });
 // ═══════════════════════════════════════════════
 // STATE
 // ═══════════════════════════════════════════════
-const APP_VER='13ก.ค.2026-2';
+const APP_VER='13ก.ค.2026-3';
 
 const S = {
   catId:null, mode:null, exList:[], exIdx:0, scores:[],
@@ -2684,6 +2759,7 @@ function renderHome() {
   };
   const ZONES=[
     {t:'💬 คุยกับคน — เริ่มง่ายสุด', ids:['smalltalk','networking']},
+    {t:'🌍 ใช้ชีวิต / ท่องเที่ยว',   ids:['survival']},
     {t:'💼 ในที่ทำงาน',            ids:['meetings','presentations','communication']},
     {t:'🎓 เตรียมสอบ',             ids:['ielts']},
   ];
@@ -2755,12 +2831,16 @@ function openCat(id) {
 
   document.getElementById('mode-list').innerHTML = MODES.map(m=>{
     const done=!!md[m.id], rec=m.id===recMode;
+    // dynamic step number so categories missing some modes still read 1,2,3…
+    const si=core.indexOf(m.id);
+    const step = m.id==='longListen' ? (allCoreDone?'ด่านจบ':'เปิดฉาก')
+               : m.id==='ielts' ? '' : (si>=0 ? 'ขั้น '+(si+1) : '');
     return `
     <div class="mode-card" onclick="startMode('${id}','${m.id}')" style="${rec?'border:2px solid #7C3AED;box-shadow:0 4px 14px rgba(124,58,237,.18);':''}${done&&!rec?'opacity:.72;':''}">
       <div class="mode-ico-wrap ${m.icoClass}">${m.ico}</div>
       <div class="mode-info">
         <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-bottom:2px">
-          ${m.step?`<span style="font-size:10px;font-weight:800;background:${rec?'#7C3AED':'rgba(124,58,237,.12)'};color:${rec?'#fff':'#7C3AED'};border-radius:100px;padding:2px 8px">${m.step}</span>`:''}
+          ${step?`<span style="font-size:10px;font-weight:800;background:${rec?'#7C3AED':'rgba(124,58,237,.12)'};color:${rec?'#fff':'#7C3AED'};border-radius:100px;padding:2px 8px">${step}</span>`:''}
           ${rec?`<span style="font-size:10px;font-weight:800;color:#7C3AED">▶ แนะนำต่อไป</span>`:''}
           ${done?`<span style="font-size:10px;font-weight:800;color:var(--green)">✓ ผ่านแล้ว</span>`:''}
         </div>
