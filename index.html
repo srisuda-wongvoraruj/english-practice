@@ -1642,7 +1642,7 @@ const CATS = [
 // ═══════════════════════════════════════════════
 // ── Scoring helpers ──────────────────────────
 function calcNaturalness(spoken) {
-  let score = 42;
+  let score = 40;
   const s = spoken.toLowerCase();
   const contractions = ["i'm","you're","it's","we're","they're","that's","can't","won't","don't","i'll","i've","isn't","aren't","i'd","it'll","there's","here's","let's","she's","he's"];
   contractions.forEach(c=>{ if(s.includes(c)) score += 7; });
@@ -1653,33 +1653,45 @@ function calcNaturalness(spoken) {
   return Math.min(100, Math.max(0, score));
 }
 
+// Word-match score with a precision penalty: recall (did you hit the target words)
+// discounted when you also said a lot of extra/wrong words. A clean exact answer = 100;
+// the right words buried in rambling, or half the words, score lower. `matched` = set of
+// target indices hit, for chip rendering.
+function _matchScore(tw, sw){
+  const used=[...sw]; const matched=new Set();
+  tw.forEach((w,i)=>{const j=used.indexOf(w);if(j!==-1){matched.add(i);used.splice(j,1)}});
+  const recall = tw.length ? matched.size/tw.length : 0;
+  const precision = sw.length ? matched.size/sw.length : 0;
+  return { matched, score: Math.round(recall*100*(0.8+0.2*precision)) };
+}
+
 function calcGrammar(spoken) {
   const s = spoken.toLowerCase().trim();
   const words = s.split(/\s+/).filter(Boolean);
-  if(words.length < 2) return 20;
-  let score = 45;
+  if(words.length < 2) return 15;
+  let score = 38;
   // Subject starter
-  const subjectStarters = ['i','you','we','they','he','she','it','this','that','there','the','my','our','your','let','can','could','would','may','do','did','have','has','is','are','was','were'];
-  if(subjectStarters.some(w => s.startsWith(w+' ') || s===w)) score += 15;
+  const subjectStarters = ['i',"i'd","i'm","i'll","i've",'you','we','they','he','she','it','this','that','there','the','my','our','your','let','can','could','would','may','do','did','have','has','is','are','was','were'];
+  if(subjectStarters.some(w => s.startsWith(w+' ') || s.startsWith(w+"'") || s===w)) score += 12;
   // Verb presence
   const verbs = ['is','are','was','were','have','has','had','do','does','did','will','would','can','could','should','may','might','let','get','got','go','went','need','want','think','know','see','make','take','give','put','come','look','use','find','feel','try','keep','help','got','been','being'];
-  if(verbs.some(v => words.includes(v))) score += 18;
+  if(verbs.some(v => words.includes(v))) score += 15;
   // Good grammar markers
   const goodMarkers = ["i'll","i've","i'd","i'm","we'll","it's","that's","would like","could you","can you","let me","could i","may i","i think","don't","can't","won't"];
-  goodMarkers.forEach(m => { if(s.includes(m)) score += 8; });
+  goodMarkers.forEach(m => { if(s.includes(m)) score += 6; });
   // Common Thai-English grammar mistakes
   const mistakes = ['i am go','i am want','i am like','i am need','i no have','i not go','very much like','i can to','want to go to shop'];
-  mistakes.forEach(m => { if(s.includes(m)) score -= 25; });
+  mistakes.forEach(m => { if(s.includes(m)) score -= 28; });
   // Length bonus
-  if(words.length >= 5) score += 8;
-  if(words.length >= 8) score += 7;
+  if(words.length >= 5) score += 6;
+  if(words.length >= 8) score += 6;
   return Math.min(100, Math.max(0, score));
 }
 
 function calcSituationFit(spoken, context) {
   const s = spoken.toLowerCase();
   const ctx = (context||'').toLowerCase();
-  let score = 45;
+  let score = 40;
   const ctxMap = {
     'ประชุม':   ['meeting','team','discuss','update','agenda','point','let me','everyone'],
     'สาย':      ['late','sorry','held up','stuck','delayed','apology','just'],
@@ -1702,9 +1714,9 @@ function calcSituationFit(spoken, context) {
   Object.entries(ctxMap).forEach(([key, kwords]) => {
     if(ctx.includes(key)) kwords.forEach(kw => { if(s.includes(kw)) matched++; });
   });
-  score += matched * 9;
-  if(s.split(/\s+/).length >= 4) score += 8;
-  if(s.split(/\s+/).length >= 8) score += 7;
+  score += matched * 8;
+  if(s.split(/\s+/).length >= 4) score += 6;
+  if(s.split(/\s+/).length >= 8) score += 6;
   return Math.min(100, Math.max(0, score));
 }
 
@@ -1758,7 +1770,7 @@ function showTranslateScore(spoken, ex) {
 }
 
 function renderScoreCard(accuracy, pronunciation, naturalness, target, spoken) {
-  const overall = Math.round(accuracy*0.4 + pronunciation*0.35 + naturalness*0.25);
+  const overall = Math.round(accuracy*0.5 + pronunciation*0.3 + naturalness*0.2);
   const bar = (v,color) => `<div style="flex:1;background:#eee;border-radius:100px;height:7px;overflow:hidden"><div style="width:${v}%;height:100%;background:${color};border-radius:100px"></div></div>`;
   const em = overall>=85?'🌟':overall>=70?'😊':overall>=50?'🙂':'💪';
   const msg = overall>=85?'Excellent! เป็นธรรมชาติมากเลย':overall>=70?'Good job! ฟังดูดีมาก':overall>=50?'ดีนะ ฝึกต่อไปเรื่อยๆ':'ลองอีกครั้งนะ คุณทำได้!';
@@ -1841,7 +1853,8 @@ function _calcRepeatScore(target, said, conf, confN){
   const used=[...sw];let ok=0;const matched=new Set();
   tw.forEach((w,i)=>{const j=used.indexOf(w);if(j!==-1){ok++;matched.add(i);used.splice(j,1)}});
   const accuracy=Math.round(ok/tw.length*100);
-  const pronunciation=confN?Math.round(conf/confN*100):75;
+  // no confidence data (common on iOS) → estimate from accuracy instead of a free 75
+  const pronunciation=confN?Math.round(conf/confN*100):Math.round(accuracy*0.82);
   const naturalness=calcNaturalness(said);
   scoreEl.innerHTML=renderScoreCard(accuracy,pronunciation,naturalness,target,said)+
     `<button class="btn btn-sm btn-outline" style="margin-top:8px;width:100%" onclick="recordRepeat()">🔄 ลองอีกครั้ง</button>`;
@@ -2540,7 +2553,7 @@ CATS.forEach(c=>{ if(c && REPLYQ[c.id]) c.reply=REPLYQ[c.id]; });
 // ═══════════════════════════════════════════════
 // STATE
 // ═══════════════════════════════════════════════
-const APP_VER='13ก.ค.2026-6';
+const APP_VER='13ก.ค.2026-7';
 
 const S = {
   catId:null, mode:null, exList:[], exIdx:0, scores:[],
@@ -3294,9 +3307,7 @@ async function micDiag(){
 function showCompare(spoken, target) {
   const sw=spoken.toLowerCase().replace(/[^a-z\s']/g,'').split(/\s+/).filter(Boolean);
   const tw=target.toLowerCase().replace(/[^a-z\s']/g,'').split(/\s+/).filter(Boolean);
-  const used=[...sw]; const matched=new Set();
-  tw.forEach((w,i)=>{const j=used.indexOf(w);if(j!==-1){matched.add(i);used.splice(j,1)}});
-  const score=tw.length?Math.round(matched.size/tw.length*100):0;
+  const {matched, score}=_matchScore(tw, sw);
   S.scores.push(score);
   if(score>=80) fireConfetti();
 
@@ -3552,10 +3563,13 @@ function _rpFlush(){
   }
   if(lbl) lbl.textContent='"'+said+'"';
   const wc=said.split(/\s+/).filter(Boolean).length;
-  const fluency=Math.min(1,wc/15); // 15+ words ≈ a solid 2-3 sentence answer
+  const fluency=Math.min(1,wc/22); // ~22 words (2-3 full sentences) for full fluency credit
   const saidLow=' '+said.toLowerCase()+' ';
-  const usedKeys=(ex.keys||[]).filter(k=>saidLow.includes(k.toLowerCase()));
-  const score=Math.min(100,Math.round(fluency*70)+usedKeys.length*10);
+  const keys=ex.keys||[];
+  const usedKeys=keys.filter(k=>saidLow.includes(k.toLowerCase()));
+  const keyRatio=keys.length?usedKeys.length/keys.length:0;
+  // need BOTH a full-length answer AND the useful phrases to score high
+  const score=Math.max(0,Math.min(100,Math.round(fluency*55 + keyRatio*45)));
   S.scores[S.exIdx]=Math.max(S.scores[S.exIdx]||0,score);
   rpShowQ(); // reveal the question text now
   const keyChips=(ex.keys||[]).map(k=>{
@@ -3622,7 +3636,8 @@ function _calcShadowScore(segIdx, target, said, conf, confN){
   const used=[...sw];let ok=0;
   tw.forEach(w=>{const j=used.indexOf(w);if(j!==-1){ok++;used.splice(j,1)}});
   const accuracy=Math.round(ok/tw.length*100);
-  const pronunciation=confN?Math.round(conf/confN*100):75;
+  // no confidence data (common on iOS) → estimate from accuracy instead of a free 75
+  const pronunciation=confN?Math.round(conf/confN*100):Math.round(accuracy*0.82);
   const naturalness=calcNaturalness(said);
   const avg=Math.round((accuracy+pronunciation+naturalness)/3);
   if(!S._shadowScores) S._shadowScores={};
@@ -3803,9 +3818,7 @@ function _sitShowResult(phraseIdx, said, target) {
   if(!scoreEl||!said) return;
   const tw=target.toLowerCase().replace(/[^a-z\s']/g,'').split(/\s+/).filter(Boolean);
   const sw=said.toLowerCase().replace(/[^a-z\s']/g,'').split(/\s+/).filter(Boolean);
-  const used=[...sw]; let ok=0;
-  tw.forEach(w=>{const j=used.indexOf(w);if(j!==-1){ok++;used.splice(j,1)}});
-  const score=tw.length?Math.round(ok/tw.length*100):0;
+  const score=_matchScore(tw, sw).score;
   _sitScores[phraseIdx]=Math.max(_sitScores[phraseIdx]||0, score);
   const em=score>=80?'🎉':score>=50?'👍':'💪';
   const color=score>=80?'var(--green)':score>=50?'var(--accent)':'var(--coral)';
@@ -4280,7 +4293,11 @@ function _ieShowResult(said, card){
   let fillerN=0; const sj=' '+said.toLowerCase()+' ';
   fillers.forEach(f=>{ const m=sj.match(new RegExp('\\b'+f.replace(' ','\\s')+'\\b','g')); if(m) fillerN+=m.length; });
   const goal = card.part===2?90 : card.part===3?45 : 25;
-  _ieScore = Math.max(45, Math.min(100, Math.round(wc/goal*100)));
+  // length gets you to ~90 at the word goal (not a free 100); fillers & poor pace cost points
+  let ieBase = Math.round(wc/goal*90);
+  if(fillerN>=3) ieBase -= Math.min(18,(fillerN-2)*5);
+  if(wpm<80) ieBase -= 8; else if(wpm>185) ieBase -= 6;
+  _ieScore = Math.max(30, Math.min(100, ieBase));
   const em=_ieScore>=80?'🎉':_ieScore>=60?'👍':'💪';
   const color=_ieScore>=80?'var(--green)':_ieScore>=60?'var(--accent)':'var(--coral)';
   let fb=[];
