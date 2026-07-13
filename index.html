@@ -2554,7 +2554,7 @@ CATS.forEach(c=>{ if(c && REPLYQ[c.id]) c.reply=REPLYQ[c.id]; });
 // ═══════════════════════════════════════════════
 // STATE
 // ═══════════════════════════════════════════════
-const APP_VER='14ก.ค.2026-4';
+const APP_VER='14ก.ค.2026-5';
 
 const S = {
   catId:null, mode:null, exList:[], exIdx:0, scores:[],
@@ -4119,8 +4119,7 @@ function ieGenerateMine(){
   const out=document.getElementById('ie-mine-out'); if(!out) return;
   out.style.display='block';
   if(!notes){ out.innerHTML=`<div class="ielts-mine-err">⚠️ พิมพ์ไอเดียคำตอบของคุณก่อน (ภาษาไทยได้)</div>`; return; }
-  const key=_gemKey();
-  if(!key){ ieShowKeyForm(out); return; }
+  if(!_gemKey()){ ieShowKeyForm(out, false, ieGenerateMine); return; }
   // length guidance per part
   const part=card.part||1;
   const lenG = part===2 ? 'a long-turn monologue of roughly 180–220 words (this is IELTS Part 2, the candidate speaks for ~2 minutes)'
@@ -4129,46 +4128,21 @@ function ieGenerateMine(){
   const prompt=`You are an expert IELTS Speaking coach. The candidate was asked this IELTS Speaking Part ${part} question:\n"${card.question}"\n\nThe candidate jotted down their own ideas/opinions, written in Thai (or mixed Thai-English):\n"${notes}"\n\nWrite ONE complete spoken answer in natural, native-like English at IELTS Band 8.5 level that expresses the candidate's ideas above. Requirements:\n- Idiomatic, fluent, spoken-style English (NOT a written essay) with discourse markers.\n- A wide range of less-common vocabulary and flexible complex grammar, used naturally and accurately.\n- Faithfully keep the candidate's specific ideas/details; you may enrich and reorganise them.\n- Length: ${lenG}.\n\nOutput ONLY the answer text itself — no preamble, no quotation marks, no notes, no Thai.`;
 
   out.innerHTML=`<div class="ielts-mine-loading">✨ กำลังเขียนคำตอบ Band 8+ ให้... <span class="ie-dots"></span></div>`;
-  ieTryModels(0, prompt, key, out);
-}
-
-function ieTryModels(i, prompt, key, out){
-  if(i>=_GEMINI_MODELS.length){
-    out.innerHTML=_ieErrBox(`❌ คีย์นี้ยังไม่มีโควต้าฟรีให้ทุกโมเดลที่ลอง (gemini 2.0/2.5/1.5 flash) — มักเกิดเมื่อโปรเจกต์ของคีย์ผูกกับ billing หรืออยู่ภูมิภาคที่ยังไม่เปิด free tier<br>👉 ลองสร้างคีย์ใหม่จาก <b>โปรเจกต์ใหม่</b> ใน <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener">AI Studio</a> แล้วกด`)
-      +`<div class="ielts-mine-keylink"><a href="javascript:void(0)" onclick="ieChangeKey()">⚙️ เปลี่ยน API key</a></div>`;
-    return;
-  }
-  const model=_GEMINI_MODELS[i];
-  const url='https://generativelanguage.googleapis.com/v1beta/models/'+model+':generateContent?key='+encodeURIComponent(key);
-  fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({contents:[{parts:[{text:prompt}]}],generationConfig:{temperature:0.75,maxOutputTokens:600}})})
-  .then(r=>r.json().then(j=>({ok:r.ok,status:r.status,j})))
-  .then(({ok,status,j})=>{
-    if(!ok){
-      const msg=(j&&j.error&&j.error.message)||('HTTP '+status);
-      if(status===400||status===403){ // bad/invalid key — same for every model, stop
-        out.innerHTML=`<div class="ielts-mine-err">❌ API key ใช้ไม่ได้ (${_ieEsc(msg)})</div>`;
-        ieShowKeyForm(out,true); return;
-      }
-      if(status===429||status===404){ // no quota for this model OR model unavailable → next model
-        ieTryModels(i+1, prompt, key, out); return;
-      }
-      out.innerHTML=_ieErrBox(`❌ สร้างไม่สำเร็จ: ${_ieEsc(msg)}`); return;
-    }
-    let txt='';
-    try{ txt=j.candidates[0].content.parts.map(p=>p.text).join(' ').trim(); }catch(e){ txt=''; }
-    txt=txt.replace(/^["'\s]+|["'\s]+$/g,'');
-    if(!txt){ ieTryModels(i+1, prompt, key, out); return; } // empty → try next model
-    _ieMineText=txt;
-    out.innerHTML=`<div class="ielts-mine-en">${_ieEsc(txt)}</div>
+  // _gemGenerate rotates through EVERY saved key (primary + backups) × every model,
+  // so quota exhaustion on one key/model falls through to the next automatically
+  _gemGenerate(prompt).then(({text,model})=>{
+    _ieMineText=text;
+    out.innerHTML=`<div class="ielts-mine-en">${_ieEsc(text)}</div>
       <div style="display:flex;gap:6px;margin-top:8px">
         <button class="btn btn-outline btn-sm" style="flex:1" onclick="ieSpeakMine()">🔊 ฟังคำตอบของฉัน</button>
         <button class="btn btn-outline btn-sm" style="flex:1" onclick="ieGenerateMine()">🔁 สร้างใหม่</button>
       </div>
       <div class="ielts-mine-keylink">โมเดล: ${_ieEsc(model)} · <a href="javascript:void(0)" onclick="ieChangeKey()">⚙️ เปลี่ยน API key</a></div>`;
-  })
-  .catch(err=>{
-    out.innerHTML=_ieErrBox(`❌ เชื่อมต่อไม่ได้: ${_ieEsc(err.message||err)}`);
+  }).catch(err=>{
+    if(err&&(err.code==='nokey'||err.code==='badkey')){ ieShowKeyForm(out, err.code==='badkey', ieGenerateMine); return; }
+    const msg = err&&err.code==='quota' ? 'ทุก key ที่มี (รวม key สำรอง) ยังไม่มีโควต้าฟรีเหลือตอนนี้ — เพิ่ม key สำรองได้ที่หน้าตั้งค่าเสียง หรือลองใหม่ภายหลัง'
+              : ((err&&err.msg)||(err&&err.message)||'สร้างไม่สำเร็จ');
+    out.innerHTML=_ieErrBox('❌ '+_ieEsc(msg));
   });
 }
 
@@ -5154,7 +5128,7 @@ function fireConfetti(){
 // ═══════════════════════════════════════════════
 // CHAT WITH BUDDY
 // ═══════════════════════════════════════════════
-const chat = { scenario:null, turn:0, messages:[], recog:null, isRec:false };
+const chat = { scenario:null, turn:0, messages:[], recog:null, isRec:false, _final:'', _interim:'' };
 
 function renderScenarios() {
   document.getElementById('scenario-grid').innerHTML = SCENARIOS.map(s=>`
@@ -5220,20 +5194,29 @@ function chatToggleRec() {
   const lbl=document.getElementById('chat-rec-lbl');
   if(chat.isRec){
     chat.isRec=false;
-    if(chat.recog){chat.recog.onresult=null;chat.recog.onerror=null;chat.recog.onend=null;try{chat.recog.abort()}catch(e){} chat.recog=null;}
     if(btn){btn.classList.remove('rec');btn.innerHTML='🎤';}
-    if(lbl){lbl.classList.remove('active');lbl.textContent='กดเพื่อพูด';}
+    if(lbl){lbl.textContent='⏳ กำลังประมวลผล...';}
+    if(chat.recog){
+      // graceful stop: .stop() (NOT .abort()) + keep handlers alive so iOS can
+      // finalize pending speech — abort() discards it even though it was heard,
+      // which is why the mic looked like it "didn't record" anything
+      const r=chat.recog; let flushed=false;
+      const doFlush=()=>{ if(flushed)return; flushed=true;
+        r.onresult=null;r.onerror=null;r.onend=null; chat.recog=null; _chatFlush(); };
+      r.onend=doFlush; r.onerror=doFlush;
+      try{r.stop()}catch(e){doFlush();}
+      setTimeout(doFlush,1200);
+    } else _chatFlush();
     return;
   }
   const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
   if(!SR){if(lbl)lbl.textContent='❌ ลองใช้ Chrome';return;}
   stopSpeech();
-  chat.isRec=true;
+  chat.isRec=true; chat._final=''; chat._interim='';
   if(btn){btn.classList.add('rec');btn.innerHTML='⏹';}
   if(lbl){lbl.textContent='🔴 กำลังฟัง...';lbl.classList.add('active');}
-  let _done=false, _chatFinal='';
   function _attempt(){
-    if(!chat.isRec||_done) return;
+    if(!chat.isRec) return;
     if(chat.recog){chat.recog.onresult=null;chat.recog.onerror=null;chat.recog.onend=null;try{chat.recog.abort()}catch(e){}}
     const r=new SR(); chat.recog=r;
     r.lang='en-US'; r.continuous=true; r.interimResults=true;
@@ -5243,30 +5226,33 @@ function chatToggleRec() {
         if(e.results[i].isFinal) final+=e.results[i][0].transcript+' ';
         else interim+=e.results[i][0].transcript;
       }
-      if(interim&&lbl) lbl.textContent='🔴 '+interim;
-      if(final) _chatFinal+=final;
+      if(final) chat._final+=final;
+      chat._interim=interim;
+      const d=(chat._final+interim).trim();
+      if(lbl&&d) lbl.textContent='🔴 '+d;
     };
     r.onerror=e=>{
       if(e.error==='not-allowed'||e.error==='service-not-allowed'){
-        _done=true; chat.isRec=false;
+        chat.isRec=false;
         if(btn){btn.classList.remove('rec');btn.innerHTML='🎤';}
         if(lbl){lbl.classList.remove('active');lbl.textContent=micDeniedMsg();}
       }
     };
-    r.onend=()=>{
-      if(!chat.isRec||_done) return;
-      if(_chatFinal.trim()){
-        _done=true; chat.isRec=false;
-        if(btn){btn.classList.remove('rec');btn.innerHTML='🎤';}
-        if(lbl) lbl.classList.remove('active');
-        userResponded(_chatFinal.trim());
-      } else {
-        _attempt();
-      }
-    };
-    try{r.start();}catch(e){if(chat.isRec&&!_done) setTimeout(_attempt,200);}
+    r.onend=()=>{ if(chat.isRec) _attempt(); };
+    try{r.start();}catch(e){if(chat.isRec) setTimeout(_attempt,200);}
   }
   _attempt();
+}
+
+function _chatFlush(){
+  const lbl=document.getElementById('chat-rec-lbl');
+  const said=((chat._final||'')+' '+(chat._interim||'')).replace(/\s+/g,' ').trim();
+  chat._final=''; chat._interim='';
+  if(!said){
+    if(lbl){ lbl.classList.remove('active'); lbl.textContent='❌ ไม่ได้ยินเสียงเลย — กด 🎤 แล้วลองใหม่'; }
+    return;
+  }
+  userResponded(said);
 }
 
 function userResponded(said) {
