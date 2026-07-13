@@ -95,51 +95,37 @@ body{
   padding:4px 16px 8px;
 }
 
-/* ── CATEGORY CARDS ── */
-.cat-grid{display:flex;flex-direction:column;gap:12px;padding:0 16px}
+/* ── CATEGORY CARDS — flat rectangle rows, colored icon chip only ── */
+.cat-grid{display:flex;flex-direction:column;gap:8px;padding:0 16px}
 .cat-card{
-  border-radius:22px;
-  padding:18px;
-  display:flex;align-items:center;gap:15px;
+  border-radius:14px;
+  padding:11px 13px;
+  display:flex;align-items:center;gap:12px;
   cursor:pointer;
-  transition:transform .18s cubic-bezier(.34,1.56,.64,1), box-shadow .18s;
-  position:relative;overflow:hidden;
-  border:none;
+  transition:transform .12s;
+  background:var(--surface);
+  border:1.5px solid var(--border);
 }
-.cat-card:active{transform:scale(.96)}
-.cat-card:hover{transform:translateY(-3px)}
-
-.cat-card.meetings   {background:linear-gradient(135deg,#B8A4E8,#9B7FE8);box-shadow:0 6px 18px rgba(155,127,232,.32)}
-.cat-card.presentations{background:linear-gradient(135deg,#F4A7C0,#F08080);box-shadow:0 6px 18px rgba(244,167,192,.35)}
-.cat-card.communication{background:linear-gradient(135deg,#89C4F4,#89B4F7);box-shadow:0 6px 18px rgba(137,196,244,.38)}
-.cat-card.networking {background:linear-gradient(135deg,#82D9A0,#6DC78A);box-shadow:0 6px 18px rgba(109,199,138,.35)}
-
-.cat-card::before{
-  content:'';position:absolute;top:-20px;right:-20px;
-  width:80px;height:80px;border-radius:50%;
-  background:rgba(255,255,255,.12);
-}
-.cat-card::after{
-  content:'';position:absolute;top:10px;right:30px;
-  width:40px;height:40px;border-radius:50%;
-  background:rgba(255,255,255,.1);
-}
+.cat-card:active{transform:scale(.97)}
 
 .cat-icon-wrap{
-  width:56px;height:56px;border-radius:16px;
-  background:rgba(255,255,255,.25);
+  width:42px;height:42px;border-radius:12px;
   display:flex;align-items:center;justify-content:center;
-  font-size:28px;flex-shrink:0;
-  backdrop-filter:blur(4px);
+  font-size:20px;flex-shrink:0;color:#fff;
 }
-.cat-info{flex:1;color:#fff}
-.cat-name{font-size:15px;font-weight:800;text-shadow:0 1px 3px rgba(0,0,0,.15)}
-.cat-desc{font-size:11px;opacity:.85;margin-top:2px;font-weight:500}
-.cat-bar-wrap{margin-top:10px}
-.cat-bar{background:rgba(255,255,255,.3);border-radius:100px;height:5px;overflow:hidden}
-.cat-bar-fill{background:rgba(255,255,255,.9);height:100%;border-radius:100px;transition:width .5s ease}
-.cat-pct{font-size:10px;opacity:.9;font-weight:700;text-align:right;margin-top:3px}
-.cat-arrow{font-size:20px;opacity:.7;color:#fff;flex-shrink:0;position:relative;z-index:1}
+.cat-card.meetings   .cat-icon-wrap{background:linear-gradient(135deg,#B8A4E8,#9B7FE8)}
+.cat-card.presentations .cat-icon-wrap{background:linear-gradient(135deg,#F4A7C0,#F08080)}
+.cat-card.communication .cat-icon-wrap{background:linear-gradient(135deg,#89C4F4,#89B4F7)}
+.cat-card.networking .cat-icon-wrap{background:linear-gradient(135deg,#82D9A0,#6DC78A)}
+
+.cat-info{flex:1;color:var(--text);min-width:0}
+.cat-name{font-size:13.5px;font-weight:800;color:var(--text)}
+.cat-desc{font-size:11px;color:var(--muted);margin-top:1px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cat-bar-wrap{margin-top:5px;display:flex;align-items:center;gap:6px}
+.cat-bar{flex:1;background:rgba(0,0,0,.08);border-radius:100px;height:4px;overflow:hidden}
+.cat-bar-fill{background:#7C3AED;height:100%;border-radius:100px;transition:width .5s ease}
+.cat-pct{font-size:10px;color:var(--muted);font-weight:700;flex-shrink:0}
+.cat-arrow{font-size:18px;color:var(--muted);flex-shrink:0}
 
 /* ── BACK BUTTON ── */
 .back-btn{
@@ -157,7 +143,7 @@ body{
 .cat-hero.presentations{background:linear-gradient(135deg,#F4A7C0,#F08080)}
 .cat-hero.communication{background:linear-gradient(135deg,#89C4F4,#89B4F7)}
 .cat-hero.networking {background:linear-gradient(135deg,#82D9A0,#6DC78A)}
-.cat-card.smalltalk  {background:linear-gradient(135deg,#FFB347,#FF7F50);box-shadow:0 6px 18px rgba(255,127,80,.35)}
+.cat-card.smalltalk .cat-icon-wrap{background:linear-gradient(135deg,#FFB347,#FF7F50)}
 .cat-hero.smalltalk  {background:linear-gradient(135deg,#FFB347,#FF7F50)}
 /* ── SITUATION CARDS ── */
 .sit-hero{border-radius:18px;padding:22px 18px;color:#fff;text-align:center;margin-bottom:14px}
@@ -533,18 +519,20 @@ body{
 .review-item-q{font-weight:700;color:var(--text);margin-bottom:4px}
 .review-item-tip{color:var(--text2);line-height:1.5}
 
-/* retention nudges + spaced-review cards */
-.quest{margin:0 16px 12px;padding:14px 16px;border-radius:18px;display:flex;align-items:center;gap:12px;cursor:pointer;
-  background:linear-gradient(135deg,#7C3AED,#A855F7);color:#fff;box-shadow:0 6px 18px rgba(124,58,237,.35);
+/* retention nudges + spaced-review cards — flat rectangle rows, colored icon chip only */
+.quest{margin:0 16px 8px;padding:11px 13px;border-radius:14px;display:flex;align-items:center;gap:11px;cursor:pointer;
+  background:var(--surface);color:var(--text);border:1.5px solid var(--border);
   transition:transform .12s;user-select:none}
 .quest:active{transform:scale(.98)}
-.quest-ico{font-size:30px;line-height:1}
-.quest-txt{flex:1}
-.quest-ttl{font-weight:800;font-size:16.5px}
-.quest-sub{font-size:12.5px;opacity:.92;margin-top:2px}
-.quest-go{font-size:18px;background:rgba(255,255,255,.22);border-radius:999px;width:38px;height:38px;display:flex;align-items:center;justify-content:center}
-.quest-done{background:linear-gradient(135deg,#059669,#10B981);box-shadow:0 6px 18px rgba(16,185,129,.3);cursor:default}
-.itp-card{background:linear-gradient(135deg,#F43F5E,#FB7185);box-shadow:0 6px 18px rgba(244,63,94,.32)}
+.quest-ico{font-size:18px;line-height:1;width:38px;height:38px;border-radius:11px;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;color:#fff;background:#7C3AED}
+.quest-txt{flex:1;min-width:0}
+.quest-ttl{font-weight:800;font-size:13.5px;color:var(--text)}
+.quest-sub{font-size:11px;color:var(--muted);margin-top:1px;line-height:1.35}
+.quest-go{font-size:17px;background:transparent;color:var(--muted);border-radius:999px;width:26px;height:26px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.quest-done{cursor:default}
+.quest-done .quest-ico{background:#10B981}
+.itp-card .quest-ico{background:#F43F5E}
 .itp-hero{background:linear-gradient(135deg,#F43F5E,#FB7185)}
 .itp-res{background:var(--surface);border:2px solid var(--border);border-radius:16px;padding:14px;margin-top:14px}
 .itp-th-said{font-size:13px;color:var(--muted);margin-bottom:8px}
@@ -563,8 +551,7 @@ body{
 .ac-topic-sub{font-size:11.5px;font-weight:600;color:var(--muted);margin-top:2px}
 .ac-fix{font-size:12px;color:#B45309;background:rgba(245,158,11,.12);border-radius:10px;padding:6px 10px;margin-top:5px;line-height:1.5;max-width:82%}
 .ac-body{display:flex;flex-direction:column;gap:10px;min-height:120px;margin-bottom:14px}
-.voice-cta{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:0 16px 12px;padding:12px 16px;border-radius:14px;font-size:13px;font-weight:700;color:#4C1D95;background:linear-gradient(135deg,#EDE9FE,#DDD6FE);border:1px solid #C4B5FD;cursor:pointer}
-.voice-cta-go{font-size:20px;color:#7C3AED}
+.voice-cta .quest-ico{background:#8B5CF6}
 .vc-opt{border:2px solid var(--border);border-radius:16px;padding:14px 16px;margin-bottom:10px;cursor:pointer;transition:.15s;background:var(--surface)}
 .vc-opt.vc-on{border-color:#7C3AED;box-shadow:0 4px 14px rgba(124,58,237,.18)}
 .vc-opt-ttl{font-size:15px;font-weight:800;color:var(--text)}
@@ -595,9 +582,9 @@ body{
 .rev-known{background:#E8F5E9;color:#2e7d32}
 
 /* IELTS Speaking */
-.cat-card.ielts{background:linear-gradient(135deg,#0EA5E9,#14B8A6);box-shadow:0 6px 18px rgba(14,165,233,.35)}
+.cat-card.ielts .cat-icon-wrap{background:linear-gradient(135deg,#0EA5E9,#14B8A6)}
 .cat-hero.ielts{background:linear-gradient(135deg,#0EA5E9,#14B8A6)}
-.cat-card.survival{background:linear-gradient(135deg,#F59E0B,#F97316);box-shadow:0 6px 18px rgba(249,115,22,.35)}
+.cat-card.survival .cat-icon-wrap{background:linear-gradient(135deg,#F59E0B,#F97316)}
 .cat-hero.survival{background:linear-gradient(135deg,#F59E0B,#F97316)}
 .ielts-hero{background:linear-gradient(135deg,#0EA5E9,#14B8A6);color:#fff;border-radius:20px;padding:20px 18px;margin:0 16px 14px;box-shadow:0 6px 18px rgba(14,165,233,.3)}
 .ielts-badge{display:inline-block;background:rgba(255,255,255,.25);color:#fff;font-weight:800;font-size:11px;letter-spacing:.6px;padding:3px 10px;border-radius:10px;margin-bottom:8px}
@@ -684,31 +671,30 @@ body{
 /* PAD */
 .pad{padding:0 16px}
 
-/* ── BUDDY TEASER (home) ── */
+/* ── BUDDY TEASER (home) — flat rectangle row ── */
 .buddy-teaser{
-  background:linear-gradient(135deg,#2D1B69,#7C5CFC);
-  border-radius:20px;padding:16px 18px;
-  display:flex;align-items:center;gap:14px;
-  cursor:pointer;color:#fff;
+  background:var(--surface);border:1.5px solid var(--border);
+  border-radius:14px;padding:11px 13px;
+  display:flex;align-items:center;gap:12px;
+  cursor:pointer;color:var(--text);
   margin:0 16px;
-  box-shadow:0 6px 20px rgba(45,27,105,.35);
-  transition:transform .18s cubic-bezier(.34,1.56,.64,1);
+  transition:transform .12s;
 }
-.buddy-teaser:hover,.buddy-teaser:active{transform:scale(.97)}
+.buddy-teaser:active{transform:scale(.97)}
 .buddy-avatar-wrap{
-  width:54px;height:54px;border-radius:16px;
-  background:rgba(255,255,255,.2);
+  width:42px;height:42px;border-radius:12px;
+  background:#7C5CFC;color:#fff;
   display:flex;align-items:center;justify-content:center;
-  font-size:28px;flex-shrink:0;position:relative;
+  font-size:20px;flex-shrink:0;position:relative;
 }
 .buddy-online{
-  width:12px;height:12px;border-radius:50%;
-  background:#58CC02;border:2px solid #2D1B69;
-  position:absolute;bottom:2px;right:2px;
+  width:10px;height:10px;border-radius:50%;
+  background:#58CC02;border:2px solid var(--surface);
+  position:absolute;bottom:-1px;right:-1px;
 }
-.buddy-teaser-info{flex:1}
-.buddy-teaser-name{font-size:15px;font-weight:800}
-.buddy-teaser-sub{font-size:12px;opacity:.8;margin-top:2px}
+.buddy-teaser-info{flex:1;min-width:0}
+.buddy-teaser-name{font-size:13.5px;font-weight:800;color:var(--text)}
+.buddy-teaser-sub{font-size:11px;color:var(--muted);margin-top:1px}
 
 /* ── SCENARIO CARDS ── */
 .scenario-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:0 16px}
@@ -823,11 +809,12 @@ body{
 .phrase-item-en{font-weight:700;color:var(--text);margin-bottom:3px}
 .phrase-item-tip{color:var(--text2);font-size:12px}
 /* ── DIALOGUE LISTENING ── */
-.listen-teaser{background:linear-gradient(135deg,#89B4F7,#9B7FE8);border-radius:18px;padding:14px 16px;margin:0 16px;display:flex;align-items:center;gap:12px;cursor:pointer;color:#fff;box-shadow:var(--shadow-md)}
-.listen-teaser-icon{font-size:30px}
-.listen-teaser-info{flex:1}
-.listen-teaser-title{font-size:14px;font-weight:900}
-.listen-teaser-sub{font-size:11px;opacity:.85;margin-top:2px}
+.listen-teaser{background:var(--surface);border:1.5px solid var(--border);border-radius:14px;padding:11px 13px;margin:0 16px;display:flex;align-items:center;gap:12px;cursor:pointer;color:var(--text);transition:transform .12s}
+.listen-teaser:active{transform:scale(.97)}
+.listen-teaser-icon{font-size:20px;width:42px;height:42px;border-radius:12px;background:linear-gradient(135deg,#89B4F7,#9B7FE8);color:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.listen-teaser-info{flex:1;min-width:0}
+.listen-teaser-title{font-size:13.5px;font-weight:800;color:var(--text)}
+.listen-teaser-sub{font-size:11px;color:var(--muted);margin-top:1px}
 .dlg-list{padding:14px 16px;display:flex;flex-direction:column;gap:10px}
 .dlg-card{border-radius:16px;padding:14px 16px;display:flex;align-items:center;gap:12px;cursor:pointer;color:#fff;box-shadow:var(--shadow-md)}
 .dlg-card-emoji{font-size:28px}
@@ -975,8 +962,8 @@ body{
   <div id="continue-card"></div>
   <div id="streak-nudge"></div>
   <div id="review-zone"></div>
-  <div class="quest" style="background:linear-gradient(135deg,#10B981,#06B6D4);box-shadow:0 6px 18px rgba(6,182,212,.3)" onclick="showScreen('aichat')">
-    <div class="quest-ico">🗣️</div>
+  <div class="quest" onclick="showScreen('aichat')">
+    <div class="quest-ico" style="background:#10B981">🗣️</div>
     <div class="quest-txt"><div class="quest-ttl">คุยกับเพื่อนฝรั่ง (AI) · ใหม่!</div>
     <div class="quest-sub">คุยอังกฤษสดๆ กับ AI — พูดโต้ตอบจริง พร้อมแก้ให้เบาๆ</div></div>
     <div class="quest-go">▶</div>
@@ -987,9 +974,11 @@ body{
     <div class="quest-sub">พูดไทยใส่ไมค์ → ได้ประโยคอังกฤษ + เสียงอ่านทันที</div></div>
     <div class="quest-go">▶</div>
   </div>
-  <div class="voice-cta" onclick="showScreen('voice')">
-    <span>🔊 เสียงอ่านฟังเหมือนหุ่นยนต์? <b>เปลี่ยนเป็นเสียง AI ธรรมชาติ</b></span>
-    <span class="voice-cta-go">›</span>
+  <div class="quest voice-cta" onclick="showScreen('voice')">
+    <div class="quest-ico">🔊</div>
+    <div class="quest-txt"><div class="quest-ttl">เสียงอ่านฟังเหมือนหุ่นยนต์?</div>
+    <div class="quest-sub">เปลี่ยนเป็นเสียง AI ธรรมชาติ</div></div>
+    <div class="quest-go">▶</div>
   </div>
 
   <div class="sec-title">เลือกหัวข้อที่อยากฝึก</div>
@@ -1006,9 +995,9 @@ body{
     <div class="buddy-avatar-wrap">🧑‍💼<div class="buddy-online"></div></div>
     <div class="buddy-teaser-info">
       <div class="buddy-teaser-name">Chat with a Foreign Friend</div>
-      <div class="buddy-teaser-sub">ฝึกสนทนาจริงๆ เลือกสถานการณ์ได้เลย →</div>
+      <div class="buddy-teaser-sub">ฝึกสนทนาจริงๆ เลือกสถานการณ์ได้เลย</div>
     </div>
-    <span style="font-size:22px;opacity:.8">›</span>
+    <span style="font-size:18px;color:var(--muted)">›</span>
   </div>
   <div style="height:4px"></div>
   <div class="sec-title">🎧 ฝึกฟังบทสนทนา</div>
@@ -1016,9 +1005,9 @@ body{
     <div class="listen-teaser-icon">🎧</div>
     <div class="listen-teaser-info">
       <div class="listen-teaser-title">Listening Comprehension</div>
-      <div class="listen-teaser-sub">ฟังบทสนทนาจริง แล้วตอบคำถามจับใจความ →</div>
+      <div class="listen-teaser-sub">ฟังบทสนทนาจริง แล้วตอบคำถามจับใจความ</div>
     </div>
-    <span style="font-size:22px;opacity:.8">›</span>
+    <span style="font-size:18px;color:var(--muted)">›</span>
   </div>
   <div style="height:12px"></div>
 </div>
@@ -2565,7 +2554,7 @@ CATS.forEach(c=>{ if(c && REPLYQ[c.id]) c.reply=REPLYQ[c.id]; });
 // ═══════════════════════════════════════════════
 // STATE
 // ═══════════════════════════════════════════════
-const APP_VER='14ก.ค.2026-2';
+const APP_VER='14ก.ค.2026-3';
 
 const S = {
   catId:null, mode:null, exList:[], exIdx:0, scores:[],
@@ -2804,7 +2793,7 @@ function renderHome() {
           <div class="cat-desc">${c.desc}</div>
           <div class="cat-bar-wrap">
             <div class="cat-bar"><div class="cat-bar-fill" style="width:${cpct}%"></div></div>
-            <div class="cat-pct">${cpct}% complete</div>
+            <div class="cat-pct">${cpct}%</div>
           </div>
         </div>
         <span class="cat-arrow">›</span>
@@ -2835,8 +2824,8 @@ function renderContinueCard(){
   if(!c||!c[last.mode]){ el.innerHTML=''; return; }
   const MODE_TH={longListen:'ฟังบทสนทนายาว',listen:'Listen & Understand',shadow:'Shadow Speaking',
     speak:'Speak & Practice',translate:'แปลไทย → อังกฤษ',reply:'ฟังแล้วตอบ',situation:'Situation Cards',ielts:'IELTS Speaking'};
-  el.innerHTML=`<div class="quest" style="background:linear-gradient(135deg,#0EA5E9,#6366F1);box-shadow:0 6px 18px rgba(14,165,233,.3)" onclick="startMode('${c.id}','${last.mode}')">
-    <div class="quest-ico">▶️</div>
+  el.innerHTML=`<div class="quest" onclick="startMode('${c.id}','${last.mode}')">
+    <div class="quest-ico" style="background:#0EA5E9">▶️</div>
     <div class="quest-txt"><div class="quest-ttl">ฝึกต่อจากเดิม</div>
     <div class="quest-sub">${c.icon} ${c.name} · ${MODE_TH[last.mode]||last.mode}</div></div>
     <div class="quest-go">▶</div>
