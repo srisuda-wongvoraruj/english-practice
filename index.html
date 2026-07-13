@@ -1089,6 +1089,17 @@ body{
   <div class="pad" style="padding-top:16px" id="voice-body"></div>
 </div>
 
+<!-- ══════════════ GET MORE API KEYS ══════════════ -->
+<div id="screen-getkey" class="screen">
+  <div class="cat-hero" style="background:linear-gradient(135deg,#F59E0B,#EF4444)">
+    <button class="back-btn" onclick="showScreen('voice')">← Back</button>
+    <div class="cat-hero-icon">🔑</div>
+    <div class="cat-hero-name">ขอ API Key เพิ่ม</div>
+    <div class="cat-hero-desc">ติดลิมิตโควตาเสียง AI? ขอ key ฟรีเพิ่มจากหลายบัญชี Google แล้วแอปจะสลับให้อัตโนมัติ</div>
+  </div>
+  <div class="pad" style="padding-top:16px" id="gk-body"></div>
+</div>
+
 <!-- ══════════════ EXERCISE ══════════════ -->
 <div id="screen-exercise" class="screen">
   <div class="ex-hero">
@@ -2553,7 +2564,7 @@ CATS.forEach(c=>{ if(c && REPLYQ[c.id]) c.reply=REPLYQ[c.id]; });
 // ═══════════════════════════════════════════════
 // STATE
 // ═══════════════════════════════════════════════
-const APP_VER='13ก.ค.2026-10';
+const APP_VER='13ก.ค.2026-11';
 
 const S = {
   catId:null, mode:null, exList:[], exIdx:0, scores:[],
@@ -2750,6 +2761,7 @@ function showScreen(id) {
   if(id==='dlg-list')  renderDlgList();
   if(id==='aichat')    renderAiChat();
   if(id==='voice')     renderVoiceSettings();
+  if(id==='getkey')    renderGetKeyPage();
 }
 
 // ═══════════════════════════════════════════════
@@ -4923,42 +4935,107 @@ function renderVoiceSettings(){
     ${_renderKeySection()}`;
 }
 // API-key manager: primary + backup keys (each has its own free quota → rotate on 429).
-function _renderKeySection(){
+function _maskKey(k){ return k.length>10?(k.slice(0,6)+'••••'+k.slice(-4)):'••••••'; }
+function _keyRowsHtml(){
   const primary = localStorage.getItem(_GEMINI_KEY_LS) || '';
   let extra=[]; try{ extra=JSON.parse(localStorage.getItem('ws_gemini_keys_extra')||'[]'); }catch(e){}
-  const mask=k=>k.length>10?(k.slice(0,6)+'••••'+k.slice(-4)):'••••••';
-  const row=(label,val,btn)=>`<div class="vc-voice"><div style="flex:1"><span style="font-weight:800;color:var(--text)">${label}</span> <span style="font-family:monospace;font-size:11.5px;color:var(--muted)">${mask(val)}</span></div>${btn}</div>`;
+  const row=(label,val,btn)=>`<div class="vc-voice"><div style="flex:1"><span style="font-weight:800;color:var(--text)">${label}</span> <span style="font-family:monospace;font-size:11.5px;color:var(--muted)">${_maskKey(val)}</span></div>${btn}</div>`;
+  return (primary?row('หลัก',primary,`<button class="btn btn-outline btn-sm" onclick="clearPrimaryKey()">✕ ลบ</button>`):`<div style="font-size:12.5px;color:var(--coral);margin-bottom:8px">ยังไม่มี key หลัก</div>`)
+    + extra.map((k,i)=>row('สำรอง '+(i+1),k,`<button class="btn btn-outline btn-sm" onclick="removeBackupKey(${i})">✕ ลบ</button>`)).join('')
+    + `<div style="font-size:12px;color:var(--muted);margin-top:6px">รวม ${1*(primary?1:0)+extra.length} key${(primary?1:0)+extra.length!==1?'s':''}</div>`;
+}
+function _renderKeySection(){
   return `
     <div class="vc-pick-ttl" style="margin-top:22px">🔑 API keys — เพิ่มโควตาเสียง AI</div>
-    <div style="font-size:12px;color:var(--muted);line-height:1.6;margin-bottom:10px">แต่ละ key มีโควตาฟรี<b>แยกกัน</b> — ใส่หลาย key (จากหลายบัญชี Google) พอ key แรกเต็ม ระบบจะสลับไปใช้ key ถัดไปให้<b>อัตโนมัติ</b> ทำให้เสียง AI ใช้ได้นานขึ้นมาก · <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener">ขอ key ฟรีเพิ่ม</a></div>
-    ${primary?row('หลัก',primary,`<button class="btn btn-outline btn-sm" onclick="clearPrimaryKey()">✕ ลบ</button>`):`<div style="font-size:12.5px;color:var(--coral);margin-bottom:8px">ยังไม่มี key หลัก</div>`}
-    ${extra.map((k,i)=>row('สำรอง '+(i+1),k,`<button class="btn btn-outline btn-sm" onclick="removeBackupKey(${i})">✕ ลบ</button>`)).join('')}
+    <div style="font-size:12px;color:var(--muted);line-height:1.6;margin-bottom:10px">แต่ละ key มีโควตาฟรี<b>แยกกัน</b> — พอ key แรกเต็ม ระบบจะสลับไปใช้ key ถัดไปให้<b>อัตโนมัติ</b> ทำให้เสียง AI ใช้ได้นานขึ้นมาก</div>
+    ${_keyRowsHtml()}
     <div style="display:flex;gap:6px;margin-top:8px">
       <input id="vc-newkey" class="ielts-mine-ta" style="min-height:auto;flex:1;margin:0" placeholder="วาง Gemini API key (AIza...)">
       <button class="btn btn-primary btn-sm" onclick="addBackupKey()">➕ เพิ่ม</button>
-    </div>`;
+    </div>
+    <button class="btn btn-outline btn-sm" style="width:100%;margin-top:8px" onclick="showScreen('getkey')">📖 ติดลิมิต? ดูวิธีขอ key เพิ่มหลายบัญชี</button>`;
+}
+function _addOneKey(k){
+  if(!k) return false;
+  const primary=localStorage.getItem(_GEMINI_KEY_LS);
+  if(!primary){ localStorage.setItem(_GEMINI_KEY_LS,k); return true; }
+  if(k===primary) return false;
+  let extra=[]; try{ extra=JSON.parse(localStorage.getItem('ws_gemini_keys_extra')||'[]'); }catch(e){}
+  if(extra.includes(k)) return false;
+  extra.push(k); localStorage.setItem('ws_gemini_keys_extra', JSON.stringify(extra));
+  return true;
 }
 function addBackupKey(){
   const inp=document.getElementById('vc-newkey'); const k=inp?inp.value.trim():'';
   if(!k){ if(inp) inp.focus(); return; }
-  if(!localStorage.getItem(_GEMINI_KEY_LS)){ localStorage.setItem(_GEMINI_KEY_LS,k); }
-  else {
-    let extra=[]; try{ extra=JSON.parse(localStorage.getItem('ws_gemini_keys_extra')||'[]'); }catch(e){}
-    if(k!==localStorage.getItem(_GEMINI_KEY_LS) && !extra.includes(k)) extra.push(k);
-    localStorage.setItem('ws_gemini_keys_extra', JSON.stringify(extra));
-  }
-  _gemKeyCursor=0; _ttsQuotaWarned=false; renderVoiceSettings();
+  _addOneKey(k);
+  _gemKeyCursor=0; _ttsQuotaWarned=false;
+  if(document.getElementById('voice-body')) renderVoiceSettings();
+  if(document.getElementById('gk-body')) renderGetKeyPage();
 }
 function removeBackupKey(i){
   let extra=[]; try{ extra=JSON.parse(localStorage.getItem('ws_gemini_keys_extra')||'[]'); }catch(e){}
   extra.splice(i,1); localStorage.setItem('ws_gemini_keys_extra', JSON.stringify(extra));
-  _gemKeyCursor=0; renderVoiceSettings();
+  _gemKeyCursor=0;
+  if(document.getElementById('voice-body')) renderVoiceSettings();
+  if(document.getElementById('gk-body')) renderGetKeyPage();
 }
 function clearPrimaryKey(){
   let extra=[]; try{ extra=JSON.parse(localStorage.getItem('ws_gemini_keys_extra')||'[]'); }catch(e){}
   if(extra.length){ localStorage.setItem(_GEMINI_KEY_LS, extra.shift()); localStorage.setItem('ws_gemini_keys_extra', JSON.stringify(extra)); }
   else localStorage.removeItem(_GEMINI_KEY_LS);
-  _gemKeyCursor=0; renderVoiceSettings();
+  _gemKeyCursor=0;
+  if(document.getElementById('voice-body')) renderVoiceSettings();
+  if(document.getElementById('gk-body')) renderGetKeyPage();
+}
+
+// ── Dedicated "get more API keys" guide page — for when quota runs out ──
+function renderGetKeyPage(){
+  const el=document.getElementById('gk-body'); if(!el) return;
+  el.innerHTML=`
+    <div class="vc-opt" style="border-color:#7C3AED">
+      <div class="vc-opt-ttl">💡 ทำไมต้องมีหลาย key?</div>
+      <div class="vc-opt-sub">Gemini API key ฟรี 1 บัญชี Google = 1 key ได้โควตาฟรีของตัวเอง ไม่เกี่ยวกัน — ถ้ามี 3 key ก็เหมือนมีโควตาเสียง AI/คุยกับ AI มากขึ้น 3 เท่า แอปจะสลับ key ให้อัตโนมัติเมื่อ key ที่ใช้อยู่เต็ม</div>
+    </div>
+
+    <div class="vc-pick-ttl">ขั้นตอนขอ key เพิ่ม (ฟรี ทำซ้ำได้ทุกบัญชี)</div>
+    <div class="vc-opt">
+      <div class="vc-opt-ttl">1️⃣ เปิด Google AI Studio</div>
+      <div class="vc-opt-sub">กดปุ่มด้านล่าง — จะเปิดแท็บใหม่ไปหน้าขอ API key</div>
+    </div>
+    <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener" class="btn btn-primary" style="width:100%;display:block;text-align:center;text-decoration:none;margin:4px 0 14px">🔗 เปิด Google AI Studio</a>
+    <div class="vc-opt">
+      <div class="vc-opt-ttl">2️⃣ ถ้าอยากได้อีก key จากอีกบัญชี</div>
+      <div class="vc-opt-sub">กดรูปโปรไฟล์มุมขวาบน → <b>Add account / เพิ่มบัญชี</b> (หรือเปิดหน้าต่าง Incognito/ส่วนตัว) → login ด้วย Gmail อีกอันที่ไม่เคยขอ key มาก่อน → เปิดลิงก์ AI Studio ซ้ำอีกครั้ง</div>
+    </div>
+    <div class="vc-opt">
+      <div class="vc-opt-ttl">3️⃣ กด "Create API key"</div>
+      <div class="vc-opt-sub">เลือก <b>Create API key in new project</b> (โปรเจกต์ใหม่ ไม่ผูกบัตร/billing เพื่อความปลอดภัย — เสียหายสุดแค่โควตาฟรีหมด)</div>
+    </div>
+    <div class="vc-opt">
+      <div class="vc-opt-ttl">4️⃣ คัดลอก key แล้ววางด้านล่างนี้</div>
+      <div class="vc-opt-sub">Key ขึ้นต้นด้วย <code>AIza</code> — วางทีละอันหรือหลายอัน (ขึ้นบรรทัดใหม่/คั่นด้วยจุลภาค) แล้วกดเพิ่มทั้งหมด ทำซ้ำข้อ 2-4 กี่บัญชีก็ได้</div>
+    </div>
+
+    <textarea id="gk-bulk" class="ielts-mine-ta" style="min-height:80px" placeholder="วาง key ได้หลายอัน บรรทัดละ 1 อัน เช่น&#10;AIzaXXXXXXXXXXXXXXXXXXXX&#10;AIzaYYYYYYYYYYYYYYYYYYYY"></textarea>
+    <button class="btn btn-primary" style="width:100%;margin-top:8px" onclick="addBackupKeysBulk()">➕ เพิ่ม key ทั้งหมดที่วาง</button>
+    <div id="gk-bulk-msg" style="font-size:12.5px;color:var(--muted);margin-top:6px"></div>
+
+    <div class="vc-pick-ttl" style="margin-top:22px">key ที่มีอยู่ตอนนี้</div>
+    ${_keyRowsHtml()}
+    <div style="font-size:11.5px;color:var(--muted);line-height:1.6;margin-top:10px">🔒 key เก็บไว้ในเครื่องคุณเท่านั้น (localStorage) ไม่ถูกส่งไปที่ไหนนอกจาก Google โดยตรง</div>`;
+}
+function addBackupKeysBulk(){
+  const ta=document.getElementById('gk-bulk'); if(!ta) return;
+  const parts=ta.value.split(/[\s,]+/).map(s=>s.trim()).filter(s=>s.length>10);
+  let added=0; parts.forEach(k=>{ if(_addOneKey(k)) added++; });
+  _gemKeyCursor=0; _ttsQuotaWarned=false;
+  const msgHtml = parts.length===0 ? '⚠️ ไม่พบ key ในข้อความที่วาง'
+    : added===0 ? '⚠️ key ที่วางมีอยู่แล้วทั้งหมด'
+    : `✅ เพิ่มแล้ว ${added} key${parts.length>added?` (ข้าม ${parts.length-added} อันที่ซ้ำ)`:''}`;
+  renderGetKeyPage(); // rebuilds #gk-bulk-msg (empty) — set text AFTER, not before
+  const msg=document.getElementById('gk-bulk-msg');
+  if(msg) msg.innerHTML = msgHtml;
 }
 // Selecting only sets the value (no API call). The AI voice model has a low free-tier
 // quota, so we only fetch audio when the user explicitly taps a 🔊 preview button —
