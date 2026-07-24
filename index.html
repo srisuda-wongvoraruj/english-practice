@@ -1936,7 +1936,7 @@ function recordRepeat(){
   _repeatRecog.lang='en-US'; _repeatRecog.continuous=true; _repeatRecog.interimResults=true;
   _repeatRecog.onresult=e=>{
     let interim='',final='';
-    for(let i=e.resultIndex;i<e.results.length;i++){
+    for(let i=(e.resultIndex||0);i<e.results.length;i++){
       if(e.results[i].isFinal){final+=e.results[i][0].transcript+' ';_rConf+=(e.results[i][0].confidence||0.75);_rConfN++;}
       else interim+=e.results[i][0].transcript;
     }
@@ -2608,7 +2608,7 @@ CATS.forEach(c=>{ if(c && REPLYQ[c.id]) c.reply=REPLYQ[c.id]; });
 // ═══════════════════════════════════════════════
 // STATE
 // ═══════════════════════════════════════════════
-const APP_VER='14ก.ค.2026-7';
+const APP_VER='14ก.ค.2026-8';
 
 const S = {
   catId:null, mode:null, exList:[], exIdx:0, scores:[],
@@ -3727,7 +3727,7 @@ function shadowRecord(i){
   _shadowRecog.lang='en-US'; _shadowRecog.continuous=true; _shadowRecog.interimResults=true;
   _shadowRecog.onresult=e=>{
     let interim='',final='';
-    for(let j=e.resultIndex;j<e.results.length;j++){
+    for(let j=(e.resultIndex||0);j<e.results.length;j++){
       if(e.results[j].isFinal){final+=e.results[j][0].transcript+' ';_sRConf+=(e.results[j][0].confidence||0.75);_sRConfN++;}
       else interim+=e.results[j][0].transcript;
     }
@@ -3851,7 +3851,7 @@ function sitSpeak(phraseIdx) {
   _sitRecog.lang='en-US'; _sitRecog.continuous=true; _sitRecog.interimResults=true;
   _sitRecog.onresult=e=>{
     let interim='',final='';
-    for(let j=e.resultIndex;j<e.results.length;j++){
+    for(let j=(e.resultIndex||0);j<e.results.length;j++){
       if(e.results[j].isFinal){final+=e.results[j][0].transcript+' ';_sitConf+=(e.results[j][0].confidence||0.75);_sitConfN++;}
       else interim+=e.results[j][0].transcript;
     }
@@ -4414,7 +4414,7 @@ function ieRecord(){
   _ieRecog.lang='en-US'; _ieRecog.continuous=true; _ieRecog.interimResults=true;
   _ieRecog.onresult=e=>{
     let interim='',final='';
-    for(let j=e.resultIndex;j<e.results.length;j++){
+    for(let j=(e.resultIndex||0);j<e.results.length;j++){
       if(e.results[j].isFinal) final+=e.results[j][0].transcript+' ';
       else interim+=e.results[j][0].transcript;
     }
@@ -5309,7 +5309,7 @@ function diaryDict(mode){
     r.continuous=true; r.interimResults=true;
     r.onresult=e=>{
       let fin='', int='';
-      for(let i=e.resultIndex;i<e.results.length;i++){
+      for(let i=(e.resultIndex||0);i<e.results.length;i++){
         if(e.results[i].isFinal) fin+=e.results[i][0].transcript+' ';
         else int+=e.results[i][0].transcript;
       }
@@ -5751,7 +5751,7 @@ function chatToggleRec() {
     r.lang='en-US'; r.continuous=true; r.interimResults=true;
     r.onresult=e=>{
       let interim='', final='';
-      for(let i=e.resultIndex;i<e.results.length;i++){
+      for(let i=(e.resultIndex||0);i<e.results.length;i++){
         if(e.results[i].isFinal) final+=e.results[i][0].transcript+' ';
         else interim+=e.results[i][0].transcript;
       }
