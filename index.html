@@ -2608,7 +2608,7 @@ CATS.forEach(c=>{ if(c && REPLYQ[c.id]) c.reply=REPLYQ[c.id]; });
 // ═══════════════════════════════════════════════
 // STATE
 // ═══════════════════════════════════════════════
-const APP_VER='14ก.ค.2026-8';
+const APP_VER='14ก.ค.2026-9';
 
 const S = {
   catId:null, mode:null, exList:[], exIdx:0, scores:[],
@@ -5444,8 +5444,16 @@ REWRITE_NOTE: <1-2 ประโยคภาษาไทย สรุปแพท
 PRACTICE: <ONE short sentence, maximum 12 words, chosen from your REWRITE, with no asterisks — good for reading-aloud practice>
 
 Rules: ให้กำลังใจเสมอ — the learner is a beginner, score honestly but never harshly. If the entry is very short or off-topic, give a low COMPREHENSION_SCORE and explain why politely in Thai.`;
-  _gemGenerate(prompt, undefined, 1100).then(({text:resp})=>{
+  // 3000: Thai notes are token-hungry and gemini-2.5-* spends "thinking" tokens
+  // inside this same cap — 1100 truncated real responses after the first score
+  _gemGenerate(prompt, undefined, 3000).then(({text:resp})=>{
     const r=_diaryParse(resp);
+    if(!r.rewrite && r.g===null && r.l===null){
+      // response clearly truncated/malformed — don't save a half-empty entry
+      ta.readOnly=false; if(sbtn) sbtn.style.display='';
+      res.innerHTML=`<div class="ielts-mine-err">⚠️ คำตอบ AI มาไม่ครบ (โดนตัดกลางทาง) — กดส่งอีกครั้งได้เลย<br><button class="btn btn-outline btn-sm" style="margin-top:8px" onclick="diarySubmit()">🔁 ส่งตรวจอีกครั้ง</button></div>`;
+      return;
+    }
     _diaryState.result=r; _diaryState.text=text;
     _diarySave(p, text, r);
     _diaryRenderResult(res, r, 0);
@@ -5459,6 +5467,11 @@ Rules: ให้กำลังใจเสมอ — the learner is a beginner,
   });
 }
 function _diaryParse(t){
+  // real Gemini sometimes bolds labels (**GRAMMAR_SCORE:** 62) or wraps the reply in a
+  // code fence despite instructions — normalize those WITHOUT touching the **…** delta
+  // markers inside REWRITE (only label tokens are unbolded)
+  t=String(t).replace(/```[a-z]*\n?/gi,'')
+    .replace(/\*\*\s*((?:COMPREHENSION|GRAMMAR|LEVEL|REWRITE)_?(?:SCORE|NOTE|ERRORS)?|REWRITE|PRACTICE)\s*(:?)\s*\*\*\s*(:?)/gi,'$1$2$3');
   const num=re=>{const m=t.match(re);return m?Math.max(0,Math.min(100,parseInt(m[1],10))):null};
   const str=re=>{const m=t.match(re);return m?m[1].trim():''};
   const c=num(/COMPREHENSION_SCORE:\s*(\d+)/i), g=num(/GRAMMAR_SCORE:\s*(\d+)/i), l=num(/LEVEL_SCORE:\s*(\d+)/i);
