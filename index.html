@@ -23,6 +23,7 @@ body{
   --green:#6DC78A;--green-br:#5BB87B;--green-lt:#E6F9ED;
   --yellow:#F5D06A;--yellow-dk:#D9A800;--yellow-lt:#FFFBE6;
   --red:#F08080;--red-lt:#FFF0F0;
+  --accent:#D9A800;--coral:#F08080; /* referenced by 7 score-color sites but were never defined — silently inherited before */
   --blue:#89B4F7;--blue-lt:#EBF2FF;
   --orange:#FFB67A;
   --surface:#FFFFFF;
@@ -561,6 +562,37 @@ body{
 .vc-voice.vc-on{border-color:#7C3AED;background:rgba(124,58,237,.05)}
 .vc-style-chip{border:2px solid var(--border);border-radius:100px;padding:8px 14px;font-size:12.5px;font-weight:700;color:var(--text2);background:var(--surface);cursor:pointer;transition:.15s}
 .vc-style-chip.vc-on{border-color:#7C3AED;background:#7C3AED;color:#fff}
+
+/* ── DIARY (ไดอารี่วันนี้) ── */
+.di-streak{font-size:12px;color:var(--muted);margin:0 2px 6px}
+.di-owl{font-size:13px;color:var(--text2);margin:0 2px 10px;font-weight:600}
+.di-card{background:var(--surface);border:1.5px solid var(--border);border-radius:16px;padding:14px 16px;position:relative}
+.di-cat-pill{display:inline-block;background:var(--purple-lt);color:var(--purple);font-size:11.5px;font-weight:800;border-radius:100px;padding:3px 10px;margin-bottom:8px}
+.di-sticker{position:absolute;top:10px;right:14px;font-size:30px;line-height:1}
+.di-prompt-th{font-size:16px;font-weight:700;color:var(--text);line-height:1.65;padding-right:36px}
+.di-ghost-row{display:flex;gap:8px;margin:10px 0 4px}
+.di-ta{width:100%;min-height:150px;border:1.5px solid var(--border);border-radius:14px;padding:12px 14px;font-size:15px;font-family:inherit;color:var(--text);background:var(--surface);resize:vertical;line-height:1.7;box-sizing:border-box}
+.di-ta:focus{outline:none;border-color:var(--pink-dk)}
+.di-ta[readonly]{opacity:.65}
+.di-wc{font-size:11.5px;color:var(--muted);text-align:right;margin-top:3px}
+.di-helper{font-size:12px;color:var(--muted);margin:4px 2px 10px;line-height:1.5}
+.di-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:14px 0 6px}
+.di-tile{background:var(--surface);border:1.5px solid var(--border);border-radius:14px;padding:12px 8px;text-align:center}
+.di-tile-v{font-size:23px;font-weight:900;color:var(--text)}
+.di-tile-l{font-size:11px;color:var(--muted);font-weight:700;margin-top:2px}
+.di-sec{font-size:12.5px;font-weight:800;color:var(--text2);margin:14px 2px 5px}
+.di-note{font-size:12.5px;color:var(--text2);line-height:1.7;margin:0 2px}
+.di-fix{background:var(--surface);border:1.5px solid var(--border);border-radius:12px;padding:10px 12px;margin-bottom:8px;font-size:12.5px;line-height:1.75;color:var(--text2)}
+.di-fix b{color:var(--text)}
+.di-rewrite{background:var(--pink-lt);border:1.5px solid var(--pink-dk);border-radius:16px;padding:14px 16px;margin-top:14px}
+.di-rewrite-ttl{font-size:13px;font-weight:800;color:var(--pink-dk);margin-bottom:8px}
+.di-rewrite-en{font-size:14.5px;color:var(--text);line-height:1.85}
+.di-rewrite-en mark{background:var(--purple-lt);color:var(--purple-dk);border-radius:4px;padding:0 3px;font-weight:700}
+.di-hist-row{display:flex;align-items:center;gap:10px;background:var(--surface);border:1.5px solid var(--border);border-radius:12px;padding:10px 12px;margin-bottom:8px;cursor:pointer}
+.di-hist-info{flex:1;min-width:0}
+.di-hist-date{font-size:11px;color:var(--muted)}
+.di-hist-line{font-size:13px;font-weight:700;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.di-score-chip{font-size:12px;font-weight:800;border-radius:100px;padding:3px 9px;flex-shrink:0;background:var(--purple-lt)}
 .nudge{margin:0 16px 10px;padding:11px 14px;border-radius:14px;font-size:13.5px;font-weight:700;line-height:1.5}
 .nudge-warn{background:linear-gradient(135deg,#FFF3CD,#FFE08A);color:#7a5a00;border:1px solid #ffd966}
 .nudge-ok{background:#E8F5E9;color:#2e7d32;border:1px solid #b6e0bb}
@@ -968,6 +1000,12 @@ body{
     <div class="quest-sub">คุยอังกฤษสดๆ กับ AI — พูดโต้ตอบจริง พร้อมแก้ให้เบาๆ</div></div>
     <div class="quest-go">▶</div>
   </div>
+  <div class="quest" onclick="showScreen('diary')">
+    <div class="quest-ico" style="background:#E0789F">📔</div>
+    <div class="quest-txt"><div class="quest-ttl">ไดอารี่วันนี้ · ใหม่!</div>
+    <div class="quest-sub">อ่านโจทย์ไทย เขียนเล่าเป็นอังกฤษ — AI ให้คะแนน 4 มิติ + แต่งให้เนทีฟ</div></div>
+    <div class="quest-go">▶</div>
+  </div>
   <div class="quest itp-card" onclick="showScreen('itp')">
     <div class="quest-ico">🎙️</div>
     <div class="quest-txt"><div class="quest-ttl">ล่ามทันใจ · พูดไทย ➜ English</div>
@@ -1087,6 +1125,17 @@ body{
     <div class="cat-hero-desc">ติดลิมิตโควตาเสียง AI? ขอ key ฟรีเพิ่มจากหลายบัญชี Google แล้วแอปจะสลับให้อัตโนมัติ</div>
   </div>
   <div class="pad" style="padding-top:16px" id="gk-body"></div>
+</div>
+
+<!-- ══════════════ DIARY ══════════════ -->
+<div id="screen-diary" class="screen">
+  <div class="cat-hero" style="background:linear-gradient(135deg,#F4A7C0,#E0789F)">
+    <button class="back-btn" onclick="diaryBack()">← Back</button>
+    <div class="cat-hero-icon">📔</div>
+    <div class="cat-hero-name">ไดอารี่วันนี้</div>
+    <div class="cat-hero-desc">อ่านโจทย์ภาษาไทย แล้วเขียนเล่าเป็นภาษาอังกฤษ — AI ตรวจให้ 4 มิติ พร้อมแต่งเวอร์ชันเนทีฟให้</div>
+  </div>
+  <div class="pad" style="padding-top:16px" id="diary-body"></div>
 </div>
 
 <!-- ══════════════ EXERCISE ══════════════ -->
@@ -2554,7 +2603,7 @@ CATS.forEach(c=>{ if(c && REPLYQ[c.id]) c.reply=REPLYQ[c.id]; });
 // ═══════════════════════════════════════════════
 // STATE
 // ═══════════════════════════════════════════════
-const APP_VER='14ก.ค.2026-5';
+const APP_VER='14ก.ค.2026-6';
 
 const S = {
   catId:null, mode:null, exList:[], exIdx:0, scores:[],
@@ -2752,6 +2801,7 @@ function showScreen(id) {
   if(id==='aichat')    renderAiChat();
   if(id==='voice')     renderVoiceSettings();
   if(id==='getkey')    renderGetKeyPage();
+  if(id==='diary')     renderDiary();
 }
 
 // ═══════════════════════════════════════════════
@@ -3944,7 +3994,7 @@ const _ieErrBox=msg=>`<div class="ielts-mine-err">${msg}<br><button class="btn b
 // generic Gemini call with the same model-fallback chain; resolves {text, model}.
 // extraParts (optional) lets callers attach non-text parts, e.g. an audio clip via
 // inlineData, for multimodal analysis (used by the intonation checker below).
-function _gemGenerate(prompt, extraParts){
+function _gemGenerate(prompt, extraParts, maxTokens){
   const keys=_gemKeyList();
   if(!keys.length) return Promise.reject({code:'nokey'});
   const parts=[{text:prompt}, ...(extraParts||[])];
@@ -3957,7 +4007,7 @@ function _gemGenerate(prompt, extraParts){
       const model=_GEMINI_MODELS[i];
       const url='https://generativelanguage.googleapis.com/v1beta/models/'+model+':generateContent?key='+encodeURIComponent(key);
       return fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({contents:[{parts}],generationConfig:{temperature:0.7,maxOutputTokens:700}})})
+        body:JSON.stringify({contents:[{parts}],generationConfig:{temperature:0.7,maxOutputTokens:maxTokens||700}})})
         .then(r=>r.json().then(j=>({ok:r.ok,status:r.status,j})), ()=>({ok:false,status:0,j:null}))
         .then(({ok,status,j})=>{
           if(!ok){
@@ -4059,6 +4109,9 @@ TIP: <one short, specific, encouraging coaching tip in Thai about their intonati
       const scoreM=text.match(/SCORE:\s*(\d+)/i), tipM=text.match(/TIP:\s*([\s\S]*)/i);
       const score=scoreM?Math.max(0,Math.min(100,parseInt(scoreM[1],10))):null;
       const tip=(tipM?tipM[1]:text).trim();
+      // optional per-id completion hook (used by the diary screen to fill its 4th
+      // score tile); other callsites never set _intoDone so behavior is unchanged
+      if(score!==null && window._intoDone && window._intoDone[id]){ try{window._intoDone[id](score)}catch(e){} }
       const em=score===null?'🎯':score>=80?'🌟':score>=60?'🙂':'💪';
       el.innerHTML=`<div class="cmp-card fade-in" style="padding:10px 12px;margin-bottom:6px">
         <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
@@ -5053,6 +5106,311 @@ function addBackupKeysBulk(){
   const msg=document.getElementById('gk-bulk-msg');
   if(msg) msg.innerHTML = msgHtml;
 }
+
+// ═══════════════════════════════════════════════
+// DIARY (ไดอารี่วันนี้) — Thai prompt → English entry → 4-dimension AI feedback
+// ═══════════════════════════════════════════════
+// Prompts come from this static curated bank (instant, works with zero API key,
+// no quota spent before the learner has written anything). AI budget is reserved
+// for scoring. "✨ โจทย์ใหม่จาก AI" is an opt-in extra that falls back silently.
+const DIARY_BANK=[
+  {cat:'เมื่อวาน',emoji:'🌙',th:'เล่าให้ฟังหน่อยว่าเมื่อวานนี้คุณทำอะไรบ้าง ตั้งแต่ตื่นนอนจนเข้านอน'},
+  {cat:'เมื่อวาน',emoji:'🌙',th:'เมื่อวานมีเรื่องอะไรที่ไม่เป็นไปตามแผนบ้าง แล้วคุณจัดการกับมันยังไง'},
+  {cat:'เมื่อวาน',emoji:'🌙',th:'เมื่อวานคุณคุยกับใครมากที่สุด คุยเรื่องอะไรกันบ้าง'},
+  {cat:'เมื่อวาน',emoji:'🌙',th:'สิ่งที่ดีที่สุดของเมื่อวานคืออะไร เล่ารายละเอียดให้ฟังหน่อย'},
+  {cat:'เมื่อวาน',emoji:'🌙',th:'เมื่อวานเหนื่อยแค่ไหน อะไรทำให้เหนื่อยที่สุด แล้วคุณพักผ่อนยังไง'},
+  {cat:'วันนี้',emoji:'☀️',th:'วันนี้มีเรื่องอะไรที่ทำให้คุณยิ้มได้บ้าง เล่าให้ฟังหน่อย'},
+  {cat:'วันนี้',emoji:'☀️',th:'เล่าบรรยากาศเช้าวันนี้ของคุณให้ฟังหน่อย ตื่นกี่โมง ทำอะไรก่อนออกจากบ้าน'},
+  {cat:'วันนี้',emoji:'☀️',th:'วันนี้คุณตั้งใจจะทำอะไรให้เสร็จ แล้วคิดว่าจะทำได้ไหม เพราะอะไร'},
+  {cat:'วันนี้',emoji:'☀️',th:'อากาศวันนี้เป็นยังไง แล้วมันมีผลกับอารมณ์หรือแผนของคุณยังไงบ้าง'},
+  {cat:'วันนี้',emoji:'☀️',th:'ถ้าให้คะแนนวันนี้เต็ม 10 คุณให้เท่าไหร่ เพราะอะไร เล่าเหตุผลหน่อย'},
+  {cat:'เที่ยว',emoji:'🎒',th:'สุดสัปดาห์ที่ผ่านมาคุณไปไหนมาบ้าง เล่าให้ฟังหน่อย'},
+  {cat:'เที่ยว',emoji:'🎒',th:'เล่าทริปเที่ยวที่ประทับใจที่สุดครั้งหนึ่งในชีวิต ไปที่ไหน กับใคร เจออะไรบ้าง'},
+  {cat:'เที่ยว',emoji:'🎒',th:'ถ้าสุดสัปดาห์นี้ไปเที่ยวได้ทุกที่ คุณจะไปไหน แล้ววางแผนจะทำอะไรที่นั่น'},
+  {cat:'เที่ยว',emoji:'🎒',th:'เล่าเรื่องคาเฟ่หรือร้านที่คุณเพิ่งไปมา บรรยากาศเป็นยังไง สั่งอะไรไปบ้าง'},
+  {cat:'เที่ยว',emoji:'🎒',th:'วันหยุดในฝันของคุณเป็นแบบไหน นอนอยู่บ้านหรือออกไปผจญภัย เล่าหน่อย'},
+  {cat:'ความรู้สึก',emoji:'💭',th:'ช่วงนี้คุณรู้สึกยังไงบ้าง มีอะไรที่ทำให้กังวลหรือมีความสุขเป็นพิเศษ'},
+  {cat:'ความรู้สึก',emoji:'💭',th:'เล่าถึงสิ่งเล็กๆ ที่ทำให้คุณมีความสุขในช่วงนี้'},
+  {cat:'ความรู้สึก',emoji:'💭',th:'มีเรื่องอะไรที่คุณอยากขอบคุณตัวเองบ้างในสัปดาห์นี้'},
+  {cat:'ความรู้สึก',emoji:'💭',th:'ถ้าพูดกับตัวเองเมื่อ 5 ปีที่แล้วได้ คุณจะเล่าอะไรให้ตัวเองฟัง'},
+  {cat:'ความรู้สึก',emoji:'💭',th:'อะไรคือสิ่งที่ทำให้คุณเครียดที่สุดตอนนี้ แล้วคุณรับมือกับมันยังไง'},
+  {cat:'แผนการ',emoji:'🗓️',th:'พรุ่งนี้คุณวางแผนจะทำอะไรบ้าง เล่าให้ฟังหน่อย'},
+  {cat:'แผนการ',emoji:'🗓️',th:'เป้าหมายที่อยากทำให้สำเร็จในเดือนนี้คืออะไร แล้วจะเริ่มยังไง'},
+  {cat:'แผนการ',emoji:'🗓️',th:'มีอะไรที่อยากเรียนรู้หรืออยากลองทำเป็นครั้งแรกบ้าง เพราะอะไร'},
+  {cat:'แผนการ',emoji:'🗓️',th:'ปีนี้เหลืออีกไม่กี่เดือน มีอะไรที่ตั้งใจไว้แล้วยังไม่ได้ทำบ้าง'},
+  {cat:'แผนการ',emoji:'🗓️',th:'เล่าความฝันระยะยาวของคุณให้ฟังหน่อย อยากเห็นชีวิตตัวเองเป็นยังไงในอีก 5 ปี'},
+  {cat:'ความทรงจำ',emoji:'🎞️',th:'เล่าความทรงจำวัยเด็กที่คุณจำได้แม่นที่สุด'},
+  {cat:'ความทรงจำ',emoji:'🎞️',th:'เล่าถึงครูหรือคนที่มีอิทธิพลกับชีวิตคุณมากที่สุด เขาเป็นคนยังไง'},
+  {cat:'ความทรงจำ',emoji:'🎞️',th:'ของขวัญที่ประทับใจที่สุดที่เคยได้รับคืออะไร ใครให้ แล้วรู้สึกยังไง'},
+  {cat:'ความทรงจำ',emoji:'🎞️',th:'เล่าเรื่องตลกหรือเรื่องเขินอายที่เคยเกิดขึ้นกับคุณ'},
+  {cat:'ความทรงจำ',emoji:'🎞️',th:'เพลงหรือหนังเรื่องไหนที่พาคุณย้อนกลับไปช่วงเวลาเก่าๆ เล่าความทรงจำนั้นหน่อย'},
+  {cat:'อาหาร',emoji:'🍜',th:'เมื่อวานคุณกินอะไรอร่อยที่สุด เล่าบรรยากาศตอนกินให้ฟังหน่อย'},
+  {cat:'อาหาร',emoji:'🍜',th:'เมนูโปรดตลอดกาลของคุณคืออะไร ทำไมถึงชอบ กินครั้งแรกเมื่อไหร่'},
+  {cat:'อาหาร',emoji:'🍜',th:'เล่าร้านอาหารที่คุณอยากพาเพื่อนต่างชาติไปกิน ต้องสั่งอะไรบ้าง'},
+  {cat:'อาหาร',emoji:'🍜',th:'คุณเคยทำอาหารเมนูไหนแล้วภูมิใจที่สุด เล่าวิธีทำคร่าวๆ ให้ฟังหน่อย'},
+  {cat:'อาหาร',emoji:'🍜',th:'ถ้าเลือกกินได้แค่เมนูเดียวตลอดชีวิต จะเลือกอะไร เพราะอะไร'},
+  {cat:'ไม่คาดฝัน',emoji:'⚡',th:'เล่าเรื่องเซอร์ไพรส์ล่าสุดที่เกิดขึ้นกับคุณ จะเรื่องดีหรือเรื่องวุ่นๆ ก็ได้'},
+  {cat:'ไม่คาดฝัน',emoji:'⚡',th:'เคยเจอเหตุการณ์อะไรที่ทำให้ต้องเปลี่ยนแผนกะทันหันบ้าง แล้วลงเอยยังไง'},
+  {cat:'ไม่คาดฝัน',emoji:'⚡',th:'เล่าครั้งที่คุณหลงทางหรือขึ้นรถผิดสาย ตอนนั้นทำยังไง'},
+  {cat:'ไม่คาดฝัน',emoji:'⚡',th:'เคยเจอคนแปลกหน้าที่ใจดีกับคุณแบบไม่คาดคิดไหม เล่าให้ฟังหน่อย'},
+  {cat:'ไม่คาดฝัน',emoji:'⚡',th:'วันที่ทุกอย่างผิดพลาดไปหมด คุณเคยเจอไหม เล่าหน่อยว่าเกิดอะไรขึ้นบ้าง'},
+];
+const _diaryState={prompt:null, idx:-1, result:null, text:''};
+function _diClr(s){ return s>=80?'var(--green)':s>=50?'var(--yellow-dk)':'var(--red)'; }
+function _diaryLoad(){ try{return JSON.parse(localStorage.getItem('ws_diary')||'[]')}catch(e){return []} }
+function _diaryStreak(){
+  const days=new Set(_diaryLoad().map(e=>new Date(e.d).toDateString()));
+  let n=0; const cur=new Date();
+  if(!days.has(cur.toDateString())) cur.setDate(cur.getDate()-1);
+  while(days.has(cur.toDateString())){ n++; cur.setDate(cur.getDate()-1); }
+  return n;
+}
+function _diaryPromptCardHtml(){
+  const p=_diaryState.prompt;
+  return `<span class="di-cat-pill">${p.emoji} ${_ieEsc(p.cat)}</span>
+    <span class="di-sticker">${p.emoji}</span>
+    <div class="di-prompt-th">${_ieEsc(p.th)}</div>`;
+}
+function renderDiary(){
+  const el=document.getElementById('diary-body'); if(!el) return;
+  if(!_diaryState.prompt){
+    _diaryState.idx=Math.floor(Date.now()/86400000)%DIARY_BANK.length; // same prompt all day
+    _diaryState.prompt=DIARY_BANK[_diaryState.idx];
+  }
+  _diaryState.result=null; _diaryState.text='';
+  const stk=_diaryStreak();
+  el.innerHTML=`
+    ${stk>=2?`<div class="di-streak">เขียนมาแล้ว ${stk} วันติด 🔥</div>`:''}
+    <div class="di-owl">🦉 วันนี้มีอะไรน่าเล่าบ้าง?</div>
+    <div class="di-card" id="di-prompt-card">${_diaryPromptCardHtml()}</div>
+    <div class="di-ghost-row">
+      <button class="btn btn-ghost btn-sm" style="flex:1" onclick="diaryReroll()">🔀 เปลี่ยนโจทย์</button>
+      <button class="btn btn-outline btn-sm" style="flex:1" onclick="diaryGenAI(this)">✨ โจทย์ใหม่จาก AI</button>
+    </div>
+    <div id="di-ai-note" style="font-size:11.5px;color:var(--muted);margin:0 2px 8px"></div>
+    <textarea id="di-ta" class="di-ta" placeholder="Today, I ..." oninput="diaryWc()"></textarea>
+    <div class="di-wc" id="di-wc">0 คำ</div>
+    <div class="di-helper">เล่าสัก 3–4 ประโยคขึ้นไป ยิ่งละเอียด AI ยิ่งช่วยได้ตรงจุด</div>
+    <button class="btn btn-primary" style="width:100%" id="di-submit" onclick="diarySubmit()">ส่งให้ AI ตรวจ 📝</button>
+    <div id="di-nudge" style="font-size:12px;color:var(--pink-dk);margin-top:6px;text-align:center"></div>
+    <div id="di-result" style="margin-top:14px"></div>
+    <div id="di-hist">${_diaryHistHtml(false)}</div>`;
+  diaryWc();
+}
+function diaryBack(){
+  const ta=document.getElementById('di-ta');
+  if(ta && ta.value.trim() && !_diaryState.result){
+    if(!confirm('ยังไม่ได้ส่ง ออกจากหน้านี้เลยไหม?')) return;
+  }
+  stopSpeech(); showScreen('home');
+}
+function diaryWc(){
+  const ta=document.getElementById('di-ta'), wc=document.getElementById('di-wc');
+  if(!ta||!wc) return;
+  const n=ta.value.trim().split(/\s+/).filter(Boolean).length;
+  wc.textContent=n+' คำ';
+}
+function diaryReroll(){
+  let i=_diaryState.idx;
+  if(DIARY_BANK.length>1){ while(i===_diaryState.idx) i=Math.floor(Math.random()*DIARY_BANK.length); }
+  _diaryState.idx=i; _diaryState.prompt=DIARY_BANK[i];
+  const card=document.getElementById('di-prompt-card');
+  if(card){ card.innerHTML=_diaryPromptCardHtml(); card.classList.remove('fade-in'); void card.offsetWidth; card.classList.add('fade-in'); }
+  const note=document.getElementById('di-ai-note'); if(note) note.textContent='';
+}
+function diaryGenAI(btn){
+  const note=document.getElementById('di-ai-note');
+  // opt-in AI prompt generation — must NEVER block: any failure falls back to the bank
+  if(!_gemKey()){ diaryReroll(); if(note) note.textContent='ยังไม่มี API key — ใช้โจทย์จากคลังแทน (ใส่ key ได้ที่หน้าตั้งค่าเสียง)'; return; }
+  if(btn){ btn.disabled=true; btn.textContent='✨ กำลังคิดโจทย์...'; }
+  let recent=[]; try{recent=JSON.parse(localStorage.getItem('ws_diary_recent_cats')||'[]')}catch(e){}
+  const prompt=`You are helping a Thai English learner practice diary writing. Generate ONE fresh diary prompt in Thai.\nPick a category from: เมื่อวาน, วันนี้, เที่ยว, ความรู้สึก, แผนการ, ความทรงจำ, อาหาร, ไม่คาดฝัน${recent.length?` — but NOT these recently used ones: ${recent.join(', ')}`:''}.\nThe prompt must invite a personal multi-sentence story (never answerable with yes/no), be specific and friendly, casual Thai.\nReply in EXACTLY this plain-text format, nothing else:\nCATEGORY: <category name from the list>\nEMOJI: <one fitting emoji>\nSCENARIO: <the diary prompt in Thai, 1-2 sentences>`;
+  const done=()=>{ if(btn){ btn.disabled=false; btn.textContent='✨ โจทย์ใหม่จาก AI'; } };
+  _gemGenerate(prompt).then(({text})=>{
+    done();
+    const cat=(text.match(/CATEGORY:\s*([^\n]+)/i)||[])[1];
+    const emoji=(text.match(/EMOJI:\s*(\S+)/i)||[])[1];
+    const th=(text.match(/SCENARIO:\s*([\s\S]+)/i)||[])[1];
+    if(!th){ diaryReroll(); if(note) note.textContent='AI ไม่ว่างชั่วคราว ใช้โจทย์สำรองแทน'; return; }
+    _diaryState.prompt={cat:(cat||'พิเศษ').trim(), emoji:(emoji||'✨').trim(), th:th.trim()};
+    const card=document.getElementById('di-prompt-card');
+    if(card){ card.innerHTML=_diaryPromptCardHtml(); card.classList.remove('fade-in'); void card.offsetWidth; card.classList.add('fade-in'); }
+    if(note) note.textContent='✨ โจทย์นี้ AI คิดให้สดๆ เลย';
+    recent.unshift(_diaryState.prompt.cat); localStorage.setItem('ws_diary_recent_cats', JSON.stringify(recent.slice(0,3)));
+  }).catch(()=>{ done(); diaryReroll(); if(note) note.textContent='AI ไม่ว่างชั่วคราว ใช้โจทย์สำรองแทน'; });
+}
+function diarySubmit(){
+  const ta=document.getElementById('di-ta'); if(!ta) return;
+  const text=ta.value.trim();
+  const wc=text.split(/\s+/).filter(Boolean).length;
+  const nud=document.getElementById('di-nudge');
+  if(wc<15){ if(nud) nud.textContent='เล่าเพิ่มอีกนิดนะ อย่างน้อย 15 คำ ถึงจะให้คะแนนแม่นๆ ได้ (ตอนนี้ '+wc+' คำ)'; return; }
+  if(nud) nud.textContent='';
+  const res=document.getElementById('di-result'); if(!res) return;
+  if(!_gemKey()){ ieShowKeyForm(res, false, diarySubmit); return; }
+  ta.readOnly=true;
+  const sbtn=document.getElementById('di-submit'); if(sbtn) sbtn.style.display='none';
+  res.innerHTML='<div class="ielts-mine-loading">🦉 กำลังอ่านไดอารี่ของคุณ... <span class="ie-dots"></span></div>';
+  const p=_diaryState.prompt;
+  const prompt=`You are a warm, encouraging English writing coach for a Thai learner (around A2-B1) practicing personal diary writing.
+
+The Thai diary prompt they were given: "${p.th}"
+
+Their English diary entry (typed on a phone — small typos are possible, judge intent, not literal spelling):
+"${text.replace(/"/g,"'")}"
+
+Evaluate their entry and reply in EXACTLY this plain-text format. Every label on its own line, no markdown symbols, no headings, no text before or after the labels:
+
+COMPREHENSION_SCORE: <number 0-100 — did they actually address the Thai prompt, and is the story coherent and reasonably complete>
+COMPREHENSION_NOTE: <1-2 ประโยคภาษาไทย เป็นกันเอง บอกว่าเล่าตรงโจทย์และครบถ้วนแค่ไหน>
+GRAMMAR_SCORE: <number 0-100>
+GRAMMAR_ERRORS: <the most important mistakes, MAXIMUM 3, each formatted as ผิด: "their exact words" | ถูก: "corrected words" | เหตุผล: short reason in Thai — separate items with " ;; " — write exactly ไม่มี if there are no real errors>
+GRAMMAR_NOTE: <1 ประโยคภาษาไทยสรุปภาพรวมแกรมม่า ให้กำลังใจ>
+LEVEL_SCORE: <number 0-100 — vocabulary range, register, and how natural it reads versus translated-from-Thai>
+LEVEL_NOTE: <1-2 ประโยคภาษาไทย ต้องยกตัวอย่างคำหรือวลีจริงจากที่เขาเขียน 1 จุด>
+REWRITE: <rewrite their FULL entry in a natural, casual, first-person diary voice that a native speaker would actually write — keep ALL of their ideas and events, do NOT invent new content, keep roughly the same length, and wrap ONLY the meaningfully changed words/phrases in double asterisks, for example: I **ended up staying** home>
+REWRITE_NOTE: <1-2 ประโยคภาษาไทย สรุปแพทเทิร์นหลักที่ปรับ เพื่อให้จำไปใช้ต่อได้>
+PRACTICE: <ONE short sentence, maximum 12 words, chosen from your REWRITE, with no asterisks — good for reading-aloud practice>
+
+Rules: ให้กำลังใจเสมอ — the learner is a beginner, score honestly but never harshly. If the entry is very short or off-topic, give a low COMPREHENSION_SCORE and explain why politely in Thai.`;
+  _gemGenerate(prompt, undefined, 1100).then(({text:resp})=>{
+    const r=_diaryParse(resp);
+    _diaryState.result=r; _diaryState.text=text;
+    _diarySave(p, text, r);
+    _diaryRenderResult(res, r, 0);
+    const hist=document.getElementById('di-hist'); if(hist) hist.innerHTML=_diaryHistHtml(false);
+  }).catch(err=>{
+    ta.readOnly=false; if(sbtn) sbtn.style.display='';
+    if(err&&(err.code==='nokey'||err.code==='badkey')){ ieShowKeyForm(res, err.code==='badkey', diarySubmit); return; }
+    const msg = err&&err.code==='quota' ? 'โควตา AI หมดชั่วคราว (ทุก key ที่มี) — ลองใหม่อีกสักครู่ หรือเพิ่ม key สำรองที่หน้าตั้งค่าเสียง'
+              : ((err&&err.msg)||(err&&err.message)||'ตรวจไม่สำเร็จ');
+    res.innerHTML=`<div class="ielts-mine-err">❌ ${_ieEsc(msg)}<br><button class="btn btn-outline btn-sm" style="margin-top:8px" onclick="diarySubmit()">🔁 ลองใหม่</button></div>`;
+  });
+}
+function _diaryParse(t){
+  const num=re=>{const m=t.match(re);return m?Math.max(0,Math.min(100,parseInt(m[1],10))):null};
+  const str=re=>{const m=t.match(re);return m?m[1].trim():''};
+  const c=num(/COMPREHENSION_SCORE:\s*(\d+)/i), g=num(/GRAMMAR_SCORE:\s*(\d+)/i), l=num(/LEVEL_SCORE:\s*(\d+)/i);
+  const cN=str(/COMPREHENSION_NOTE:\s*([^\n]+)/i), gN=str(/GRAMMAR_NOTE:\s*([^\n]+)/i), lN=str(/LEVEL_NOTE:\s*([^\n]+)/i);
+  const errsRaw=str(/GRAMMAR_ERRORS:\s*([\s\S]*?)\n\s*GRAMMAR_NOTE:/i);
+  let errs=[];
+  if(errsRaw && !/^ไม่มี/.test(errsRaw)){
+    errs=errsRaw.split(';;').map(s=>s.trim()).filter(Boolean).slice(0,3).map(item=>({
+      wrong:(item.match(/ผิด:\s*"([^"]+)"/)||[])[1]||'',
+      right:(item.match(/ถูก:\s*"([^"]+)"/)||[])[1]||'',
+      why:((item.match(/เหตุผล:\s*([\s\S]+)$/)||[])[1]||'').trim()
+    })).filter(e=>e.wrong||e.right);
+  }
+  let rewrite=str(/REWRITE:\s*([\s\S]*?)\n\s*REWRITE_NOTE:/i);
+  const rwN=str(/REWRITE_NOTE:\s*([^\n]+)/i);
+  let practice=str(/PRACTICE:\s*([^\n]+)/i).replace(/\*\*/g,'').trim();
+  if(!rewrite) rewrite=str(/REWRITE:\s*([\s\S]+)/i)||'';
+  if(!practice && rewrite){ // degrade: first sentence of the rewrite
+    practice=((rewrite.replace(/\*\*/g,'').match(/[^.!?\n]+[.!?]/)||[rewrite.replace(/\*\*/g,'').slice(0,80)])[0]).trim();
+  }
+  return {c,g,l,cN,gN,lN,errs,rewrite,rwN,practice};
+}
+// hi = index into ws_diary this result belongs to (0 = just-submitted newest)
+function _diaryRenderResult(el, r, hi){
+  const tile=(v,lbl,id)=>`<div class="di-tile"${id?` id="${id}"`:''}>
+    <div class="di-tile-v" style="color:${v===null?'var(--muted)':_diClr(v)}">${v===null?'—':v+'%'}</div>
+    <div class="di-tile-l">${lbl}</div></div>`;
+  // escape FIRST, then convert **…** markers to <mark> — order is load-bearing
+  const rwHtml=_ieEsc(r.rewrite).replace(/\*\*(.+?)\*\*/g,'<mark>$1</mark>');
+  window._diaryFixes=r.errs;
+  const intoId='diary-into-'+hi;
+  el.innerHTML=`
+    <div class="fade-in">
+      <div class="di-grid">
+        ${tile(r.c,'🧠 เข้าใจโจทย์')}
+        ${tile(r.g,'📝 แกรมม่า')}
+        ${tile(r.l,'✨ ระดับภาษา')}
+        ${tile(r.p!==undefined&&r.p!==null?r.p:null,'🎵 การออกเสียง','di-tile-p')}
+      </div>
+      ${r.cN?`<div class="di-sec">🧠 ความเข้าใจในการเล่า</div><div class="di-note">${_ieEsc(r.cN)}</div>`:''}
+      ${r.errs.length?`<div class="di-sec">📝 จุดที่ควรแก้</div>`+r.errs.map((e,i)=>`
+        <div class="di-fix">คุณเขียน: "<b>${_ieEsc(e.wrong)}</b>"<br>ควรเขียน: "<b>${_ieEsc(e.right)}</b>"${e.why?`<br><span style="color:var(--muted)">${_ieEsc(e.why)}</span>`:''}
+          <button class="btn btn-ghost btn-sm" style="margin-top:4px;padding:3px 10px;font-size:11.5px" onclick="diarySaveFix(${i},this)">📌 เก็บไว้ทบทวน</button>
+        </div>`).join(''):''}
+      ${r.gN?`<div class="di-note" style="margin-top:4px">${_ieEsc(r.gN)}</div>`:''}
+      ${r.lN?`<div class="di-sec">✨ ระดับภาษา</div><div class="di-note">${_ieEsc(r.lN)}</div>`:''}
+      ${r.rewrite?`<div class="di-rewrite">
+        <div class="di-rewrite-ttl">✨ เวอร์ชันที่เนทีฟเขียนจริง <button class="btn btn-ghost btn-sm" style="padding:2px 10px" onclick="diarySpeakRewrite()">🔊</button></div>
+        <div class="di-rewrite-en">${rwHtml}</div>
+        ${r.rwN?`<div class="di-note" style="margin-top:8px">${_ieEsc(r.rwN)}</div>`:''}
+      </div>`:''}
+      ${r.practice?`<div class="di-sec">🎵 ลองอ่านประโยคนี้ออกเสียง</div>
+        <div class="di-fix" style="font-size:14px;color:var(--text);font-weight:700">"${_ieEsc(r.practice)}"
+          <button class="btn btn-ghost btn-sm" style="padding:2px 10px" onclick="speak(_diaryPractice,0.92)">🔊</button></div>
+        <div id="${intoId}" style="margin-top:6px">${intoButtonInner(intoId, r.practice)}</div>`:''}
+      <div style="display:flex;gap:8px;margin-top:16px">
+        <button class="btn btn-outline btn-sm" style="flex:1" onclick="diaryNew()">✍️ เขียนเรื่องใหม่</button>
+        <button class="btn btn-ghost btn-sm" style="flex:1" onclick="diaryBack()">🏠 กลับหน้าแรก</button>
+      </div>
+    </div>`;
+  window._diaryPractice=r.practice||'';
+  window._intoDone=window._intoDone||{};
+  window._intoDone[intoId]=function(score){
+    const t=document.getElementById('di-tile-p');
+    if(t) t.innerHTML=`<div class="di-tile-v" style="color:${_diClr(score)}">${score}%</div><div class="di-tile-l">🎵 การออกเสียง</div>`;
+    try{ const arr=_diaryLoad(); if(arr[hi]){ arr[hi].scores.p=score; localStorage.setItem('ws_diary',JSON.stringify(arr)); } }catch(e){}
+  };
+}
+function diarySpeakRewrite(){
+  if(_diaryState.result&&_diaryState.result.rewrite) speak(_diaryState.result.rewrite.replace(/\*\*/g,''),0.95);
+}
+function diarySaveFix(i,btn){
+  const e=(window._diaryFixes||[])[i]; if(!e) return;
+  saveNote({phrase:e.right||e.wrong, context:'ไดอารี่', tip:(e.wrong?('เดิม: '+e.wrong+(e.why?' — '+e.why:'')):e.why)||'จุดที่ควรแก้จากไดอารี่'});
+  if(btn){ btn.textContent='✓ เก็บแล้ว'; btn.disabled=true; }
+}
+function _diarySave(p, text, r){
+  const arr=_diaryLoad();
+  arr.unshift({d:Date.now(), cat:p.cat, emoji:p.emoji, th:p.th, text:text,
+    scores:{c:r.c,g:r.g,l:r.l,p:null}, rewrite:r.rewrite, rwN:r.rwN, practice:r.practice,
+    cN:r.cN, gN:r.gN, lN:r.lN, errs:r.errs});
+  localStorage.setItem('ws_diary', JSON.stringify(arr.slice(0,30)));
+}
+function diaryNew(){ _diaryState.prompt=null; _diaryState.result=null; renderDiary(); window.scrollTo(0,0); }
+function _diaryHistHtml(expanded){
+  const arr=_diaryLoad();
+  if(!arr.length) return '';
+  const rows=(expanded?arr:arr.slice(0,3)).map((e,i)=>{
+    const avg=Math.round(((e.scores.c||0)+(e.scores.g||0)+(e.scores.l||0))/3);
+    const d=new Date(e.d);
+    return `<div class="di-hist-row" onclick="diaryOpenHist(${i})">
+      <span style="font-size:20px">${e.emoji||'📔'}</span>
+      <div class="di-hist-info">
+        <div class="di-hist-date">${d.getDate()}/${d.getMonth()+1}/${d.getFullYear()+543}</div>
+        <div class="di-hist-line">${_ieEsc(e.text.split(/\s+/).slice(0,7).join(' '))}...</div>
+      </div>
+      <span class="di-score-chip" style="color:${_diClr(avg)}">${avg}%</span>
+    </div>`;
+  }).join('');
+  return `<div class="di-sec" style="margin-top:22px">📚 ที่เคยเขียน</div>${rows}
+    ${!expanded&&arr.length>3?`<button class="btn btn-ghost btn-sm" style="width:100%" onclick="document.getElementById('di-hist').innerHTML=_diaryHistHtml(true)">ดูทั้งหมด (${arr.length})</button>`:''}`;
+}
+function diaryOpenHist(i){
+  const e=_diaryLoad()[i]; if(!e) return;
+  const el=document.getElementById('diary-body'); if(!el) return;
+  const d=new Date(e.d);
+  el.innerHTML=`
+    <button class="btn btn-ghost btn-sm" onclick="diaryNew()">← กลับ</button>
+    <div class="di-card" style="margin-top:10px">
+      <span class="di-cat-pill">${e.emoji||'📔'} ${_ieEsc(e.cat||'')}</span>
+      <span class="di-sticker">${e.emoji||'📔'}</span>
+      <div class="di-prompt-th">${_ieEsc(e.th)}</div>
+      <div class="di-hist-date" style="margin-top:6px">${d.getDate()}/${d.getMonth()+1}/${d.getFullYear()+543}</div>
+    </div>
+    <div class="di-sec">✍️ ที่คุณเขียน</div>
+    <div class="di-fix" style="font-size:13.5px;color:var(--text)">${_ieEsc(e.text)}</div>
+    <div id="di-result" style="margin-top:6px"></div>`;
+  _diaryState.result=e;
+  _diaryRenderResult(document.getElementById('di-result'),
+    {c:e.scores.c,g:e.scores.g,l:e.scores.l,p:e.scores.p,cN:e.cN,gN:e.gN,lN:e.lN,errs:e.errs||[],rewrite:e.rewrite,rwN:e.rwN,practice:e.practice}, i);
+  window.scrollTo(0,0);
+}
+
 function setTtsMode(m){ _ttsMode=m; localStorage.setItem('ws_tts_mode',m); _ttsQuotaWarned=false; renderVoiceSettings(); }
 function previewVoice(){
   const note=document.getElementById('vc-note');
