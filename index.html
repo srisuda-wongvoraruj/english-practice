@@ -593,6 +593,11 @@ body{
 .di-hist-date{font-size:11px;color:var(--muted)}
 .di-hist-line{font-size:13px;font-weight:700;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .di-score-chip{font-size:12px;font-weight:800;border-radius:100px;padding:3px 9px;flex-shrink:0;background:var(--purple-lt)}
+.di-guide-btn{display:block;margin-top:10px;background:var(--yellow-lt);border:1.5px solid var(--yellow);border-radius:100px;padding:6px 14px;font-size:12px;font-weight:700;color:#7a5200;cursor:pointer;font-family:inherit}
+.di-guide-step{display:flex;gap:8px;align-items:flex-start;font-size:13px;color:var(--text2);line-height:1.65;margin-top:8px}
+.di-guide-num{width:20px;height:20px;border-radius:50%;background:var(--purple-lt);color:var(--purple);font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px}
+.di-guide-tip{font-size:11.5px;color:var(--muted);margin-top:10px;line-height:1.5}
+#di-mic-en.rec,#di-mic-th.rec{background:var(--red-lt);border-color:var(--red);color:#c0392b}
 .nudge{margin:0 16px 10px;padding:11px 14px;border-radius:14px;font-size:13.5px;font-weight:700;line-height:1.5}
 .nudge-warn{background:linear-gradient(135deg,#FFF3CD,#FFE08A);color:#7a5a00;border:1px solid #ffd966}
 .nudge-ok{background:#E8F5E9;color:#2e7d32;border:1px solid #b6e0bb}
@@ -2603,7 +2608,7 @@ CATS.forEach(c=>{ if(c && REPLYQ[c.id]) c.reply=REPLYQ[c.id]; });
 // ═══════════════════════════════════════════════
 // STATE
 // ═══════════════════════════════════════════════
-const APP_VER='14ก.ค.2026-6';
+const APP_VER='14ก.ค.2026-7';
 
 const S = {
   catId:null, mode:null, exList:[], exIdx:0, scores:[],
@@ -5113,48 +5118,92 @@ function addBackupKeysBulk(){
 // Prompts come from this static curated bank (instant, works with zero API key,
 // no quota spent before the learner has written anything). AI budget is reserved
 // for scoring. "✨ โจทย์ใหม่จาก AI" is an opt-in extra that falls back silently.
+// Each prompt carries a hand-written Thai story guide `g` (3 leading questions,
+// setup → details → feeling) shown on demand for learners who can't think what to tell.
 const DIARY_BANK=[
-  {cat:'เมื่อวาน',emoji:'🌙',th:'เล่าให้ฟังหน่อยว่าเมื่อวานนี้คุณทำอะไรบ้าง ตั้งแต่ตื่นนอนจนเข้านอน'},
-  {cat:'เมื่อวาน',emoji:'🌙',th:'เมื่อวานมีเรื่องอะไรที่ไม่เป็นไปตามแผนบ้าง แล้วคุณจัดการกับมันยังไง'},
-  {cat:'เมื่อวาน',emoji:'🌙',th:'เมื่อวานคุณคุยกับใครมากที่สุด คุยเรื่องอะไรกันบ้าง'},
-  {cat:'เมื่อวาน',emoji:'🌙',th:'สิ่งที่ดีที่สุดของเมื่อวานคืออะไร เล่ารายละเอียดให้ฟังหน่อย'},
-  {cat:'เมื่อวาน',emoji:'🌙',th:'เมื่อวานเหนื่อยแค่ไหน อะไรทำให้เหนื่อยที่สุด แล้วคุณพักผ่อนยังไง'},
-  {cat:'วันนี้',emoji:'☀️',th:'วันนี้มีเรื่องอะไรที่ทำให้คุณยิ้มได้บ้าง เล่าให้ฟังหน่อย'},
-  {cat:'วันนี้',emoji:'☀️',th:'เล่าบรรยากาศเช้าวันนี้ของคุณให้ฟังหน่อย ตื่นกี่โมง ทำอะไรก่อนออกจากบ้าน'},
-  {cat:'วันนี้',emoji:'☀️',th:'วันนี้คุณตั้งใจจะทำอะไรให้เสร็จ แล้วคิดว่าจะทำได้ไหม เพราะอะไร'},
-  {cat:'วันนี้',emoji:'☀️',th:'อากาศวันนี้เป็นยังไง แล้วมันมีผลกับอารมณ์หรือแผนของคุณยังไงบ้าง'},
-  {cat:'วันนี้',emoji:'☀️',th:'ถ้าให้คะแนนวันนี้เต็ม 10 คุณให้เท่าไหร่ เพราะอะไร เล่าเหตุผลหน่อย'},
-  {cat:'เที่ยว',emoji:'🎒',th:'สุดสัปดาห์ที่ผ่านมาคุณไปไหนมาบ้าง เล่าให้ฟังหน่อย'},
-  {cat:'เที่ยว',emoji:'🎒',th:'เล่าทริปเที่ยวที่ประทับใจที่สุดครั้งหนึ่งในชีวิต ไปที่ไหน กับใคร เจออะไรบ้าง'},
-  {cat:'เที่ยว',emoji:'🎒',th:'ถ้าสุดสัปดาห์นี้ไปเที่ยวได้ทุกที่ คุณจะไปไหน แล้ววางแผนจะทำอะไรที่นั่น'},
-  {cat:'เที่ยว',emoji:'🎒',th:'เล่าเรื่องคาเฟ่หรือร้านที่คุณเพิ่งไปมา บรรยากาศเป็นยังไง สั่งอะไรไปบ้าง'},
-  {cat:'เที่ยว',emoji:'🎒',th:'วันหยุดในฝันของคุณเป็นแบบไหน นอนอยู่บ้านหรือออกไปผจญภัย เล่าหน่อย'},
-  {cat:'ความรู้สึก',emoji:'💭',th:'ช่วงนี้คุณรู้สึกยังไงบ้าง มีอะไรที่ทำให้กังวลหรือมีความสุขเป็นพิเศษ'},
-  {cat:'ความรู้สึก',emoji:'💭',th:'เล่าถึงสิ่งเล็กๆ ที่ทำให้คุณมีความสุขในช่วงนี้'},
-  {cat:'ความรู้สึก',emoji:'💭',th:'มีเรื่องอะไรที่คุณอยากขอบคุณตัวเองบ้างในสัปดาห์นี้'},
-  {cat:'ความรู้สึก',emoji:'💭',th:'ถ้าพูดกับตัวเองเมื่อ 5 ปีที่แล้วได้ คุณจะเล่าอะไรให้ตัวเองฟัง'},
-  {cat:'ความรู้สึก',emoji:'💭',th:'อะไรคือสิ่งที่ทำให้คุณเครียดที่สุดตอนนี้ แล้วคุณรับมือกับมันยังไง'},
-  {cat:'แผนการ',emoji:'🗓️',th:'พรุ่งนี้คุณวางแผนจะทำอะไรบ้าง เล่าให้ฟังหน่อย'},
-  {cat:'แผนการ',emoji:'🗓️',th:'เป้าหมายที่อยากทำให้สำเร็จในเดือนนี้คืออะไร แล้วจะเริ่มยังไง'},
-  {cat:'แผนการ',emoji:'🗓️',th:'มีอะไรที่อยากเรียนรู้หรืออยากลองทำเป็นครั้งแรกบ้าง เพราะอะไร'},
-  {cat:'แผนการ',emoji:'🗓️',th:'ปีนี้เหลืออีกไม่กี่เดือน มีอะไรที่ตั้งใจไว้แล้วยังไม่ได้ทำบ้าง'},
-  {cat:'แผนการ',emoji:'🗓️',th:'เล่าความฝันระยะยาวของคุณให้ฟังหน่อย อยากเห็นชีวิตตัวเองเป็นยังไงในอีก 5 ปี'},
-  {cat:'ความทรงจำ',emoji:'🎞️',th:'เล่าความทรงจำวัยเด็กที่คุณจำได้แม่นที่สุด'},
-  {cat:'ความทรงจำ',emoji:'🎞️',th:'เล่าถึงครูหรือคนที่มีอิทธิพลกับชีวิตคุณมากที่สุด เขาเป็นคนยังไง'},
-  {cat:'ความทรงจำ',emoji:'🎞️',th:'ของขวัญที่ประทับใจที่สุดที่เคยได้รับคืออะไร ใครให้ แล้วรู้สึกยังไง'},
-  {cat:'ความทรงจำ',emoji:'🎞️',th:'เล่าเรื่องตลกหรือเรื่องเขินอายที่เคยเกิดขึ้นกับคุณ'},
-  {cat:'ความทรงจำ',emoji:'🎞️',th:'เพลงหรือหนังเรื่องไหนที่พาคุณย้อนกลับไปช่วงเวลาเก่าๆ เล่าความทรงจำนั้นหน่อย'},
-  {cat:'อาหาร',emoji:'🍜',th:'เมื่อวานคุณกินอะไรอร่อยที่สุด เล่าบรรยากาศตอนกินให้ฟังหน่อย'},
-  {cat:'อาหาร',emoji:'🍜',th:'เมนูโปรดตลอดกาลของคุณคืออะไร ทำไมถึงชอบ กินครั้งแรกเมื่อไหร่'},
-  {cat:'อาหาร',emoji:'🍜',th:'เล่าร้านอาหารที่คุณอยากพาเพื่อนต่างชาติไปกิน ต้องสั่งอะไรบ้าง'},
-  {cat:'อาหาร',emoji:'🍜',th:'คุณเคยทำอาหารเมนูไหนแล้วภูมิใจที่สุด เล่าวิธีทำคร่าวๆ ให้ฟังหน่อย'},
-  {cat:'อาหาร',emoji:'🍜',th:'ถ้าเลือกกินได้แค่เมนูเดียวตลอดชีวิต จะเลือกอะไร เพราะอะไร'},
-  {cat:'ไม่คาดฝัน',emoji:'⚡',th:'เล่าเรื่องเซอร์ไพรส์ล่าสุดที่เกิดขึ้นกับคุณ จะเรื่องดีหรือเรื่องวุ่นๆ ก็ได้'},
-  {cat:'ไม่คาดฝัน',emoji:'⚡',th:'เคยเจอเหตุการณ์อะไรที่ทำให้ต้องเปลี่ยนแผนกะทันหันบ้าง แล้วลงเอยยังไง'},
-  {cat:'ไม่คาดฝัน',emoji:'⚡',th:'เล่าครั้งที่คุณหลงทางหรือขึ้นรถผิดสาย ตอนนั้นทำยังไง'},
-  {cat:'ไม่คาดฝัน',emoji:'⚡',th:'เคยเจอคนแปลกหน้าที่ใจดีกับคุณแบบไม่คาดคิดไหม เล่าให้ฟังหน่อย'},
-  {cat:'ไม่คาดฝัน',emoji:'⚡',th:'วันที่ทุกอย่างผิดพลาดไปหมด คุณเคยเจอไหม เล่าหน่อยว่าเกิดอะไรขึ้นบ้าง'},
+  {cat:'เมื่อวาน',emoji:'🌙',th:'เล่าให้ฟังหน่อยว่าเมื่อวานนี้คุณทำอะไรบ้าง ตั้งแต่ตื่นนอนจนเข้านอน',
+   g:['เริ่มจากตอนเช้า: ตื่นกี่โมง ทำอะไรเป็นอย่างแรก','ช่วงกลางวัน: ไปไหน เจอใคร มีอะไรพิเศษไหม','ปิดท้าย: ก่อนนอนทำอะไร แล้ววันนั้นโดยรวมเป็นยังไง']},
+  {cat:'เมื่อวาน',emoji:'🌙',th:'เมื่อวานมีเรื่องอะไรที่ไม่เป็นไปตามแผนบ้าง แล้วคุณจัดการกับมันยังไง',
+   g:['เดิมทีวางแผนจะทำอะไร','แล้วเกิดอะไรขึ้นที่ทำให้แผนเปลี่ยน','คุณแก้สถานการณ์ยังไง ผลออกมาเป็นยังไง']},
+  {cat:'เมื่อวาน',emoji:'🌙',th:'เมื่อวานคุณคุยกับใครมากที่สุด คุยเรื่องอะไรกันบ้าง',
+   g:['คนนั้นคือใคร รู้จักกันยังไง','คุยเรื่องอะไร มีประเด็นไหนสนุกหรือน่าคิด','คุยแล้วรู้สึกยังไง ได้อะไรจากบทสนทนานี้']},
+  {cat:'เมื่อวาน',emoji:'🌙',th:'สิ่งที่ดีที่สุดของเมื่อวานคืออะไร เล่ารายละเอียดให้ฟังหน่อย',
+   g:['สิ่งนั้นคืออะไร เกิดขึ้นตอนไหน','ใครอยู่ด้วย เกิดอะไรขึ้นบ้าง เล่าให้เห็นภาพ','ทำไมถึงเป็นเรื่องที่ดีที่สุด รู้สึกยังไง']},
+  {cat:'เมื่อวาน',emoji:'🌙',th:'เมื่อวานเหนื่อยแค่ไหน อะไรทำให้เหนื่อยที่สุด แล้วคุณพักผ่อนยังไง',
+   g:['เมื่อวานทำอะไรบ้างถึงเหนื่อย','ช่วงไหนหรืองานไหนหนักที่สุด เพราะอะไร','พอเสร็จแล้วพักยังไง ได้ผลไหม']},
+  {cat:'วันนี้',emoji:'☀️',th:'วันนี้มีเรื่องอะไรที่ทำให้คุณยิ้มได้บ้าง เล่าให้ฟังหน่อย',
+   g:['เรื่องนั้นคืออะไร เกิดขึ้นที่ไหน ตอนไหน','ใครเกี่ยวข้องบ้าง เล่าเหตุการณ์ให้เห็นภาพ','ทำไมมันทำให้ยิ้มได้']},
+  {cat:'วันนี้',emoji:'☀️',th:'เล่าบรรยากาศเช้าวันนี้ของคุณให้ฟังหน่อย ตื่นกี่โมง ทำอะไรก่อนออกจากบ้าน',
+   g:['ตื่นกี่โมง ตื่นง่ายหรือยาก เพราะอะไร','กิจวัตรเช้านี้: กาแฟ อาหารเช้า ทำอะไรบ้าง','อารมณ์ตอนเริ่มวันเป็นแบบไหน']},
+  {cat:'วันนี้',emoji:'☀️',th:'วันนี้คุณตั้งใจจะทำอะไรให้เสร็จ แล้วคิดว่าจะทำได้ไหม เพราะอะไร',
+   g:['สิ่งที่ตั้งใจจะทำวันนี้คืออะไร','ทำไมมันสำคัญ ต้องเสร็จเมื่อไหร่','มั่นใจแค่ไหน มีอะไรอาจเป็นอุปสรรค']},
+  {cat:'วันนี้',emoji:'☀️',th:'อากาศวันนี้เป็นยังไง แล้วมันมีผลกับอารมณ์หรือแผนของคุณยังไงบ้าง',
+   g:['บรรยายอากาศวันนี้: ร้อน ฝน แดด ลม','อากาศแบบนี้ทำให้รู้สึกยังไง','มันเปลี่ยนแผนอะไรของคุณไหม ยังไง']},
+  {cat:'วันนี้',emoji:'☀️',th:'ถ้าให้คะแนนวันนี้เต็ม 10 คุณให้เท่าไหร่ เพราะอะไร เล่าเหตุผลหน่อย',
+   g:['ให้กี่คะแนน ตัดสินจากอะไร','เล่าเหตุการณ์ที่ทำให้ได้หรือเสียคะแนน','ถ้าย้อนได้ อยากเปลี่ยนอะไรให้วันนี้ดีขึ้น']},
+  {cat:'เที่ยว',emoji:'🎒',th:'สุดสัปดาห์ที่ผ่านมาคุณไปไหนมาบ้าง เล่าให้ฟังหน่อย',
+   g:['ไปที่ไหน กับใคร เดินทางยังไง','ที่นั่นทำอะไรบ้าง ช่วงไหนสนุกสุด','กลับมาแล้วรู้สึกยังไง อยากไปอีกไหม']},
+  {cat:'เที่ยว',emoji:'🎒',th:'เล่าทริปเที่ยวที่ประทับใจที่สุดครั้งหนึ่งในชีวิต ไปที่ไหน กับใคร เจออะไรบ้าง',
+   g:['ทริปนั้นไปที่ไหน เมื่อไหร่ กับใคร','เจออะไรที่ไม่คาดคิดหรือประทับใจเป็นพิเศษ','ทำไมทริปนี้ถึงพิเศษกว่าทริปอื่น']},
+  {cat:'เที่ยว',emoji:'🎒',th:'ถ้าสุดสัปดาห์นี้ไปเที่ยวได้ทุกที่ คุณจะไปไหน แล้ววางแผนจะทำอะไรที่นั่น',
+   g:['เลือกที่ไหน ทำไมถึงเลือกที่นั่น','วางแผนคร่าวๆ: เช้าทำอะไร เย็นทำอะไร','อยากชวนใครไปด้วย เพราะอะไร']},
+  {cat:'เที่ยว',emoji:'🎒',th:'เล่าเรื่องคาเฟ่หรือร้านที่คุณเพิ่งไปมา บรรยากาศเป็นยังไง สั่งอะไรไปบ้าง',
+   g:['ร้านชื่ออะไร อยู่แถวไหน ไปกับใคร','บรรยากาศร้าน: การตกแต่ง เพลง ผู้คน','สั่งอะไร อร่อยไหม จะกลับไปอีกไหม']},
+  {cat:'เที่ยว',emoji:'🎒',th:'วันหยุดในฝันของคุณเป็นแบบไหน นอนอยู่บ้านหรือออกไปผจญภัย เล่าหน่อย',
+   g:['อยู่บ้านชิลหรือออกไปลุย เลือกแบบไหน','เล่ากิจกรรมตั้งแต่เช้าถึงค่ำในวันนั้น','ทำไมแบบนี้ถึงชาร์จพลังคุณได้ดีที่สุด']},
+  {cat:'ความรู้สึก',emoji:'💭',th:'ช่วงนี้คุณรู้สึกยังไงบ้าง มีอะไรที่ทำให้กังวลหรือมีความสุขเป็นพิเศษ',
+   g:['ช่วงนี้อารมณ์โดยรวมเป็นยังไง','อะไรคือสาเหตุหลัก เล่าเหตุการณ์ให้ฟัง','คุณดูแลใจตัวเองยังไงอยู่']},
+  {cat:'ความรู้สึก',emoji:'💭',th:'เล่าถึงสิ่งเล็กๆ ที่ทำให้คุณมีความสุขในช่วงนี้',
+   g:['สิ่งเล็กๆ นั้นคืออะไร เจอมันตอนไหน','เล่าโมเมนต์ล่าสุดที่มันทำให้คุณยิ้ม','ทำไมสิ่งเล็กแค่นี้ถึงมีความหมาย']},
+  {cat:'ความรู้สึก',emoji:'💭',th:'มีเรื่องอะไรที่คุณอยากขอบคุณตัวเองบ้างในสัปดาห์นี้',
+   g:['สัปดาห์นี้คุณทำอะไรได้ดี','มันยากยังไง แล้วคุณผ่านมาได้ยังไง','อยากบอกอะไรกับตัวเอง']},
+  {cat:'ความรู้สึก',emoji:'💭',th:'ถ้าพูดกับตัวเองเมื่อ 5 ปีที่แล้วได้ คุณจะเล่าอะไรให้ตัวเองฟัง',
+   g:['5 ปีที่แล้วคุณกำลังทำอะไร ชีวิตเป็นยังไง','ตอนนี้อะไรเปลี่ยนไปที่ตัวเองในอดีตคงไม่เชื่อ','อยากให้กำลังใจหรือเตือนอะไรตัวเองตอนนั้น']},
+  {cat:'ความรู้สึก',emoji:'💭',th:'อะไรคือสิ่งที่ทำให้คุณเครียดที่สุดตอนนี้ แล้วคุณรับมือกับมันยังไง',
+   g:['เรื่องที่เครียดคืออะไร เริ่มมาตั้งแต่เมื่อไหร่','มันกระทบชีวิตประจำวันยังไง','ตอนนี้รับมือยังไง อะไรช่วยได้บ้าง']},
+  {cat:'แผนการ',emoji:'🗓️',th:'พรุ่งนี้คุณวางแผนจะทำอะไรบ้าง เล่าให้ฟังหน่อย',
+   g:['พรุ่งนี้มีนัดหรืองานอะไรบ้าง เรียงตามเวลา','อันไหนสำคัญที่สุด ทำไม','คาดหวังว่าพรุ่งนี้จะเป็นวันแบบไหน']},
+  {cat:'แผนการ',emoji:'🗓️',th:'เป้าหมายที่อยากทำให้สำเร็จในเดือนนี้คืออะไร แล้วจะเริ่มยังไง',
+   g:['เป้าหมายคืออะไร ทำไมถึงเลือกอันนี้','ขั้นแรกที่จะลงมือทำคืออะไร เมื่อไหร่','อะไรอาจทำให้ไม่สำเร็จ จะป้องกันยังไง']},
+  {cat:'แผนการ',emoji:'🗓️',th:'มีอะไรที่อยากเรียนรู้หรืออยากลองทำเป็นครั้งแรกบ้าง เพราะอะไร',
+   g:['สิ่งที่อยากลองคืออะไร รู้จักมันได้ยังไง','ทำไมถึงอยากลอง มันดึงดูดตรงไหน','จะเริ่มยังไง ต้องเตรียมอะไรบ้าง']},
+  {cat:'แผนการ',emoji:'🗓️',th:'ปีนี้เหลืออีกไม่กี่เดือน มีอะไรที่ตั้งใจไว้แล้วยังไม่ได้ทำบ้าง',
+   g:['ต้นปีตั้งใจอะไรไว้บ้าง','อันไหนยังไม่ได้ทำ เพราะอะไร','จะทำทันไหม แผนช่วงที่เหลือคืออะไร']},
+  {cat:'แผนการ',emoji:'🗓️',th:'เล่าความฝันระยะยาวของคุณให้ฟังหน่อย อยากเห็นชีวิตตัวเองเป็นยังไงในอีก 5 ปี',
+   g:['อีก 5 ปี อยากให้ชีวิตด้านงาน ครอบครัว ตัวเอง เป็นยังไง','ทำไมภาพนั้นถึงสำคัญกับคุณ','ตอนนี้เริ่มทำอะไรเพื่อไปถึงจุดนั้นแล้วบ้าง']},
+  {cat:'ความทรงจำ',emoji:'🎞️',th:'เล่าความทรงจำวัยเด็กที่คุณจำได้แม่นที่สุด',
+   g:['ตอนนั้นอายุเท่าไหร่ อยู่ที่ไหน','เกิดอะไรขึ้น ใครอยู่ในเหตุการณ์บ้าง','ทำไมความทรงจำนี้ถึงติดอยู่ในใจจนวันนี้']},
+  {cat:'ความทรงจำ',emoji:'🎞️',th:'เล่าถึงครูหรือคนที่มีอิทธิพลกับชีวิตคุณมากที่สุด เขาเป็นคนยังไง',
+   g:['เขาคือใคร เจอกันตอนไหน','เขาทำหรือสอนอะไรที่เปลี่ยนคุณ','ทุกวันนี้ยังใช้สิ่งที่ได้จากเขายังไงบ้าง']},
+  {cat:'ความทรงจำ',emoji:'🎞️',th:'ของขวัญที่ประทับใจที่สุดที่เคยได้รับคืออะไร ใครให้ แล้วรู้สึกยังไง',
+   g:['ของขวัญคืออะไร ได้ในโอกาสไหน','คนให้คือใคร ทำไมเขาถึงเลือกสิ่งนี้','ตอนรับรู้สึกยังไง ตอนนี้ของชิ้นนั้นอยู่ไหน']},
+  {cat:'ความทรงจำ',emoji:'🎞️',th:'เล่าเรื่องตลกหรือเรื่องเขินอายที่เคยเกิดขึ้นกับคุณ',
+   g:['เหตุการณ์เกิดที่ไหน ตอนนั้นกำลังทำอะไร','จุดพีคคืออะไร คนรอบข้างมีปฏิกิริยายังไง','ตอนนี้มองกลับไปรู้สึกยังไง ขำไหม']},
+  {cat:'ความทรงจำ',emoji:'🎞️',th:'เพลงหรือหนังเรื่องไหนที่พาคุณย้อนกลับไปช่วงเวลาเก่าๆ เล่าความทรงจำนั้นหน่อย',
+   g:['เพลงหรือหนังชื่ออะไร เจอครั้งแรกตอนไหน','มันพาย้อนไปช่วงไหนของชีวิต เกิดอะไรขึ้นตอนนั้น','กลับไปฟังหรือดูอีกตอนนี้รู้สึกยังไง']},
+  {cat:'อาหาร',emoji:'🍜',th:'เมื่อวานคุณกินอะไรอร่อยที่สุด เล่าบรรยากาศตอนกินให้ฟังหน่อย',
+   g:['เมนูอะไร กินที่ไหน กับใคร','หน้าตาและรสชาติเป็นยังไง เล่าให้เห็นภาพ','ทำไมมื้อนี้ถึงพิเศษกว่ามื้ออื่น']},
+  {cat:'อาหาร',emoji:'🍜',th:'เมนูโปรดตลอดกาลของคุณคืออะไร ทำไมถึงชอบ กินครั้งแรกเมื่อไหร่',
+   g:['เมนูคืออะไร กินครั้งแรกที่ไหน เมื่อไหร่','เสน่ห์ของมันอยู่ตรงไหน ร้านไหนทำอร่อยสุด','มีความทรงจำอะไรผูกกับเมนูนี้ไหม']},
+  {cat:'อาหาร',emoji:'🍜',th:'เล่าร้านอาหารที่คุณอยากพาเพื่อนต่างชาติไปกิน ต้องสั่งอะไรบ้าง',
+   g:['ร้านอะไร อยู่ที่ไหน ทำไมต้องร้านนี้','เมนูที่ต้องสั่ง 2-3 อย่าง อธิบายแต่ละจาน','คิดว่าเพื่อนต่างชาติจะชอบอะไรที่สุด']},
+  {cat:'อาหาร',emoji:'🍜',th:'คุณเคยทำอาหารเมนูไหนแล้วภูมิใจที่สุด เล่าวิธีทำคร่าวๆ ให้ฟังหน่อย',
+   g:['เมนูอะไร ทำในโอกาสไหน ทำให้ใครกิน','ขั้นตอนคร่าวๆ เคล็ดลับอยู่ตรงไหน','ผลออกมาเป็นยังไง คนกินว่ายังไง']},
+  {cat:'อาหาร',emoji:'🍜',th:'ถ้าเลือกกินได้แค่เมนูเดียวตลอดชีวิต จะเลือกอะไร เพราะอะไร',
+   g:['เลือกเมนูไหน คิดนานไหม','เหตุผลคืออะไร: รสชาติ ความผูกพัน หรือกินไม่เบื่อ','ถ้าต้องกินทุกวันจริงๆ จะปรับยังไงไม่ให้เบื่อ']},
+  {cat:'ไม่คาดฝัน',emoji:'⚡',th:'เล่าเรื่องเซอร์ไพรส์ล่าสุดที่เกิดขึ้นกับคุณ จะเรื่องดีหรือเรื่องวุ่นๆ ก็ได้',
+   g:['เหตุการณ์เกิดขึ้นเมื่อไหร่ ที่ไหน','ตอนแรกคิดว่ายังไง แล้วความจริงคืออะไร','ลงเอยยังไง ได้บทเรียนหรือเรื่องเล่าอะไร']},
+  {cat:'ไม่คาดฝัน',emoji:'⚡',th:'เคยเจอเหตุการณ์อะไรที่ทำให้ต้องเปลี่ยนแผนกะทันหันบ้าง แล้วลงเอยยังไง',
+   g:['แผนเดิมคืออะไร แล้วอะไรมาทำให้พัง','ตอนนั้นรู้สึกยังไง ตัดสินใจยังไง','สุดท้ายกลายเป็นดีหรือแย่กว่าแผนเดิม']},
+  {cat:'ไม่คาดฝัน',emoji:'⚡',th:'เล่าครั้งที่คุณหลงทางหรือขึ้นรถผิดสาย ตอนนั้นทำยังไง',
+   g:['เกิดขึ้นที่ไหน กำลังจะไปไหน','รู้ตัวตอนไหนว่าหลง แล้วทำอะไรต่อ','ถึงที่หมายไหม ตอนนี้นึกถึงแล้วขำไหม']},
+  {cat:'ไม่คาดฝัน',emoji:'⚡',th:'เคยเจอคนแปลกหน้าที่ใจดีกับคุณแบบไม่คาดคิดไหม เล่าให้ฟังหน่อย',
+   g:['เจอกันที่ไหน สถานการณ์ตอนนั้นคืออะไร','เขาช่วยหรือทำอะไรให้ ทำไมถึงไม่คาดคิด','เรื่องนี้เปลี่ยนมุมมองของคุณยังไง']},
+  {cat:'ไม่คาดฝัน',emoji:'⚡',th:'วันที่ทุกอย่างผิดพลาดไปหมด คุณเคยเจอไหม เล่าหน่อยว่าเกิดอะไรขึ้นบ้าง',
+   g:['วันนั้นเริ่มพังตั้งแต่ตอนไหน','ไล่เหตุการณ์: อะไรพังบ้างต่อกันมา','ผ่านวันนั้นมาได้ยังไง ตอนนี้เล่าแล้วขำไหม']},
 ];
+// generic fallback guide (AI-generated prompts that fail to return their own)
+const DIARY_GUIDE_GENERIC=['เริ่มจากฉาก: ใคร ที่ไหน เมื่อไหร่','เล่าเหตุการณ์: เกิดอะไรขึ้น จุดไหนน่าจดจำ','ปิดท้าย: รู้สึกยังไง ได้คิดอะไรจากเรื่องนี้'];
 const _diaryState={prompt:null, idx:-1, result:null, text:''};
 function _diClr(s){ return s>=80?'var(--green)':s>=50?'var(--yellow-dk)':'var(--red)'; }
 function _diaryLoad(){ try{return JSON.parse(localStorage.getItem('ws_diary')||'[]')}catch(e){return []} }
@@ -5167,9 +5216,19 @@ function _diaryStreak(){
 }
 function _diaryPromptCardHtml(){
   const p=_diaryState.prompt;
+  const g=(p.g&&p.g.length)?p.g:DIARY_GUIDE_GENERIC;
   return `<span class="di-cat-pill">${p.emoji} ${_ieEsc(p.cat)}</span>
     <span class="di-sticker">${p.emoji}</span>
-    <div class="di-prompt-th">${_ieEsc(p.th)}</div>`;
+    <div class="di-prompt-th">${_ieEsc(p.th)}</div>
+    <button class="di-guide-btn" onclick="diaryGuideToggle()">💡 นึกไม่ออก? ดูไกด์การเล่า</button>
+    <div id="di-guide" style="display:none">
+      ${g.map((q,i)=>`<div class="di-guide-step"><span class="di-guide-num">${i+1}</span><span>${_ieEsc(q)}</span></div>`).join('')}
+      <div class="di-guide-tip">ลองตอบทีละข้อเป็นภาษาอังกฤษ แล้วร้อยต่อกัน ก็ได้ไดอารี่ครบเรื่องแล้ว ✨</div>
+    </div>`;
+}
+function diaryGuideToggle(){
+  const g=document.getElementById('di-guide');
+  if(g) g.style.display = g.style.display==='none' ? '' : 'none';
 }
 function renderDiary(){
   const el=document.getElementById('diary-body'); if(!el) return;
@@ -5190,7 +5249,12 @@ function renderDiary(){
     <div id="di-ai-note" style="font-size:11.5px;color:var(--muted);margin:0 2px 8px"></div>
     <textarea id="di-ta" class="di-ta" placeholder="Today, I ..." oninput="diaryWc()"></textarea>
     <div class="di-wc" id="di-wc">0 คำ</div>
-    <div class="di-helper">เล่าสัก 3–4 ประโยคขึ้นไป ยิ่งละเอียด AI ยิ่งช่วยได้ตรงจุด</div>
+    <div style="display:flex;gap:8px;margin:2px 0 4px">
+      <button class="btn btn-outline btn-sm" style="flex:1" id="di-mic-en" onclick="diaryDict('en')">🎤 พูดเป็นอังกฤษ</button>
+      <button class="btn btn-outline btn-sm" style="flex:1" id="di-mic-th" onclick="diaryDict('th')">🇹🇭 พูดไทย → Eng</button>
+    </div>
+    <div id="di-mic-live" style="font-size:12px;color:var(--muted);margin-bottom:4px;text-align:center;min-height:16px"></div>
+    <div class="di-helper">พิมพ์หรือพูดก็ได้ — พูดไทยเดี๋ยว AI แปลงเป็นอังกฤษธรรมชาติให้ · เล่าสัก 3–4 ประโยคขึ้นไป ยิ่งละเอียด AI ยิ่งช่วยได้ตรงจุด</div>
     <button class="btn btn-primary" style="width:100%" id="di-submit" onclick="diarySubmit()">ส่งให้ AI ตรวจ 📝</button>
     <div id="di-nudge" style="font-size:12px;color:var(--pink-dk);margin-top:6px;text-align:center"></div>
     <div id="di-result" style="margin-top:14px"></div>
@@ -5202,13 +5266,118 @@ function diaryBack(){
   if(ta && ta.value.trim() && !_diaryState.result){
     if(!confirm('ยังไม่ได้ส่ง ออกจากหน้านี้เลยไหม?')) return;
   }
-  stopSpeech(); showScreen('home');
+  _diDictKill(); stopSpeech(); showScreen('home');
 }
 function diaryWc(){
   const ta=document.getElementById('di-ta'), wc=document.getElementById('di-wc');
   if(!ta||!wc) return;
   const n=ta.value.trim().split(/\s+/).filter(Boolean).length;
   wc.textContent=n+' คำ';
+}
+
+// ── diary dictation: speak English (dictated as-is) OR speak Thai (AI converts to
+// natural real-life English). Same graceful-stop rules as every recorder in this app:
+// accumulate on persistent vars, manual stop uses .stop() with handlers kept alive
+// (never .abort(), which discards pending speech), auto-restart onend while recording.
+let _diRecog=null, _diMode=null, _diBase='', _diFinal='', _diInt='', _diLastTh='';
+function _diMicBtns(){ return {en:document.getElementById('di-mic-en'), th:document.getElementById('di-mic-th')}; }
+function _diMicIdle(){
+  const b=_diMicBtns();
+  if(b.en){ b.en.textContent='🎤 พูดเป็นอังกฤษ'; b.en.disabled=false; b.en.classList.remove('rec'); }
+  if(b.th){ b.th.textContent='🇹🇭 พูดไทย → Eng'; b.th.disabled=false; b.th.classList.remove('rec'); }
+}
+function _diLive(msg){ const el=document.getElementById('di-mic-live'); if(el) el.textContent=msg||''; }
+function diaryDict(mode){
+  const ta=document.getElementById('di-ta'); if(!ta||ta.readOnly) return;
+  if(_diMode){ _diDictStop(); return; } // tap again = stop whichever is running
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!SR){ _diLive('❌ เบราว์เซอร์นี้ไม่รองรับการพูด ลองใช้ Safari/Chrome'); return; }
+  if(mode==='th' && !_gemKey()){ _diLive('⚠️ โหมดพูดไทยต้องมี Gemini key ก่อน (ใส่ได้ที่หน้าตั้งค่าเสียง) — หรือพูดเป็นอังกฤษได้เลย'); return; }
+  stopSpeech();
+  _diMode=mode; _diFinal=''; _diInt='';
+  _diBase = mode==='en' ? (ta.value ? ta.value.replace(/\s+$/,'')+' ' : '') : ta.value;
+  const b=_diMicBtns();
+  const act=b[mode], other=b[mode==='en'?'th':'en'];
+  if(act){ act.textContent='⏹ หยุดพูด'; act.classList.add('rec'); }
+  if(other) other.disabled=true;
+  _diLive(mode==='en' ? '🎙 พูดเป็นภาษาอังกฤษได้เลย...' : '🎙 เล่าเป็นภาษาไทยได้เลย เดี๋ยวแปลงให้...');
+  function _attempt(){
+    if(!_diMode) return;
+    if(_diRecog){_diRecog.onresult=null;_diRecog.onerror=null;_diRecog.onend=null;try{_diRecog.abort()}catch(e){}}
+    const r=new SR(); _diRecog=r;
+    r.lang = mode==='en' ? 'en-US' : 'th-TH';
+    r.continuous=true; r.interimResults=true;
+    r.onresult=e=>{
+      let fin='', int='';
+      for(let i=e.resultIndex;i<e.results.length;i++){
+        if(e.results[i].isFinal) fin+=e.results[i][0].transcript+' ';
+        else int+=e.results[i][0].transcript;
+      }
+      if(fin) _diFinal+=fin;
+      _diInt=int;
+      if(mode==='en'){ ta.value=_diBase+_diFinal+_diInt; diaryWc(); }
+      else { const d=(_diFinal+_diInt).trim(); if(d) _diLive('🎙 "'+d+'"'); }
+    };
+    r.onerror=e=>{
+      if(e.error==='not-allowed'||e.error==='service-not-allowed'){ _diDictAbort(micDeniedMsg()); }
+      else if(e.error==='audio-capture'){ _diDictAbort('❌ ไม่พบไมโครโฟน — เช็คว่าไม่มีแอปอื่นใช้ไมค์อยู่'); }
+      else if(e.error==='network'){ _diDictAbort('❌ ระบบรู้จำเสียงล้มเหลว — iPhone ต้องเปิด ตั้งค่า → ทั่วไป → แป้นพิมพ์ → เปิดใช้การป้อนตามคำบอก (Enable Dictation)'); }
+      // no-speech / aborted → onend restart
+    };
+    r.onend=()=>{ if(_diMode) _attempt(); };
+    try{r.start();}catch(e){ if(_diMode) setTimeout(_attempt,300); }
+  }
+  _attempt();
+}
+function _diDictStop(){ // graceful manual stop → flush what was heard
+  const mode=_diMode; _diMode=null;
+  const b=_diMicBtns(); if(b.en) b.en.disabled=true; if(b.th) b.th.disabled=true;
+  _diLive('⏳ กำลังประมวลผล...');
+  if(_diRecog){
+    const r=_diRecog; let flushed=false;
+    const doFlush=()=>{ if(flushed) return; flushed=true;
+      r.onresult=null;r.onerror=null;r.onend=null; _diRecog=null; _diDictFlush(mode); };
+    r.onend=doFlush; r.onerror=doFlush;
+    try{r.stop()}catch(e){doFlush();}
+    setTimeout(doFlush,1200);
+  } else _diDictFlush(mode);
+}
+function _diDictFlush(mode){
+  const ta=document.getElementById('di-ta');
+  const heard=(_diFinal+' '+_diInt).replace(/\s+/g,' ').trim();
+  _diFinal=''; _diInt='';
+  if(mode==='en'){
+    if(ta){ ta.value=(_diBase+heard).replace(/\s+$/,''); diaryWc(); }
+    _diMicIdle(); _diLive(heard?'':'ไม่ได้ยินเสียง ลองพูดใหม่ได้เลย');
+    return;
+  }
+  // Thai mode → convert to natural real-life English before inserting
+  if(!heard){ _diMicIdle(); _diLive('ไม่ได้ยินเสียง ลองพูดใหม่ได้เลย'); return; }
+  _diLastTh=heard;
+  _diLive('✨ กำลังแปลงเป็นอังกฤษแบบธรรมชาติ...');
+  _gemGenerate(`You are helping a Thai person write their personal English diary. They SPOKE this diary snippet in Thai:\n"${heard.replace(/"/g,"'")}"\n\nRewrite it as natural, casual, first-person English that a native speaker would actually write in a personal diary — real-life everyday phrasing, not stiff textbook translation. Keep all their ideas and details, same meaning, roughly the same length.\nReply with ONLY the English text — no quotes, no explanations, no Thai.`)
+  .then(({text})=>{
+    const en=text.trim();
+    if(ta){ ta.value=(ta.value?ta.value.replace(/\s+$/,'')+' ':'')+en; diaryWc(); }
+    _diMicIdle(); _diLive('✅ แปลงให้แล้ว แก้คำได้ตามใจเลย');
+  }).catch(err=>{
+    _diMicIdle();
+    const msg = err&&err.code==='quota' ? '❌ โควตา AI หมดชั่วคราว — ที่พูดไว้: "'+_diLastTh+'" (ลองใหม่หรือพิมพ์เองได้)'
+              : err&&(err.code==='nokey'||err.code==='badkey') ? '❌ Gemini key ใช้ไม่ได้ — เช็ค key ที่หน้าตั้งค่าเสียง'
+              : '❌ แปลงไม่สำเร็จ — ที่พูดไว้: "'+_diLastTh+'"';
+    _diLive(msg);
+  });
+}
+function _diDictAbort(msg){ // hard error → stop everything, show reason
+  _diMode=null;
+  if(_diRecog){_diRecog.onresult=null;_diRecog.onerror=null;_diRecog.onend=null;try{_diRecog.abort()}catch(e){} _diRecog=null;}
+  _diFinal=''; _diInt='';
+  _diMicIdle(); _diLive(msg);
+}
+function _diDictKill(){ // silent cleanup on submit/leave — textarea already holds live text
+  _diMode=null;
+  if(_diRecog){_diRecog.onresult=null;_diRecog.onerror=null;_diRecog.onend=null;try{_diRecog.abort()}catch(e){} _diRecog=null;}
+  _diFinal=''; _diInt='';
 }
 function diaryReroll(){
   let i=_diaryState.idx;
@@ -5224,15 +5393,16 @@ function diaryGenAI(btn){
   if(!_gemKey()){ diaryReroll(); if(note) note.textContent='ยังไม่มี API key — ใช้โจทย์จากคลังแทน (ใส่ key ได้ที่หน้าตั้งค่าเสียง)'; return; }
   if(btn){ btn.disabled=true; btn.textContent='✨ กำลังคิดโจทย์...'; }
   let recent=[]; try{recent=JSON.parse(localStorage.getItem('ws_diary_recent_cats')||'[]')}catch(e){}
-  const prompt=`You are helping a Thai English learner practice diary writing. Generate ONE fresh diary prompt in Thai.\nPick a category from: เมื่อวาน, วันนี้, เที่ยว, ความรู้สึก, แผนการ, ความทรงจำ, อาหาร, ไม่คาดฝัน${recent.length?` — but NOT these recently used ones: ${recent.join(', ')}`:''}.\nThe prompt must invite a personal multi-sentence story (never answerable with yes/no), be specific and friendly, casual Thai.\nReply in EXACTLY this plain-text format, nothing else:\nCATEGORY: <category name from the list>\nEMOJI: <one fitting emoji>\nSCENARIO: <the diary prompt in Thai, 1-2 sentences>`;
+  const prompt=`You are helping a Thai English learner practice diary writing. Generate ONE fresh diary prompt in Thai.\nPick a category from: เมื่อวาน, วันนี้, เที่ยว, ความรู้สึก, แผนการ, ความทรงจำ, อาหาร, ไม่คาดฝัน${recent.length?` — but NOT these recently used ones: ${recent.join(', ')}`:''}.\nThe prompt must invite a personal multi-sentence story (never answerable with yes/no), be specific and friendly, casual Thai.\nReply in EXACTLY this plain-text format, nothing else:\nCATEGORY: <category name from the list>\nEMOJI: <one fitting emoji>\nSCENARIO: <the diary prompt in Thai, 1-2 sentences>\nGUIDE1: <คำถามนำภาษาไทยข้อแรก ช่วยเริ่มเรื่อง เช่น ใคร ที่ไหน เมื่อไหร่>\nGUIDE2: <คำถามนำภาษาไทยข้อสอง ช่วยเล่ารายละเอียดเหตุการณ์>\nGUIDE3: <คำถามนำภาษาไทยข้อสาม ช่วยปิดเรื่องด้วยความรู้สึกหรือข้อคิด>`;
   const done=()=>{ if(btn){ btn.disabled=false; btn.textContent='✨ โจทย์ใหม่จาก AI'; } };
   _gemGenerate(prompt).then(({text})=>{
     done();
     const cat=(text.match(/CATEGORY:\s*([^\n]+)/i)||[])[1];
     const emoji=(text.match(/EMOJI:\s*(\S+)/i)||[])[1];
-    const th=(text.match(/SCENARIO:\s*([\s\S]+)/i)||[])[1];
+    const th=(text.match(/SCENARIO:\s*([^\n]+)/i)||[])[1];
     if(!th){ diaryReroll(); if(note) note.textContent='AI ไม่ว่างชั่วคราว ใช้โจทย์สำรองแทน'; return; }
-    _diaryState.prompt={cat:(cat||'พิเศษ').trim(), emoji:(emoji||'✨').trim(), th:th.trim()};
+    const g=[1,2,3].map(n=>(text.match(new RegExp('GUIDE'+n+':\\s*([^\\n]+)','i'))||[])[1]).filter(Boolean).map(s=>s.trim());
+    _diaryState.prompt={cat:(cat||'พิเศษ').trim(), emoji:(emoji||'✨').trim(), th:th.trim(), g:g.length?g:DIARY_GUIDE_GENERIC};
     const card=document.getElementById('di-prompt-card');
     if(card){ card.innerHTML=_diaryPromptCardHtml(); card.classList.remove('fade-in'); void card.offsetWidth; card.classList.add('fade-in'); }
     if(note) note.textContent='✨ โจทย์นี้ AI คิดให้สดๆ เลย';
@@ -5240,6 +5410,7 @@ function diaryGenAI(btn){
   }).catch(()=>{ done(); diaryReroll(); if(note) note.textContent='AI ไม่ว่างชั่วคราว ใช้โจทย์สำรองแทน'; });
 }
 function diarySubmit(){
+  _diDictKill(); // textarea already holds the live dictated text; just release the mic
   const ta=document.getElementById('di-ta'); if(!ta) return;
   const text=ta.value.trim();
   const wc=text.split(/\s+/).filter(Boolean).length;
@@ -5371,7 +5542,7 @@ function _diarySave(p, text, r){
     cN:r.cN, gN:r.gN, lN:r.lN, errs:r.errs});
   localStorage.setItem('ws_diary', JSON.stringify(arr.slice(0,30)));
 }
-function diaryNew(){ _diaryState.prompt=null; _diaryState.result=null; renderDiary(); window.scrollTo(0,0); }
+function diaryNew(){ _diDictKill(); _diaryState.prompt=null; _diaryState.result=null; renderDiary(); window.scrollTo(0,0); }
 function _diaryHistHtml(expanded){
   const arr=_diaryLoad();
   if(!arr.length) return '';
